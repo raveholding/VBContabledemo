@@ -127,6 +127,7 @@ body.pub .app{display:none}body.pub #pub{display:block}
 details.fq{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-bottom:8px}
 details.fq summary{cursor:pointer;font-weight:600}details.fq p{color:var(--mut);margin:8px 0 0}
 .pfoot{border-top:1px solid var(--line);padding:22px 0;color:var(--mut);font-size:12px;margin-top:20px}
+@keyframes pulse{from{opacity:.4}to{opacity:1}}
 @media(max-width:1100px){.g6{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(2,1fr)}.g21,.g12{grid-template-columns:1fr}}
 @media(max-width:820px){
  .app{grid-template-columns:1fr}
@@ -293,11 +294,11 @@ const PERFIL_ALLOC={Conservador:[['Renta fija / bonos',45],['FCI Money Market',3
 
 /* ----- Contabilidad ----- */
 const PLAN=[
- ['1.1.01','Caja','A'],['1.1.02','Banco cuenta corriente','A'],['1.1.03','Deudores por ventas','A'],['1.1.04','Mercaderías','A'],['1.1.05','IVA Crédito Fiscal','A'],['1.2.01','Bienes de uso','A'],
+ ['1.1.01','Caja','A'],['1.1.02','Banco cuenta corriente','A'],['1.1.03','Deudores por ventas','A'],['1.1.04','Mercaderías','A'],['1.1.05','IVA Crédito Fiscal','A'],['1.1.06','Plataformas de cobro a liquidar','A'],['1.2.01','Bienes de uso','A'],
  ['2.1.01','Proveedores','P'],['2.1.02','Sueldos a pagar','P'],['2.1.03','Cargas sociales a pagar','P'],['2.1.04','IVA Débito Fiscal','P'],['2.1.05','Deudas fiscales','P'],
  ['3.1.01','Capital social','PN'],['3.1.02','Resultados no asignados','PN'],
  ['4.1.01','Ventas','RP'],['4.2.01','Otros ingresos','RP'],
- ['5.1.01','Costo de mercaderías vendidas','RN'],['5.2.01','Sueldos y jornales','RN'],['5.2.02','Cargas sociales','RN'],['5.2.03','Alquileres','RN'],['5.2.04','Servicios públicos','RN'],['5.2.05','Honorarios profesionales','RN'],['5.2.06','Impuestos y tasas','RN']
+ ['5.1.01','Costo de mercaderías vendidas','RN'],['5.2.01','Sueldos y jornales','RN'],['5.2.02','Cargas sociales','RN'],['5.2.03','Alquileres','RN'],['5.2.04','Servicios públicos','RN'],['5.2.05','Honorarios profesionales','RN'],['5.2.06','Impuestos y tasas','RN'],['5.2.07','Comisiones de plataformas de venta','RN']
 ];
 const cta=c=>PLAN.find(p=>p[0]===c)||[c,c,'A'];
 const AS={};
@@ -346,7 +347,7 @@ let CH=[];
 const NAV=[
  ['General'],['dash','Panel general','🏠'],['cli','Clientes','👥'],['tareas','Agenda y tareas','🗓️'],
  ['Estudio contable'],['venc','Vencimientos','⏰'],['imp','Impuestos','🧾'],['cont','Contabilidad','📒'],['sue','Sueldos y RRHH','💼'],['docs','Documentos','📁'],
- ['Inversiones en bolsa'],['mkt','Mercado en vivo','📈'],['cart','Cartera y órdenes','💹'],['perf','Perfil del inversor','🎯'],
+ ['Digitalización'],['ia','Carga de facturas con IA','🤖'],['ecom','E-commerce y facturación','🛍️'],['Inversiones en bolsa'],['mkt','Mercado en vivo','📈'],['cart','Cartera y órdenes','💹'],['perf','Perfil del inversor','🎯'],
  ['Administración'],['hon','Honorarios y cobranzas','💳'],['portal','Portal del cliente','🔐'],['sitio','Sitio público y servicios','🌐'],['rep','Reportes y exportación','📊'],['cfg','Configuración','⚙️']
 ];
 const V={};
@@ -696,6 +697,8 @@ const SERV=[
  {id:10,cat:'Inversiones',n:'Apertura de cuenta comitente',d:'Te acompañamos en el alta y en el test de perfil de inversor.',p:0,u:'sin costo',on:1,hot:1},
  {id:11,cat:'Inversiones',n:'Asesoramiento y armado de cartera',d:'Bonos, acciones, CEDEARs y FCI según tu perfil. Informe mensual.',p:95000,u:'por mes',on:1},
  {id:12,cat:'Inversiones',n:'Planificación financiera y protección de ahorros',d:'Estrategia de ahorro, jubilación y diversificación de patrimonio.',p:120000,u:'por plan',on:1},
+ {id:14,cat:'Digitalización',n:'Facturación electrónica para tu tienda online',d:'Conectamos Tiendanube, Mercado Libre, Mercado Pago o WooCommerce y facturamos tus ventas automáticamente.',p:70000,u:'por mes',on:1,hot:1},
+ {id:15,cat:'Digitalización',n:'Digitalización de comprobantes con IA',d:'Subís tus facturas y la IA las lee, las clasifica y las contabiliza sin cargar nada a mano.',p:55000,u:'por mes',on:1},
  {id:13,cat:'Consultoría',n:'Consulta profesional (60 min)',d:'Reunión presencial o virtual para resolver tu situación puntual.',p:35000,u:'por consulta',on:1}
 ];
 const PACKS=[
@@ -800,6 +803,139 @@ Object.assign(FRM,{
   window.open(waLink(STEL,txt),'_blank','noopener');
  }
 });
+
+
+/* ============ Carga de facturas con IA + E-commerce ============ */
+const IA={cid:11,items:[],nid:1};
+const IAPROV=[
+ ['Distribuidora Sur S.A.','30-70811234-5','1.1.04','Compra de mercaderías'],
+ ['Papelera del Norte S.R.L.','30-69887711-3','1.1.04','Compra de mercaderías'],
+ ['Telecomunicaciones del NOA S.A.','30-63945373-8','5.2.04','Servicio de internet y telefonía'],
+ ['Distribuidora de energía (demo)','30-50001234-7','5.2.04','Energía eléctrica'],
+ ['Inmobiliaria Centro S.R.L.','30-71234098-2','5.2.03','Alquiler de local'],
+ ['Estudio Gómez y Asoc.','30-68123450-9','5.2.05','Honorarios profesionales']
+];
+const iaCuentas=()=>PLAN.filter(p=>p[2]==='RN'||p[0]==='1.1.04'||p[0]==='1.2.01');
+const iaClients=()=>CL.filter(c=>c.tipo==='Sociedad');
+const iaMin=it=>Math.min(...Object.values(it.conf));
+function iaRead(f){
+ const h=hash(f.name+(f.size||0)),r=rng(h),p=IAPROV[h%IAPROV.length],low=!!f.low||h%5===0,cf=()=>Math.round((.93+r()*.06)*100);
+ const neto=Math.round((60000+r()*900000)/100)*100;
+ return{prov:p[0],cuit:p[1],cuenta:p[2],concepto:p[3],tipo:'Factura A',nro:'0001-'+String(Math.floor(1000+r()*90000)).padStart(8,'0'),fecha:iso(addD(TODAY,-Math.floor(r()*TODAY.getDate()))),neto,al:21,conf:{prov:cf(),nro:cf(),fecha:cf(),neto:low?68:cf(),iva:cf()}};
+}
+function addIA(f){
+ const it={id:IA.nid++,cid:IA.cid,file:f.name,isImg:/^image\//.test(f.type||''),url:null,estado:'Leyendo'};
+ try{if(it.isImg&&typeof Blob!=='undefined'&&f instanceof Blob)it.url=URL.createObjectURL(f)}catch(e){}
+ IA.items.unshift(it);
+ setTimeout(()=>{Object.assign(it,iaRead(f));it.dup=IA.items.some(o=>o!==it&&o.estado!=='Leyendo'&&o.nro===it.nro&&o.prov===it.prov);it.estado=iaMin(it)<90?'Revisar':'Lista';if(S.view==='ia'&&!$('#modal.on'))render()},900+Math.random()*700);
+}
+function postIA(it){
+ const cid=it.cid,as=asientos(cid),iva=Math.round(it.neto*it.al/100),tot=it.neto+iva,l=[[it.cuenta,it.neto,0]];
+ if(iva)l.push(['1.1.05',iva,0]);l.push(['2.1.01',0,tot]);
+ as.push({n:as.length+1,f:it.fecha,desc:(it.concepto||'Compra')+' – '+it.prov+' '+it.nro,l});
+ comprobantes(cid,it.fecha.slice(0,7)).c.push({tp:'C',f:it.nro,cp:it.prov,neto:it.neto,al:it.al});
+ it.estado='Contabilizada';it.asiento=as.length;
+}
+V.ia=()=>{
+ const cs=iaClients(),it=IA.items,rev=it.filter(x=>x.estado==='Revisar').length,lis=it.filter(x=>x.estado==='Lista'&&!x.dup).length,done=it.filter(x=>x.estado==='Contabilizada'),tot=sum(done.map(x=>x.neto*(1+x.al/100)));
+ return`<div class="ph"><div><h1>Carga de facturas con IA</h1><p>Subí fotos o PDF de facturas de compra: la IA lee proveedor, CUIT, número, fecha e importes, propone la cuenta contable y contabiliza con tu OK.</p></div><div style="min-width:260px"><label>Contabilizar en</label><select data-chg="iacid">${clOpts(IA.cid,c=>c.tipo==='Sociedad')}</select></div></div>
+ <div class="grid g4" style="margin-bottom:14px">${kpi('Comprobantes cargados',it.length)}${kpi('Para revisar',rev,'confianza baja o dudas',rev?'dn':'up')}${kpi('Listas para contabilizar',lis,'confianza alta','up')}${kpi('Contabilizadas',done.length,ars(tot)+' con IVA')}</div>
+ <div class="card" id="iadrop" style="text-align:center;padding:26px;border:2px dashed var(--gold)"><div style="font-size:38px">🤖</div><h3 style="justify-content:center">Arrastrá tus facturas acá o elegí archivos</h3><p class="mut" style="margin:4px 0 14px">PDF, JPG o PNG. También se pueden cargar desde el portal del cliente o por WhatsApp.</p><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><label class="btn pri" style="margin:0;cursor:pointer">⬆ Subir facturas<input type="file" multiple accept="image/*,.pdf" hidden data-chg="iaup"></label><button class="btn" data-act="iasample">Probar con facturas de ejemplo</button></div><p class="disc">Demo: la lectura se simula con datos de ejemplo. En la versión real un modelo de IA lee el documento (y el QR de ARCA) y los datos pueden diferir del archivo subido.</p></div>
+ <div class="card" style="margin-top:14px"><h3>Bandeja de comprobantes ${lis?`<button class="btn ok sm" data-act="iaall">Contabilizar las ${lis} confiables</button>`:''}</h3><div class="tw"><table><thead><tr><th>Archivo</th><th>Proveedor</th><th>Comprobante</th><th>Fecha</th><th class="r">Neto</th><th class="r">IVA</th><th class="r">Total</th><th>Confianza</th><th>Estado</th><th></th></tr></thead><tbody>${it.map(x=>{
+  if(x.estado==='Leyendo')return`<tr><td>${esc(x.file)}</td><td colspan="8"><div class="bar" style="max-width:280px"><i style="width:70%;animation:pulse 1s infinite alternate"></i></div><small class="mut">Leyendo con IA…</small></td><td></td></tr>`;
+  const iva=Math.round(x.neto*x.al/100),m=iaMin(x),ok=x.estado==='Contabilizada';
+  return`<tr><td>${esc(x.file)}</td><td><b>${esc(x.prov)}</b><br><small class="mut">${x.cuit}</small></td><td>${x.tipo}<br><small class="mut">${x.nro}</small></td><td>${fd(x.fecha)}</td><td class="r">${ars(x.neto)}</td><td class="r">${ars(iva)}</td><td class="r"><b>${ars(x.neto+iva)}</b></td><td>${ok?badge('Validada','ok'):badge(m+'%',m>=90?'ok':'warn')}</td><td>${ok?badge('Contabilizada','ok'):x.dup?badge('Posible duplicado','bad'):x.estado==='Revisar'?badge('Revisar','warn'):badge('Lista','info')}</td><td>${ok?`<button class="btn sm" data-act="iadiario" data-id="${x.id}">Asiento N° ${x.asiento}</button>`:`<button class="btn sm" data-act="iarev" data-id="${x.id}">Revisar</button> ${x.estado==='Lista'&&!x.dup?`<button class="btn sm ok" data-act="iaquick" data-id="${x.id}">Contabilizar</button>`:''} <button class="btn sm bad" data-act="iadel" data-id="${x.id}">✕</button>`}</td></tr>`}).join('')||'<tr><td colspan="10" class="mut">Todavía no cargaste comprobantes. Probá con las facturas de ejemplo.</td></tr>'}</tbody></table></div></div>
+ <div class="grid g3" style="margin-top:14px"><div class="card"><h3>1 · Subís</h3><p class="mut">Foto del celular, PDF del proveedor o ticket escaneado.</p></div><div class="card"><h3>2 · La IA lee</h3><p class="mut">Extrae proveedor, CUIT, número, fecha, neto e IVA, sugiere la cuenta y detecta duplicados.</p></div><div class="card"><h3>3 · Contabiliza</h3><p class="mut">Con tu confirmación genera el asiento en el libro diario y carga el libro IVA Compras.</p></div></div>`;
+};
+const ECB=[['Camila Torres',''],['Federico Luna',''],['Lucía Benítez',''],['Mariano Díaz',''],['Distribuidora Andina S.R.L.','30-71102233-4'],['Rosa Paz (Kiosco El Sol)','27-24558811-6'],['Natalia Vega',''],['Gimnasio Fuerza S.A.','30-70998877-1']];
+const ECP=['Auriculares inalámbricos','Zapatillas urbanas','Mochila antirrobo','Termo de acero 1 L','Set de cocina x6','Remera de algodón','Cargador rápido USB-C','Lámpara LED de escritorio'];
+const PLAT=[
+ {k:'tn',n:'Tiendanube',ic:'🛒',fee:2.5,px:'#',d:'Pedidos de tu tienda propia'},
+ {k:'ml',n:'Mercado Libre',ic:'🤝',fee:13,px:'ML-',d:'Ventas del marketplace'},
+ {k:'mp',n:'Mercado Pago',ic:'💙',fee:4.2,px:'MP-',d:'Cobros por link, QR y punto de venta'},
+ {k:'woo',n:'WooCommerce',ic:'🧩',fee:0,px:'WC-',d:'Pedidos de tu sitio en WordPress'}
+];
+const plat=k=>PLAT.find(p=>p.k===k);
+const ECS={};S.cidEc=11;S.ecf={pl:'',est:''};
+const ec=cid=>ECS[cid]||(ECS[cid]={conn:{},auto:false,orders:[],seq:100,oid:1,pv:2});
+function genOrders(cid,k,n,seed){
+ const e=ec(cid),r=rng(hash(cid+k+(seed||''))),p=plat(k);
+ for(let i=0;i<n;i++){const b=ECB[Math.floor(r()*ECB.length)],q=1+Math.floor(r()*3);
+  e.orders.push({id:e.oid++,pl:k,num:p.px+String(100000+Math.floor(r()*899999)),cli:b[0],doc:b[1],det:q+' × '+ECP[Math.floor(r()*ECP.length)],total:Math.round((18000+r()*190000)/100)*100,fecha:seed?TODAYISO:iso(addD(TODAY,-Math.floor(r()*7))),est:'Pendiente'})}
+}
+function facturar(cid,o){
+ if(o.est==='Facturada')return null;
+ const e=ec(cid),tipo=o.doc?'Factura A':'Factura B',neto=Math.round(o.total/1.21),iva=o.total-neto,fee=Math.round(o.total*plat(o.pl).fee/100);
+ e.seq++;const nro=String(e.pv).padStart(4,'0')+'-'+String(e.seq).padStart(8,'0'),cae=('7'+String(hash(cid+o.num)).padStart(13,'0')).slice(0,14),as=asientos(cid),l=[['1.1.06',o.total-fee,0]];
+ if(fee)l.push(['5.2.07',fee,0]);l.push(['4.1.01',0,neto],['2.1.04',0,iva]);
+ as.push({n:as.length+1,f:TODAYISO,desc:'Venta online '+plat(o.pl).n+' '+o.num+' – '+tipo+' '+nro,l});
+ comprobantes(cid,TODAYISO.slice(0,7)).v.push({tp:'V',f:nro,cp:o.cli,neto,al:21});
+ Object.assign(o,{est:'Facturada',tipo,nro,cae,caeVto:iso(addD(TODAY,10)),neto,iva,fee,asiento:as.length});return o;
+}
+V.ecom=()=>{
+ const cs=iaClients(),cid=cs.find(c=>c.id===S.cidEc)?S.cidEc:cs[0].id,e=ec(cid),conn=PLAT.filter(p=>e.conn[p.k]),f=S.ecf;
+ const all=e.orders.filter(o=>e.conn[o.pl]),list=all.filter(o=>(!f.pl||o.pl===f.pl)&&(!f.est||o.est===f.est)).sort((a,b)=>a.fecha<b.fecha?1:a.fecha>b.fecha?-1:b.id-a.id);
+ const pend=all.filter(o=>o.est==='Pendiente'),fact=all.filter(o=>o.est==='Facturada'),last=fact.slice().sort((a,b)=>b.asiento-a.asiento)[0],asl=last?asientos(cid)[last.asiento-1]:null;
+ return`<div class="ph"><div><h1>E-commerce y facturación</h1><p>Conectá tus tiendas y plataformas de cobro. Cada venta se factura desde el sistema y se contabiliza sola: asiento en el libro diario, IVA Ventas y comisiones.</p></div><div style="min-width:260px"><label>Empresa</label><select data-chg="eccid">${clOpts(cid,c=>c.tipo==='Sociedad')}</select></div></div>
+ <div class="grid g4" style="margin-bottom:14px">${PLAT.map(p=>{const on=!!e.conn[p.k];return`<div class="card"><h3><span>${p.ic} ${p.n}</span>${badge(on?'Conectada':'No conectada',on?'ok':'info')}</h3><p class="mut" style="margin:0 0 8px">${p.d}</p><small class="mut">Comisión estimada: ${p.fee?num(p.fee,1)+'%':'sin comisión'}${on?' · '+e.orders.filter(o=>o.pl===p.k).length+' pedidos':''}</small><div style="margin-top:10px">${on?`<button class="btn sm" data-act="ecdis" data-k="${p.k}">Desconectar</button>`:`<button class="btn pri sm" data-act="eccon" data-k="${p.k}">Conectar</button>`}</div></div>`}).join('')}</div>
+ <div class="grid g4" style="margin-bottom:14px">${kpi('Pendientes de facturar',pend.length,ars(sum(pend.map(o=>o.total))),pend.length?'dn':'up')}${kpi('Facturadas',fact.length,ars(sum(fact.map(o=>o.total))),'up')}${kpi('Comisiones de plataformas',ars(sum(fact.map(o=>o.fee))),'registradas como gasto')}${kpi('Neto a liquidar',ars(sum(fact.map(o=>o.total-o.fee))),'cuenta Plataformas de cobro')}</div>
+ <div class="card"><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:10px"><label style="color:var(--txt);font-size:13px;display:flex;gap:6px;align-items:center;margin:0"><input type="checkbox" ${e.auto?'checked':''} data-chg="ecauto"> Facturar automáticamente cada venta nueva</label><div style="flex:1"></div><div><label>Plataforma</label><select data-chg="ecpl"><option value="">Todas</option>${PLAT.map(p=>`<option value="${p.k}" ${f.pl===p.k?'selected':''}>${p.n}</option>`).join('')}</select></div><div><label>Estado</label><select data-chg="ecest"><option value="">Todos</option>${['Pendiente','Facturada'].map(x=>`<option ${f.est===x?'selected':''}>${x}</option>`).join('')}</select></div></div>
+ <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><button class="btn" data-act="ecnew" ${conn.length?'':'disabled'}>＋ Simular nueva venta</button>${pend.length?`<button class="btn ok" data-act="ecfall">Facturar las ${pend.length} pendientes</button>`:''}<button class="btn" data-act="ecdiario">📒 Ver libro diario</button><button class="btn" data-act="ecivaf">🧾 Ver libro IVA Ventas</button></div>
+ <div class="tw"><table><thead><tr><th>Fecha</th><th>Plataforma</th><th>Pedido</th><th>Cliente</th><th>Detalle</th><th class="r">Total</th><th class="r">Comisión</th><th>Estado</th><th></th></tr></thead><tbody>${list.map(o=>`<tr><td>${fd(o.fecha)}</td><td>${plat(o.pl).ic} ${plat(o.pl).n}</td><td>${o.num}</td><td>${esc(o.cli)}<br><small class="mut">${o.doc||'Consumidor final'}</small></td><td>${esc(o.det)}</td><td class="r">${ars(o.total)}</td><td class="r">${ars(Math.round(o.total*plat(o.pl).fee/100))}</td><td>${o.est==='Facturada'?badge(o.tipo+' '+o.nro,'ok'):badge('Pendiente','warn')}</td><td>${o.est==='Facturada'?`<button class="btn sm" data-act="ecver" data-id="${o.id}">Ver comprobante</button>`:`<button class="btn sm ok" data-act="ecfac" data-id="${o.id}">Facturar</button>`}</td></tr>`).join('')||`<tr><td colspan="9" class="mut">${conn.length?'Sin pedidos para este filtro':'Conectá una plataforma para traer tus ventas'}</td></tr>`}</tbody></table></div></div>
+ ${asl?`<div class="card" style="margin-top:14px"><h3>Último impacto contable · Asiento N° ${asl.n}</h3><p class="mut" style="margin:0 0 8px">${esc(asl.desc)}</p><div class="tw"><table><thead><tr><th>Cuenta</th><th class="r">Debe</th><th class="r">Haber</th></tr></thead><tbody>${asl.l.map(l=>`<tr><td>${cta(l[0])[0]} ${cta(l[0])[1]}</td><td class="r">${l[1]?ars(l[1]):''}</td><td class="r">${l[2]?ars(l[2]):''}</td></tr>`).join('')}</tbody></table></div></div>`:''}
+ <p class="disc">Demo: la conexión, los pedidos, la numeración y el CAE son simulados. En la versión real se autoriza cada plataforma por API y los comprobantes se emiten con el web service de facturación electrónica de ARCA. Operatoria solo para ver el funcionamiento.</p>`;
+};
+Object.assign(ACT,{
+ iasample(){[{name:'FC-A_distribuidora_sur_0001.pdf',size:84211,type:'application/pdf'},{name:'factura_telecom_octubre.jpg',size:231904,type:'image/jpeg'},{name:'alquiler_local_octubre.pdf',size:50234,type:'application/pdf'},{name:'ticket_escaneado_borroso.jpg',size:90111,type:'image/jpeg',low:true}].forEach(addIA);render()},
+ iadel(d){IA.items=IA.items.filter(x=>x.id!==+d.id);render()},
+ iaquick(d){const it=IA.items.find(x=>x.id===+d.id);if(!it||it.estado!=='Lista')return;postIA(it);toast('Contabilizada: asiento N° '+it.asiento+' e IVA Compras ✔');render()},
+ iaall(){const l=IA.items.filter(x=>x.estado==='Lista'&&!x.dup);l.forEach(postIA);toast(l.length+' comprobantes contabilizados ✔');render()},
+ iadiario(d){const it=IA.items.find(x=>x.id===+d.id);S.cidCont=it.cid;S.tab.cont='diario';go('cont')},
+ iarev(d){
+  const it=IA.items.find(x=>x.id===+d.id);if(!it||it.estado==='Leyendo')return;
+  const cf=k=>`<small class="${it.conf[k]<90?'dn':'up'}"> · IA ${it.conf[k]}%</small>`;
+  modal('Revisar factura leída',`<div class="grid g2"><div class="card"><h3>Documento</h3>${it.url?`<img src="${it.url}" alt="" style="max-width:100%;max-height:320px;border-radius:8px">`:`<div class="rec" style="min-height:220px;display:grid;place-items:center;text-align:center"><div><div style="font-size:42px">📄</div><b>${esc(it.file)}</b><br><small class="mut">Vista previa disponible para imágenes</small></div></div>`}${it.dup?`<p>${badge('Posible duplicado: ya hay una factura de este proveedor con el mismo número','bad')}</p>`:''}</div>
+  <form class="card" data-form="iaconf"><input type="hidden" name="id" value="${it.id}"><h3>Datos extraídos por la IA</h3>
+  <div class="fr"><div><label>Tipo</label><select name="tipo">${['Factura A','Factura B','Factura C','Ticket'].map(x=>`<option ${it.tipo===x?'selected':''}>${x}</option>`).join('')}</select></div><div><label>Número${cf('nro')}</label><input name="nro" value="${esc(it.nro)}" required></div></div>
+  <div class="fr"><div><label>Fecha${cf('fecha')}</label><input type="date" name="fecha" value="${it.fecha}" required></div><div><label>CUIT proveedor</label><input name="cuit" value="${esc(it.cuit)}"></div></div>
+  <div class="fr"><div style="grid-column:1/-1"><label>Proveedor${cf('prov')}</label><input name="prov" value="${esc(it.prov)}" required></div></div>
+  <div class="fr"><div><label>Neto gravado${cf('neto')}</label><input type="number" name="neto" min="1" value="${it.neto}" required></div><div><label>Alícuota IVA${cf('iva')}</label><select name="al">${[21,10.5,27,0].map(x=>`<option ${it.al===x?'selected':''}>${x}</option>`).join('')}</select></div></div>
+  <div class="fr"><div style="grid-column:1/-1"><label>Cuenta contable sugerida</label><select name="cuenta">${iaCuentas().map(c=>`<option value="${c[0]}" ${it.cuenta===c[0]?'selected':''}>${c[0]} ${c[1]}</option>`).join('')}</select></div></div>
+  <p style="margin-top:12px"><button class="btn pri">Confirmar y contabilizar</button></p><p class="disc">Genera el asiento en el libro diario de ${esc(cl(it.cid).n)} y suma el comprobante al libro IVA Compras.</p></form></div>`);
+ },
+ eccon(d){
+  const p=plat(d.k),woo=d.k==='woo';
+  modal('Conectar '+p.n,`<form data-form="eccon"><input type="hidden" name="k" value="${p.k}"><p>${woo?'Ingresá la dirección de tu tienda y las claves de la API REST de WooCommerce (WooCommerce → Ajustes → Avanzado → API REST).':'Se abre la pantalla oficial de '+p.n+' para que autorices a <b>Sistema VB</b> a leer tus ventas. No guardamos tu contraseña.'}</p>${woo?`<div class="fr"><div style="grid-column:1/-1"><label>URL de la tienda</label><input name="url" value="https://mitienda.com.ar"></div><div><label>Consumer key</label><input name="ck" value="ck_demo_xxxxxxxx"></div><div><label>Consumer secret</label><input type="password" name="cs" value="cs_demo_xxxxxxxx"></div></div>`:''}<div class="rec" style="margin:12px 0"><b>Qué se sincroniza</b><ul style="margin:6px 0 0;padding-left:18px"><li>Ventas y cobros con fecha, monto y comprador</li><li>Datos fiscales del comprador (CUIT/DNI) para elegir Factura A o B</li><li>Comisiones y cargos de la plataforma</li></ul></div><button class="btn pri">Autorizar y conectar (simulado)</button></form>`);
+ },
+ ecdis(d){ec(S.cidEc).conn[d.k]=false;toast(plat(d.k).n+' desconectada');render()},
+ ecfac(d){const o=ec(S.cidEc).orders.find(x=>x.id===+d.id);if(!o)return;facturar(S.cidEc,o);toast(o.tipo+' '+o.nro+' emitida y contabilizada ✔');render()},
+ ecfall(){const e=ec(S.cidEc),l=e.orders.filter(o=>e.conn[o.pl]&&o.est==='Pendiente');l.forEach(o=>facturar(S.cidEc,o));toast(l.length+' ventas facturadas y contabilizadas ✔');render()},
+ ecnew(){const e=ec(S.cidEc),c=PLAT.filter(p=>e.conn[p.k]);if(!c.length)return toast('Conectá una plataforma primero');const k=c[Math.floor(Math.random()*c.length)].k;genOrders(S.cidEc,k,1,String(Date.now()));const o=e.orders[e.orders.length-1];if(e.auto){facturar(S.cidEc,o);toast('Nueva venta en '+plat(k).n+': facturada automáticamente ('+o.tipo+' '+o.nro+') ✔')}else toast('Nueva venta en '+plat(k).n+' · pendiente de facturar');render()},
+ ecver(d){
+  const cid=S.cidEc,c=cl(cid),o=ec(cid).orders.find(x=>x.id===+d.id);if(!o||o.est!=='Facturada')return;
+  modal('Comprobante '+o.tipo+' '+o.nro,`<div class="rec"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><div><b>${esc(c.n)}</b><br>CUIT ${c.cuit}<br>${esc(c.det)}</div><div style="text-align:right"><b>${o.tipo.replace('Factura ','FACTURA ')}</b><br>N° ${o.nro}<br>Fecha ${fd(TODAYISO)}</div></div><hr style="border:0;border-top:1px dashed var(--line);margin:12px 0"><div class="stat"><span>Cliente</span><b>${esc(o.cli)} · ${o.doc||'Consumidor final'}</b></div><div class="stat"><span>Origen</span><b>${plat(o.pl).n} · ${o.num}</b></div><div class="stat"><span>Detalle</span><b>${esc(o.det)}</b></div><div class="stat"><span>Neto gravado</span><b>${ars(o.neto)}</b></div><div class="stat"><span>IVA 21%</span><b>${ars(o.iva)}</b></div><div class="stat"><span>Total</span><b>${ars(o.total)}</b></div><div class="stat"><span>CAE (demo)</span><b>${o.cae}</b></div><div class="stat"><span>Vto. CAE</span><b>${fd(o.caeVto)}</b></div></div><p class="disc">Comprobante ilustrativo sin validez fiscal.</p><p class="noprint"><button class="btn pri" onclick="window.print()">🖨 Imprimir</button> <button class="btn" data-act="ecdiario" onclick="closeModal()">Ver asiento N° ${o.asiento}</button></p>`);
+ },
+ ecdiario(){S.cidCont=S.cidEc;S.tab.cont='diario';go('cont')},
+ ecivaf(){S.cidIva=S.cidEc;S.ivaYM=TODAYISO.slice(0,7);S.tab.imp='iva';go('imp')}
+});
+Object.assign(CHG,{
+ iacid(v){IA.cid=+v;render()},
+ iaup(v,t){const fs=Array.from(t.files||[]);fs.forEach(addIA);try{t.value=''}catch(e){}if(fs.length){toast(fs.length+' archivo(s) enviados a la IA');render()}},
+ eccid(v){S.cidEc=+v;render()},
+ ecauto(v,t){ec(S.cidEc).auto=t.checked;toast(t.checked?'Facturación automática activada':'Facturación automática desactivada')},
+ ecpl(v){S.ecf.pl=v;render()},ecest(v){S.ecf.est=v;render()}
+});
+Object.assign(FRM,{
+ iaconf(f){
+  const it=IA.items.find(x=>x.id===+f.get('id'));if(!it)return;const neto=+f.get('neto');if(!(neto>0))return toast('Ingresá un neto válido');
+  Object.assign(it,{tipo:f.get('tipo'),nro:f.get('nro'),fecha:f.get('fecha'),cuit:f.get('cuit'),prov:f.get('prov'),neto,al:+f.get('al'),cuenta:f.get('cuenta')});
+  it.concepto=(cta(it.cuenta)[1]||'Compra');it.conf={prov:100,nro:100,fecha:100,neto:100,iva:100};
+  postIA(it);closeModal();toast('Contabilizada: asiento N° '+it.asiento+' e IVA Compras ✔');render();
+ },
+ eccon(f){const k=f.get('k'),e=ec(S.cidEc);e.conn[k]=true;if(!e.orders.some(o=>o.pl===k))genOrders(S.cidEc,k,6);closeModal();toast(plat(k).n+' conectada: se importaron las ventas ✔');render()}
+});
+document.addEventListener('dragover',e=>{if(e.target.closest&&e.target.closest('#iadrop'))e.preventDefault()});
+document.addEventListener('drop',e=>{if(e.target.closest&&e.target.closest('#iadrop')){e.preventDefault();const fs=Array.from((e.dataTransfer||{}).files||[]);fs.forEach(addIA);if(fs.length){toast(fs.length+' archivo(s) enviados a la IA');render()}}});
 
 /* ============ Core ============ */
 function buildNav(){
