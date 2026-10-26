@@ -1,6 +1,6 @@
 # Sistema VB · Estudio Contable e Inversiones (demo)
 
-Demo HTML5 de un estudio contable con asesoramiento de inversiones en bolsa, con el nombre de ejemplo **Estudio Juan Pablo Russi**.
+Demo HTML5 de un estudio contable con asesoramiento de inversiones en bolsa, con el nombre de ejemplo **Estudio contable VB**.
 
 **Panel interno:** clientes, vencimientos, impuestos (IVA, Monotributo, Ganancias, rentas financieras), contabilidad, sueldos, documentos, agenda y tareas, mercado en vivo (simulado), cartera y órdenes, perfil del inversor, honorarios, portal del cliente y reportes.
 
