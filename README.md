@@ -11,3 +11,18 @@ Demo HTML5 de un estudio contable con asesoramiento de inversiones en bolsa, con
 Todos los datos, precios y cotizaciones son ficticios.
 
 Desarrollado por **Vincular Business** · WhatsApp (387) 4484132 · vincularbusiness@gmail.com
+
+## Funciones del listado del estudio (cada una en su módulo)
+
+- **Ventas y compras:** importación y exportación de comprobantes (Mis Comprobantes simulado + CSV real), conciliación contra ARCA.
+- **Impuestos:** IVA, Monotributo, Ganancias, IIBB y Convenio Multilateral (CM03/CM05), tasas municipales, Libro IVA Digital.
+- **Papeles de trabajo:** IVA, IIBB, Ganancias y cargas sociales, con la marca del estudio.
+- **Contabilidad:** estados contables (ESP, ER, EEPN, EFE), ajuste por inflación simplificado, resúmenes bancarios con clasificación automática y asientos automáticos.
+- **Sueldos:** convenios precargados (de ejemplo), Libro de Sueldos Digital, F.931 e importación de legajos por CSV con validación de CUIL.
+- **Gestión del estudio:** avance mensual por cliente y vencimientos por terminación de CUIT.
+- **Datos de ARCA:** Domicilio Fiscal Electrónico, Cuentas Tributarias y CCMA (datos de ejemplo).
+- **Para tu estudio:** reportes con la marca del estudio y API para empresas (simulada).
+- **Carga de facturas con IA:** foto, archivo, WhatsApp o email; controles automáticos (CUIT, padrón, receptor, total, fecha, duplicados) que bajan el error humano.
+- **Usuarios y permisos:** Administrador y Secretaria, con matriz de permisos editable y registro de actividad.
+
+Las conexiones con ARCA, la lectura de la IA, las plataformas de e-commerce y la API son simuladas en esta demo.
