@@ -26,3 +26,9 @@ Desarrollado por **Vincular Business** · WhatsApp (387) 4484132 · vincularbusi
 - **Usuarios y permisos:** Administrador y Secretaria, con matriz de permisos editable y registro de actividad.
 
 Las conexiones con ARCA, la lectura de la IA, las plataformas de e-commerce y la API son simuladas en esta demo.
+
+## Conciliación, sueldos y ajuste por inflación
+
+- **Conciliación bancaria:** extractos en PDF (lectura con IA simulada), Excel .xlsx (lectura real en el navegador) o CSV, más conexión simulada a Interbanking. Concilia automáticamente contra la contabilidad, muestra el cuadro de conciliación, clasifica por reglas los movimientos no contabilizados y genera los asientos. Incluye resúmenes de tarjeta de crédito con contabilización y pago.
+- **Liquidación de sueldos:** controles previos (CUIL válido, sin duplicados, convenio aplicado, netos positivos, contacto de cada empleado), cálculo, recibos, asiento contable automático, presentación del F.931 y envío de los recibos por WhatsApp o email.
+- **Ajuste por inflación en un clic:** índices precargados (de ejemplo), anticuación de partidas, cálculo del RECPAM, asiento contabilizado y papeles de trabajo listos para imprimir o exportar.

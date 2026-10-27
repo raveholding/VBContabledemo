@@ -503,7 +503,7 @@ V.imp=()=>{
 
 V.cont=()=>{
  const t=S.tab.cont,socs=CL.filter(c=>c.tipo==='Sociedad'),cid=socs.find(c=>c.id===S.cidCont)?S.cidCont:socs[0].id,as=asientos(cid);
- const tabs=`<div class="tabs">${[['diario','Libro diario'],['bal','Sumas y saldos'],['ee','Estados contables'],['inf','Ajuste por inflación'],['banco','Resúmenes bancarios'],['auto','Asientos automáticos'],['plan','Plan de cuentas'],['nuevo','Nuevo asiento']].map(x=>`<button class="${t===x[0]?'on':''}" data-act="tab" data-v="cont" data-t="${x[0]}">${x[1]}</button>`).join('')}</div>`;
+ const tabs=`<div class="tabs">${[['diario','Libro diario'],['bal','Sumas y saldos'],['ee','Estados contables'],['inf','Ajuste por inflación en un clic'],['auto','Asientos automáticos'],['plan','Plan de cuentas'],['nuevo','Nuevo asiento']].map(x=>`<button class="${t===x[0]?'on':''}" data-act="tab" data-v="cont" data-t="${x[0]}">${x[1]}</button>`).join('')}</div>`;
  let b='';
  if(t==='diario')b=`<div class="card tw"><table><thead><tr><th>N°</th><th>Fecha</th><th>Cuenta / Detalle</th><th class="r">Debe</th><th class="r">Haber</th></tr></thead><tbody>${as.map(a=>`<tr><td><b>${a.n}</b></td><td>${fd(a.f)}</td><td><b>${esc(a.desc)}</b></td><td></td><td></td></tr>`+a.l.map(l=>`<tr><td></td><td></td><td style="padding-left:${l[2]?36:14}px" class="mut">${cta(l[0])[0]} ${cta(l[0])[1]}</td><td class="r">${l[1]?ars(l[1]):''}</td><td class="r">${l[2]?ars(l[2]):''}</td></tr>`).join('')).join('')}</tbody></table></div>`;
  if(t==='bal'){const bs=balanceSyS(cid),td=sum(bs.map(x=>x.d)),th=sum(bs.map(x=>x.h)),act=sum(bs.filter(x=>x.t==='A').map(x=>x.s)),pas=-sum(bs.filter(x=>x.t==='P').map(x=>x.s)),pn=-sum(bs.filter(x=>x.t==='PN').map(x=>x.s)),res=-sum(bs.filter(x=>x.t==='RP'||x.t==='RN').map(x=>x.s));
@@ -1299,6 +1299,307 @@ Object.assign(FRM,{
  newuser(f){USERS.push({n:f.get('n'),mail:f.get('m'),r:f.get('r'),ini:f.get('n').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()});logA('Usuario creado: '+f.get('n'));toast('Usuario agregado ✔');render()},
  brand(f){S.brand={n:f.get('n'),ini:(f.get('ini')||'VB').toUpperCase().slice(0,3),color:f.get('color')||'#d4af37'};applyBrand();logA('Marca del estudio actualizada');toast('Marca aplicada ✔');render()}
 });
+
+
+/* ============ Lectura de archivos: CSV, Excel (.xlsx) y PDF con IA ============ */
+const colNum=r=>{let n=0;for(const ch of String(r).replace(/[^A-Z]/g,''))n=n*26+(ch.charCodeAt(0)-64);return n-1};
+const unXml=t=>String(t).replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&amp;/g,'&');
+const serialDate=n=>{const d=new Date(Date.UTC(1899,11,30)+Math.round(n)*864e5);return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0')};
+function zipEntries(buf){
+ const dv=new DataView(buf),u8=new Uint8Array(buf);let eo=-1;
+ for(let i=u8.length-22;i>=0&&i>u8.length-66000;i--){if(dv.getUint32(i,true)===0x06054b50){eo=i;break}}
+ if(eo<0)throw new Error('El archivo no es un .xlsx válido');
+ const n=dv.getUint16(eo+10,true);let off=dv.getUint32(eo+16,true);const out={};
+ for(let k=0;k<n;k++){
+  if(dv.getUint32(off,true)!==0x02014b50)throw new Error('El archivo .xlsx está dañado');
+  const method=dv.getUint16(off+10,true),csize=dv.getUint32(off+20,true),nlen=dv.getUint16(off+28,true),elen=dv.getUint16(off+30,true),clen=dv.getUint16(off+32,true),lho=dv.getUint32(off+42,true);
+  const name=new TextDecoder().decode(u8.subarray(off+46,off+46+nlen));
+  const lnlen=dv.getUint16(lho+26,true),lelen=dv.getUint16(lho+28,true),ds=lho+30+lnlen+lelen;
+  out[name]={method,data:u8.subarray(ds,ds+csize)};off+=46+nlen+elen+clen;
+ }
+ return out;
+}
+async function entryText(e){
+ if(!e)throw new Error('El .xlsx no tiene hojas legibles');
+ if(e.method===0)return new TextDecoder().decode(e.data);
+ if(typeof DecompressionStream==='undefined')throw new Error('Este navegador no puede abrir .xlsx: guardá el archivo como CSV');
+ const st=new Blob([e.data]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+ return await new Response(st).text();
+}
+async function readXlsx(file){
+ const buf=await file.arrayBuffer(),z=zipEntries(buf);
+ const shKey=Object.keys(z).find(k=>/^xl\/worksheets\/sheet1\.xml$/i.test(k))||Object.keys(z).find(k=>/^xl\/worksheets\/.*\.xml$/i.test(k));
+ const xml=await entryText(z[shKey]);
+ let shared=[];
+ if(z['xl/sharedStrings.xml']){const sx=await entryText(z['xl/sharedStrings.xml']);shared=(sx.match(/<si>[\s\S]*?<\/si>/g)||[]).map(si=>(si.match(/<t[^>]*>([\s\S]*?)<\/t>/g)||[]).map(t=>unXml(t.replace(/<[^>]+>/g,''))).join(''))}
+ const rows=[],rx=/<row[^>]*>([\s\S]*?)<\/row>/g;let m;
+ while((m=rx.exec(xml))){
+  const arr=[],cx=/<c([^>]*?)\/>|<c([^>]*?)>([\s\S]*?)<\/c>/g;let c;
+  while((c=cx.exec(m[1]))){
+   const at=c[1]||c[2]||'',inner=c[3]||'',ref=(at.match(/r="([A-Z]+)\d+"/)||[])[1]||'',t=(at.match(/t="([^"]+)"/)||[])[1];
+   let v='';
+   if(t==='inlineStr')v=unXml((inner.match(/<t[^>]*>([\s\S]*?)<\/t>/)||['',''])[1].replace(/<[^>]+>/g,''));
+   else{const vm=inner.match(/<v>([\s\S]*?)<\/v>/);v=vm?unXml(vm[1]):'';if(t==='s')v=shared[+v]||''}
+   arr[ref?colNum(ref):arr.length]=v;
+  }
+  for(let i=0;i<arr.length;i++)if(arr[i]==null)arr[i]='';
+  if(arr.length)rows.push(arr);
+ }
+ if(!rows.length)throw new Error('La hoja de Excel está vacía');
+ const hd=rows[0].map(x=>String(x).toLowerCase()),fi=hd.findIndex(h=>/fecha/.test(h));
+ if(fi>=0)rows.slice(1).forEach(r=>{const v=String(r[fi]||'');if(/^\d{4,5}(\.\d+)?$/.test(v)&&+v>20000&&+v<80000)r[fi]=serialDate(+v)});
+ return rows;
+}
+function pdfSim(kind){
+ const r=rng(hash(kind+TODAYISO));
+ if(kind==='tarjeta')return[['fecha','descripcion','importe'],
+  [iso(addD(TODAY,-22)),'YPF SERVICIOS COMBUSTIBLE',Math.round(85000+r()*40000)],
+  [iso(addD(TODAY,-19)),'LIBRERIA INSUMOS OFICINA',Math.round(30000+r()*20000)],
+  [iso(addD(TODAY,-15)),'SUSCRIPCION SOFTWARE CONTABLE',48000],
+  [iso(addD(TODAY,-12)),'ALMUERZO CLIENTES RESTAURANT',Math.round(40000+r()*25000)],
+  [iso(addD(TODAY,-9)),'SEGURO INTEGRAL COMERCIO',96000],
+  [iso(addD(TODAY,-7)),'IMPUESTO DE SELLOS TARJETA',12400],
+  [iso(addD(TODAY,-6)),'INTERESES FINANCIACION',23800]];
+ return[['fecha','descripcion','debito','credito'],
+  [iso(addD(TODAY,-11)),'TRANSFERENCIA RECIBIDA 30-71102233-4',0,Math.round(180000+r()*200000)],
+  [iso(addD(TODAY,-10)),'IMPUESTO DB/CR LEY 25413',6240,0],
+  [iso(addD(TODAY,-8)),'DEBITO AUTOMATICO SERVICIO INTERNET',45900,0],
+  [iso(addD(TODAY,-5)),'COMISION MANTENIMIENTO CUENTA',12500,0],
+  [iso(addD(TODAY,-3)),'ACREDITACION MERCADO PAGO LIQUIDACION',0,Math.round(120000+r()*120000)]];
+}
+function fileRows(file,kind,cb){
+ const n=(file.name||'').toLowerCase();
+ if(/\.pdf$/.test(n)){toast('Leyendo el PDF con IA…');setTimeout(()=>cb({rows:pdfSim(kind),src:'PDF leído con IA (simulado)'}),1100);return}
+ if(/\.xlsx$/.test(n)){toast('Leyendo el Excel…');readXlsx(file).then(rows=>cb({rows,src:'Excel'})).catch(e=>cb({err:e.message}));return}
+ if(/\.(csv|txt)$/.test(n)){readFile(file,t=>cb({rows:parseCSV(t),src:'CSV'}));return}
+ cb({err:'Formato no soportado. Usá PDF, Excel (.xlsx) o CSV.'});
+}
+
+/* ============ Conciliación bancaria ============ */
+BKRULES.unshift([/COMISION|MANTENIMIENTO|INTERES(ES)? FINANCIA|GASTOS BANCARIOS/i,'5.2.09'],[/SELLOS|IMPUESTO DE SELLOS/i,'5.2.06'],[/SEGURO/i,'5.2.08'],[/COMBUSTIBLE|LIBRERIA|INSUMOS|ALMUERZO|RESTAURANT|SUPERMERCADO/i,'5.2.08'],[/SOFTWARE|SUSCRIPCION|HOSTING/i,'5.2.04']);
+const clasif=d=>{const r=BKRULES.find(x=>x[0].test(d));return r?r[1]:''};
+const CUENTAS=[{k:'cc',b:'Banco Nación',n:'Cuenta corriente 0290-4412/7',cta:'1.1.02'},{k:'ca',b:'Banco Galicia',n:'Caja de ahorro 4410-9983/1',cta:'1.1.02'}];
+const BKMETA={},CARD={},INTERB={};
+function sysMovs(cid){const out=[];asientos(cid).forEach(a=>a.l.forEach((l,i)=>{if(l[0]!=='1.1.02')return;out.push({k:a.n+'-'+i,n:a.n,f:a.f,desc:a.desc,imp:l[1]-l[2]})}));return out}
+function bankDesc(d){
+ const u=String(d).toUpperCase();
+ if(/APORTE|CAPITAL/.test(u))return'DEPOSITO APORTE DE SOCIOS';
+ if(/COBRANZA|CLIENTE/.test(u))return'DEPOSITO COBRANZA CLIENTES';
+ if(/PROVEEDOR/.test(u))return'TRANSFERENCIA A PROVEEDOR';
+ if(/ALQUILER/.test(u))return'DEBITO ALQUILER LOCAL';
+ if(/SUELDO|HABERES/.test(u))return'PAGO DE HABERES ACREDITACION';
+ if(/RESUMEN BANCARIO: /.test(u))return u.replace('RESUMEN BANCARIO: ','');
+ return u.slice(0,42);
+}
+function bkSample(cid){
+ const movs=sysMovs(cid),out=[];
+ movs.forEach((m,i)=>{if(movs.length>3&&i===2)return;const v=Math.abs(m.imp);out.push({f:m.f,d:bankDesc(m.desc),deb:m.imp<0?v:0,cre:m.imp>0?v:0})});
+ pdfSim('banco').slice(1).forEach(r=>out.push({f:r[0],d:r[1],deb:r[2],cre:r[3]}));
+ return out.sort((a,b)=>a.f<b.f?-1:1);
+}
+function bkLoad(cid,rows,src,ctaK){
+ const b=BANK[cid]||(BANK[cid]={rows:[],nid:1});let n=0;const err=[];
+ rows.forEach((r,i)=>{
+  const f=normFecha(r.f!==undefined?r.f:r[0]),d=String(r.d!==undefined?r.d:r[1]||'').trim(),deb=toNum(r.deb!==undefined?r.deb:r[2]),cre=toNum(r.cre!==undefined?r.cre:r[3]);
+  if(!f||!d||(!deb&&!cre)){err.push('Fila '+(i+1)+': fecha, descripción o importe inválidos');return}
+  if(b.rows.some(x=>x.f===f&&x.d===d&&x.deb===deb&&x.cre===cre)){err.push('Fila '+(i+1)+': movimiento duplicado, se omitió');return}
+  b.rows.push({id:b.nid++,f,d,deb,cre,cta:clasif(d),est:'Pendiente',src:src||'Carga',ctaK:ctaK||'cc'});n++;
+ });
+ b.rows.sort((a,b2)=>a.f<b2.f?-1:1);return{n,err};
+}
+function concilia(cid){
+ const bank=(BANK[cid]||{rows:[]}).rows,sys=sysMovs(cid),used={},pairs=[];
+ const tryMatch=(r,tol)=>{const v=r.cre-r.deb;return sys.find(m=>!used[m.k]&&Math.abs(m.imp-v)<1&&Math.abs((pd(m.f)-pd(r.f))/864e5)<=tol)};
+ bank.forEach(r=>{let m=tryMatch(r,0);if(!m)m=tryMatch(r,7);if(m){used[m.k]=1;pairs.push({r,m});r.est='Conciliado'}else if(r.est!=='Contabilizado')r.est='Pendiente'});
+ const bankOnly=bank.filter(r=>!pairs.some(p=>p.r===r)),sysOnly=sys.filter(m=>!used[m.k]);
+ const sE=sum(bank.map(r=>r.cre-r.deb)),sC=sum(sys.map(m=>m.imp));
+ return{pairs,bankOnly,sysOnly,sE,sC,bank,sys};
+}
+V.banco=()=>{
+ const socs=CL.filter(c=>c.tipo==='Sociedad'),cid=socs.find(c=>c.id===S.cidBanco)?S.cidBanco:socs[0].id,t=S.tab.banco;
+ const tabs=subTabs('banco',[['conc','Conciliación'],['tarj','Tarjetas de crédito'],['conn','Cuentas y conexiones']]);
+ let b='';
+ if(t==='conc'){
+  const k=concilia(cid),clas=k.bankOnly.filter(r=>r.cta&&r.est!=='Contabilizado').length,dif=k.sE-k.sC;
+  const up=`<div class="card" style="margin-bottom:14px"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><label class="btn pri" style="margin:0;cursor:pointer">📄 Subir extracto PDF (IA)<input type="file" accept=".pdf" hidden data-chg="bkfile"></label><label class="btn" style="margin:0;cursor:pointer">📊 Subir Excel o CSV<input type="file" accept=".xlsx,.csv,.txt" hidden data-chg="bkfile"></label><button class="btn" data-act="bksample">Extracto de ejemplo</button>${INTERB[cid]?`<button class="btn ok" data-act="bksync">🔄 Sincronizar Interbanking</button>`:`<button class="btn" data-act="go" data-v="banco" onclick="S.tab.banco='conn'">🔗 Conectar Interbanking</button>`}<div style="flex:1"></div><button class="btn" data-act="bkplant">Plantilla</button>${k.bank.length?`<button class="btn bad" data-act="bkclear">Vaciar extracto</button>`:''}</div><p class="disc">El PDF se lee con IA y el Excel se abre directo en el navegador. Las columnas esperadas son fecha, descripción, débito y crédito.</p></div>`;
+  const eq=`<div class="card" style="margin-bottom:14px"><h3>Cuadro de conciliación</h3><div class="stat"><span>Saldo según extracto bancario</span><b>${ars(k.sE)}</b></div><div class="stat"><span>(−) Movimientos del banco todavía no contabilizados (${k.bankOnly.length})</span><b class="dn">${ars(-sum(k.bankOnly.map(r=>r.cre-r.deb)))}</b></div><div class="stat"><span>(+) Partidas del sistema que no figuran en el extracto (${k.sysOnly.length})</span><b>${ars(sum(k.sysOnly.map(m=>m.imp)))}</b></div><div class="stat"><span><b>Saldo según contabilidad</b></span><b>${ars(k.sC)}</b></div><p style="margin:10px 0 0">${Math.abs(k.sE-sum(k.bankOnly.map(r=>r.cre-r.deb))+sum(k.sysOnly.map(m=>m.imp))-k.sC)<1?badge('✔ La conciliación cierra','ok'):badge('No cierra','bad')} ${k.bankOnly.length||k.sysOnly.length?badge(k.bankOnly.length+k.sysOnly.length+' partidas pendientes','warn'):badge('Sin partidas pendientes','ok')}</p></div>`;
+  b=up+`<div class="grid g4" style="margin-bottom:14px">${kpi('Saldo según extracto',ars(k.sE),k.bank.length+' movimientos')}${kpi('Saldo según contabilidad',ars(k.sC),k.sys.length+' movimientos')}${kpi('Conciliados automáticamente',k.pairs.length+' / '+k.bank.length,k.bank.length?num(k.pairs.length/k.bank.length*100,0)+'% sin tocar nada':'cargá un extracto','up')}${kpi('Diferencia',ars(dif),dif?'explicada por las partidas pendientes':'conciliado ✔',dif?'dn':'up')}</div>`+eq+
+  `<div class="card"><h3>Movimientos del extracto ${clas?`<button class="btn ok sm" data-act="bkpost">Contabilizar los ${clas} clasificados</button>`:''}</h3><div class="tw"><table><thead><tr><th>Fecha</th><th>Descripción</th><th class="r">Débito</th><th class="r">Crédito</th><th>Estado</th><th>Cuenta contable</th></tr></thead><tbody>${k.bank.map(x=>{const conc=k.pairs.find(p=>p.r===x);return`<tr><td>${fd(x.f)}</td><td style="white-space:normal;min-width:220px">${esc(x.d)}<br><small class="mut">${esc(x.src||'')}</small></td><td class="r">${x.deb?ars(x.deb):''}</td><td class="r">${x.cre?ars(x.cre):''}</td><td>${conc?badge('Conciliado · asiento '+conc.m.n,'ok'):x.cta?badge('Listo para contabilizar','info'):badge('Sin identificar','warn')}</td><td>${conc?'<span class="mut">—</span>':`<select data-chg="bkcta" data-id="${x.id}" style="min-width:230px"><option value="">— Elegí una cuenta —</option>${PLAN.map(pl=>`<option value="${pl[0]}" ${x.cta===pl[0]?'selected':''}>${pl[0]} ${pl[1]}</option>`).join('')}</select>`}</td></tr>`}).join('')||'<tr><td colspan="6" class="mut">Subí un extracto en PDF, Excel o CSV, o probá con el de ejemplo.</td></tr>'}</tbody></table></div></div>
+  ${k.sysOnly.length?`<div class="card" style="margin-top:14px"><h3>Partidas del sistema que no figuran en el extracto</h3><div class="tw"><table><thead><tr><th>Asiento</th><th>Fecha</th><th>Concepto</th><th class="r">Importe</th><th>Situación</th></tr></thead><tbody>${k.sysOnly.map(m=>`<tr><td>N° ${m.n}</td><td>${fd(m.f)}</td><td style="white-space:normal">${esc(m.desc)}</td><td class="r">${ars(m.imp)}</td><td>${badge(m.imp<0?'Cheque o pago no debitado':'Depósito en tránsito','warn')}</td></tr>`).join('')}</tbody></table></div><p class="disc">Son partidas normales de conciliación: quedan pendientes hasta que el banco las registre.</p></div>`:''}`;
+ }
+ if(t==='tarj'){
+  const c=CARD[cid];
+  b=`<div class="card" style="margin-bottom:14px"><div style="display:flex;gap:8px;flex-wrap:wrap"><label class="btn pri" style="margin:0;cursor:pointer">📄 Subir resumen PDF (IA)<input type="file" accept=".pdf" hidden data-chg="cardfile"></label><label class="btn" style="margin:0;cursor:pointer">📊 Subir Excel o CSV<input type="file" accept=".xlsx,.csv,.txt" hidden data-chg="cardfile"></label><button class="btn" data-act="cardsample">Resumen de ejemplo</button></div><p class="disc">Columnas esperadas: fecha, descripción e importe.</p></div>`;
+  if(!c)b+='<div class="card"><p class="mut">Todavía no cargaste un resumen de tarjeta.</p></div>';
+  else{const tot=sum(c.rows.map(x=>x.imp)),sinc=c.rows.filter(x=>!x.cta).length;
+   b+=`<div class="grid g4" style="margin-bottom:14px">${kpi('Total del resumen',ars(tot),c.rows.length+' consumos')}${kpi('Cierre',fd(c.cierre))}${kpi('Vencimiento',fd(c.vto),Math.round((pd(c.vto)-TODAY)/864e5)+' días')}${kpi('Sin clasificar',sinc,'',sinc?'dn':'up')}</div>
+   <div class="card"><h3>Tarjeta ${esc(c.banco)} ····${c.ult} ${c.est==='Contabilizado'?badge('Resumen contabilizado · asiento '+c.asiento,'ok'):`<button class="btn ok sm" data-act="cardpost">Contabilizar resumen</button>`}${c.est==='Contabilizado'&&!c.pago?` <button class="btn sm" data-act="cardpay">Registrar pago de la tarjeta</button>`:''}${c.pago?badge('Pago registrado · asiento '+c.pago,'ok'):''}</h3><div class="tw"><table><thead><tr><th>Fecha</th><th>Consumo</th><th class="r">Importe</th><th>Cuenta contable</th></tr></thead><tbody>${c.rows.map(x=>`<tr><td>${fd(x.f)}</td><td style="white-space:normal;min-width:220px">${esc(x.d)}</td><td class="r">${ars(x.imp)}</td><td>${c.est==='Contabilizado'?cta(x.cta)[0]+' '+cta(x.cta)[1]:`<select data-chg="cardcta" data-id="${x.id}" style="min-width:230px"><option value="">— Elegí una cuenta —</option>${PLAN.filter(pl=>pl[2]==='RN'||pl[0]==='1.1.04').map(pl=>`<option value="${pl[0]}" ${x.cta===pl[0]?'selected':''}>${pl[0]} ${pl[1]}</option>`).join('')}</select>`}</td></tr>`).join('')}<tr><td></td><td><b>Total</b></td><td class="r"><b>${ars(tot)}</b></td><td></td></tr></tbody></table></div><p class="disc">Al contabilizar se registra cada consumo contra <b>Tarjetas de crédito a pagar</b>; el pago cancela esa deuda desde el banco y queda listo para conciliar.</p></div>`}
+ }
+ if(t==='conn'){
+  const on=INTERB[cid];
+  b=`<div class="grid g2"><div class="card"><h3>Interbanking ${on?badge('Conectado','ok'):badge('No conectado','info')}</h3><p class="mut">Trae los movimientos de todas las cuentas del cliente sin entrar al homebanking. ${on?'Sincroniza todos los días a las 8:00.':''}</p>${on?`<div class="stat"><span>Última sincronización</span><b>${esc(on.last)}</b></div><div class="stat"><span>Cuentas</span><b>${CUENTAS.length}</b></div><div style="display:flex;gap:8px;margin-top:10px"><button class="btn pri" data-act="bksync">🔄 Sincronizar ahora</button><button class="btn" data-act="interbdis">Desconectar</button></div>`:`<button class="btn pri" data-act="interb">Conectar Interbanking</button>`}<p class="disc">Demo: la conexión y los movimientos son simulados. En la versión real se usan las credenciales de Interbanking del cliente y los movimientos llegan solos.</p></div>
+  <div class="card"><h3>Cuentas bancarias</h3><div class="tw"><table><thead><tr><th>Banco</th><th>Cuenta</th><th>Cuenta contable</th><th>Estado</th></tr></thead><tbody>${CUENTAS.map(x=>`<tr><td><b>${x.b}</b></td><td>${x.n}</td><td>${cta(x.cta)[0]} ${cta(x.cta)[1]}</td><td>${on?badge('Sincroniza sola','ok'):badge('Carga manual','info')}</td></tr>`).join('')}</tbody></table></div></div></div>`;
+ }
+ return`<div class="ph"><div><h1>Conciliación bancaria</h1><p>Extractos y resúmenes de tarjeta en PDF con IA, Excel o Interbanking. El sistema concilia solo contra la contabilidad: no hace falta abrir el homebanking.</p></div><div style="min-width:260px"><label>Empresa</label><select data-chg="bkcid">${clOpts(cid,c=>c.tipo==='Sociedad')}</select></div></div>${tabs}${b}`;
+};
+
+/* ============ Liquidación de sueldos automática ============ */
+const _empleados=empleados;
+empleados=function(cid){const es=_empleados(cid);es.forEach(e=>{e.cuil=mkCuit(e.cuil);if(!e.mail){e.mail=e.n.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z]+/g,'.')+'@correo.demo';e.tel='549387'+String(1000000+hash(e.cuil)%8999999)}});return es};
+const LIQ={};
+function calcEmp(e){const ant=e.bas*e.ant*LQ.antp/100,pres=(e.bas+ant)*LQ.pres/100,bruto=e.bas+ant+pres,d=bruto*(LQ.jub+LQ.pami+LQ.os+LQ.sind)/100,pa=bruto*LQ.patr/100;return{ant,pres,bruto,desc:d,neto:bruto-d,patr:pa}}
+function sueChecks(cid){
+ const es=empleados(cid),cuils=es.map(e=>e.cuil);
+ return[
+  {t:'Todos los legajos tienen CUIL válido',ok:es.every(e=>cuitOk(e.cuil)),m:'Hay CUIL con dígito verificador incorrecto'},
+  {t:'Sin CUIL repetidos',ok:new Set(cuils).size===cuils.length,m:'Hay empleados cargados dos veces'},
+  {t:'Todos tienen sueldo básico cargado',ok:es.every(e=>e.bas>0),m:'Falta el básico de algún empleado'},
+  {t:'Convenio colectivo aplicado',ok:!!CONVSEL[cid],m:'Elegí el convenio en la pestaña Convenios colectivos'},
+  {t:'Alícuotas de aportes y contribuciones cargadas',ok:LQ.jub>0&&LQ.patr>0,m:'Faltan alícuotas'},
+  {t:'Todos tienen email y WhatsApp para recibir el recibo',ok:es.every(e=>e.mail&&e.tel),m:'Falta el contacto de algún empleado'},
+  {t:'Ningún neto queda en cero o negativo',ok:es.every(e=>calcEmp(e).neto>0),m:'Un neto da cero o negativo: revisá descuentos'}
+ ];
+}
+function liquidar(cid){
+ const ym=TODAYISO.slice(0,7),es=empleados(cid),det=es.map(e=>Object.assign({e},calcEmp(e),{env:null}));
+ const br=sum(det.map(x=>x.bruto)),de=sum(det.map(x=>x.desc)),pa=sum(det.map(x=>x.patr)),as=asientos(cid);
+ const Br=Math.round(br),De=Math.round(de),Pa=Math.round(pa);
+ as.push({org:'Sueldos',n:as.length+1,f:TODAYISO,desc:'Devengamiento de sueldos y cargas – '+MESES[TODAY.getMonth()]+' '+TODAY.getFullYear(),l:[['5.2.01',Br,0],['5.2.02',Pa,0],['2.1.02',0,Br-De],['2.1.03',0,De+Pa]]});
+ LIQ[cid+'|'+ym]={det,br,de,pa,neto:br-de,f931:de+pa,asiento:as.length,ts:Date.now(),f931pres:false};
+ logA('Liquidación de sueldos de '+cl(cid).n+': '+det.length+' empleados, asiento N° '+as.length);
+ return LIQ[cid+'|'+ym];
+}
+const reciboTxt=(cid,x)=>'Recibo de sueldo '+MESES[TODAY.getMonth()]+' '+TODAY.getFullYear()+' – '+cl(cid).n+'. '+x.e.n+', CUIL '+x.e.cuil+'. Bruto '+ars(x.bruto)+', descuentos '+ars(x.desc)+', neto a cobrar '+ars(x.neto)+'.';
+function sueProc(cid){
+ const ym=TODAYISO.slice(0,7),L=LIQ[cid+'|'+ym],ch=sueChecks(cid),bad=ch.filter(c=>!c.ok),es=empleados(cid);
+ const head=`<div class="card" style="margin-bottom:14px"><h3>Controles previos a liquidar</h3><div class="list">${ch.map(c=>`<div><span>${c.ok?'✅':'❌'}</span><div class="g">${c.ok?esc(c.t):'<b class="dn">'+esc(c.m)+'</b>'}</div></div>`).join('')}</div></div>`;
+ if(!L)return head+`<div class="card" style="text-align:center;padding:26px"><div style="font-size:38px">💼</div><h3 style="justify-content:center">Liquidar ${MESES[TODAY.getMonth()]} ${TODAY.getFullYear()}</h3><p class="mut">${es.length} empleados de ${esc(cl(cid).n)}. El sistema calcula, arma los recibos, genera el asiento contable y los envía a cada empleado.</p><button class="btn pri" style="padding:12px 20px" data-act="sueliq" ${bad.length?'disabled':''}>⚡ Liquidar el mes</button>${bad.length?`<p class="disc">Resolvé los ${bad.length} control(es) en rojo para poder liquidar.</p>`:''}</div>`;
+ const env=L.det.filter(x=>x.env).length;
+ return head+`<div class="grid g4" style="margin-bottom:14px">${kpi('Remuneración bruta',ars(L.br),L.det.length+' empleados')}${kpi('Neto a pagar',ars(L.neto),'transferencia a empleados')}${kpi('F.931 a ingresar',ars(L.f931),'aportes + contribuciones')}${kpi('Recibos enviados',env+' / '+L.det.length,env===L.det.length?'todos notificados':'pendientes de envío',env===L.det.length?'up':'dn')}</div>
+ <div class="card"><h3>Liquidación de ${MESES[TODAY.getMonth()]} ${TODAY.getFullYear()} ${badge('Asiento N° '+L.asiento+' generado','ok')}</h3><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><button class="btn pri" data-act="sueenvall">📤 Enviar todos los recibos</button><button class="btn" data-act="suecsv2">⬇ Descargar liquidación</button>${L.f931pres?badge('F.931 presentado','ok'):`<button class="btn" data-act="suef931">Presentar F.931 del mes</button>`}<button class="btn bad" data-act="suereliq">Rehacer liquidación</button></div>
+ <div class="tw"><table><thead><tr><th>Empleado</th><th>CUIL</th><th class="r">Bruto</th><th class="r">Descuentos</th><th class="r">Neto</th><th>Recibo</th><th></th></tr></thead><tbody>${L.det.map((x,i)=>`<tr><td><b>${esc(x.e.n)}</b><br><small class="mut">${esc(x.e.mail)}</small></td><td>${x.e.cuil}</td><td class="r">${ars(x.bruto)}</td><td class="r dn">−${ars(x.desc)}</td><td class="r"><b>${ars(x.neto)}</b></td><td>${x.env?badge('Enviado por '+x.env,'ok'):badge('Pendiente','warn')}</td><td><button class="btn sm" data-act="suerec" data-i="${i}">Ver recibo</button> <a class="btn sm wa" target="_blank" rel="noopener" data-act="sueenv" data-i="${i}" data-via="WhatsApp" href="${waLink(x.e.tel,reciboTxt(cid,x))}">WhatsApp</a> <a class="btn sm" data-act="sueenv" data-i="${i}" data-via="email" href="mailto:${esc(x.e.mail)}?subject=${encodeURIComponent('Recibo de sueldo '+MESES[TODAY.getMonth()]+' '+TODAY.getFullYear())}&body=${encodeURIComponent(reciboTxt(cid,x))}">Email</a></td></tr>`).join('')}</tbody></table></div>
+ <p class="disc">Demo: el envío se simula y los botones abren WhatsApp o tu correo con el mensaje armado. En la versión real los recibos salen solos en PDF, con firma digital y acuse de recibo.</p></div>`;
+}
+sueTabs=function(){return subTabs('sue',[['proc','Liquidar el mes'],['liq','Cálculo y recibos'],['conv','Convenios colectivos'],['lsd','Libro de Sueldos Digital'],['leg','Legajos']])};
+const _vsue=V.sue;
+V.sue=()=>{
+ if(S.tab.sue!=='proc')return _vsue();
+ const emp=CL.filter(c=>c.emp>0),cid=emp.find(c=>c.id===S.cidSue)?S.cidSue:emp[0].id;
+ return`<div class="ph"><div><h1>Sueldos y RRHH</h1><p>El sistema calcula, arma los recibos, genera el asiento y los envía a cada empleado. Sin planillas y con controles antes de liquidar.</p></div><div style="min-width:260px"><label>Empresa</label><select data-chg="suecid">${clOpts(cid,c=>c.emp>0)}</select></div></div>`+sueTabs()+sueProc(cid);
+};
+S.tab.sue='proc';
+
+/* ============ Ajuste por inflación en un clic ============ */
+const IPC=(()=>{const out=[];let v=100;for(let k=25;k>=0;k--){const d=new Date(TODAY.getFullYear(),TODAY.getMonth()-k,1);out.push({ym:iso(d).slice(0,7),idx:Math.round(v*100)/100});v*=1+(2.2+(k%4)*.35)/100}return out})();
+const ipcOf=ym=>{const f=IPC.find(x=>x.ym===ym);return f?f.idx:IPC[IPC.length-1].idx};
+const ipcCierre=()=>IPC[IPC.length-1].idx;
+const AJ={};
+function ajusteCalc(cid){
+ const bs=balanceSyS(cid),as=asientos(cid),cierre=ipcCierre(),mes=k=>iso(new Date(TODAY.getFullYear(),TODAY.getMonth()-k,1)).slice(0,7);
+ const capA=as.find(a=>a.l.some(l=>l[0]==='3.1.01')),capYM=capA?capA.f.slice(0,7):mes(3);
+ const part=[
+  {n:'Mercaderías',c:'1.1.04',saldo:sv1(bs,'1.1.04'),org:mes(1)},
+  {n:'Bienes de uso',c:'1.2.01',saldo:sv1(bs,'1.2.01'),org:mes(10)},
+  {n:'Capital social',c:'3.1.01',saldo:-sv1(bs,'3.1.01'),org:capYM}
+ ].filter(x=>Math.abs(x.saldo)>0).map(x=>{const io=ipcOf(x.org),coef=cierre/io;return Object.assign(x,{io,coef,ajuste:x.saldo*(coef-1),ajustado:x.saldo*coef})});
+ const act=part.filter(x=>x.c!=='3.1.01'),pn=part.filter(x=>x.c==='3.1.01');
+ const aAct=sum(act.map(x=>x.ajuste)),aPn=sum(pn.map(x=>x.ajuste)),recpam=aAct-aPn;
+ return{part,act,pn,aAct,aPn,recpam,cierre,infl:(cierre/ipcOf(mes(12))-1)*100};
+}
+function ajustePost(cid){
+ const c=ajusteCalc(cid),l=[];
+ c.act.forEach(x=>{if(Math.round(x.ajuste))l.push([x.c,Math.round(x.ajuste),0])});
+ if(Math.round(c.aPn))l.push(['3.1.03',0,Math.round(c.aPn)]);
+ const d=sum(l.map(x=>x[1])),h=sum(l.map(x=>x[2])),dif=d-h;
+ if(Math.round(dif))l.push(dif>0?['5.3.01',0,Math.round(dif)]:['5.3.01',Math.round(-dif),0]);
+ const as=asientos(cid);as.push({org:'Ajuste',n:as.length+1,f:TODAYISO,desc:'Ajuste por inflación contable al '+fd(TODAYISO)+' (RT 6)',l});
+ AJ[cid]=Object.assign(c,{asiento:as.length,ts:Date.now()});INFPOST[cid]=true;
+ logA('Ajuste por inflación calculado y contabilizado en '+cl(cid).n+' (asiento N° '+as.length+')');
+ return AJ[cid];
+}
+infCalc=function(cid){return ajusteCalc(cid)};
+contInf=function(cid){
+ const done=AJ[cid],c=done||ajusteCalc(cid);
+ const idxTab=`<div class="card" style="margin-top:14px"><h3>Índices de precios precargados ${badge('Actualizados al '+MESES[TODAY.getMonth()]+' '+TODAY.getFullYear(),'ok')}</h3><div class="tw"><table><thead><tr>${IPC.slice(-13).map(x=>`<th class="r">${x.ym}</th>`).join('')}</tr></thead><tbody><tr>${IPC.slice(-13).map(x=>`<td class="r">${num(x.idx,2)}</td>`).join('')}</tr></tbody></table></div><p class="disc">No hay que cargar nada: los índices vienen con el sistema. Son valores de ejemplo; en la versión real se actualizan solos con el índice oficial publicado por el INDEC.</p></div>`;
+ if(!done)return`<div class="card" style="text-align:center;padding:26px"><div style="font-size:38px">📈</div><h3 style="justify-content:center">Ajuste por inflación de ${esc(cl(cid).n)}</h3><p class="mut">Inflación del período según los índices cargados: <b>${num(c.infl,1)}%</b>. El sistema anticua cada partida, calcula el RECPAM, arma el asiento y genera los papeles de trabajo.</p><button class="btn pri" style="padding:12px 20px" data-act="ajusteir">⚡ Calcular ajuste y generar papeles</button></div>`+idxTab;
+ return`<div class="grid g4" style="margin-bottom:14px">${kpi('Inflación del período',num(c.infl,1)+'%','índices precargados')}${kpi('Ajuste de partidas no monetarias',ars(c.aAct))}${kpi('Ajuste del capital',ars(c.aPn))}${kpi('RECPAM',ars(c.recpam),c.recpam>=0?'ganancia por exposición':'pérdida por exposición',c.recpam>=0?'up':'dn')}</div>
+ <div class="card"><h3>Papeles de trabajo del ajuste ${badge('Asiento N° '+c.asiento+' contabilizado','ok')}<span class="noprint"><button class="btn sm" data-act="ajustecsv">⬇ CSV</button> <button class="btn sm" onclick="window.print()">🖨 Imprimir</button></span></h3>
+ ${papHead('Ajuste por inflación · anticuación de partidas',cid)}
+ <div class="tw"><table><thead><tr><th>Partida</th><th>Mes de origen</th><th class="r">Índice origen</th><th class="r">Índice cierre</th><th class="r">Coeficiente</th><th class="r">Saldo histórico</th><th class="r">Ajuste</th><th class="r">Saldo ajustado</th></tr></thead><tbody>${c.part.map(x=>`<tr><td><b>${x.n}</b></td><td>${x.org}</td><td class="r">${num(x.io,2)}</td><td class="r">${num(c.cierre,2)}</td><td class="r">${num(x.coef,4)}</td><td class="r">${ars(x.saldo)}</td><td class="r">${ars(x.ajuste)}</td><td class="r"><b>${ars(x.ajustado)}</b></td></tr>`).join('')}</tbody></table></div>
+ <h3 style="margin-top:16px">Determinación del RECPAM</h3><div class="stat"><span>Ajuste de activos no monetarios</span><b>${ars(c.aAct)}</b></div><div class="stat"><span>(−) Ajuste del capital</span><b>${ars(c.aPn)}</b></div><div class="stat"><span><b>RECPAM del período</b></span><b class="${c.recpam>=0?'up':'dn'}">${ars(c.recpam)}</b></div>
+ <h3 style="margin-top:16px">Asiento contabilizado</h3><div class="tw"><table><thead><tr><th>Cuenta</th><th class="r">Debe</th><th class="r">Haber</th></tr></thead><tbody>${asientos(cid)[c.asiento-1].l.map(l=>`<tr><td>${cta(l[0])[0]} ${cta(l[0])[1]}</td><td class="r">${l[1]?ars(l[1]):''}</td><td class="r">${l[2]?ars(l[2]):''}</td></tr>`).join('')}</tbody></table></div>
+ <p class="disc">Método simplificado de demostración: anticuación por mes de origen de cada partida. La versión real desagrega cada partida por fecha de incorporación y contempla resultados, bienes de cambio y previsiones.</p></div>`+idxTab;
+};
+
+/* ============ Acciones ============ */
+Object.assign(ACT,{
+ bksample(){const cid=S.cidBanco||CL.find(c=>c.tipo==='Sociedad').id,r=bkLoad(cid,bkSample(cid),'Ejemplo');toast(r.n+' movimientos cargados · conciliación automática aplicada');render()},
+ bkplant(){download('plantilla_extracto.csv',csv([['fecha','descripcion','debito','credito'],[TODAYISO,'PAGO PROVEEDOR EJEMPLO',100000,''],[TODAYISO,'TRANSFERENCIA RECIBIDA CLIENTE','',250000]]))},
+ bkclear(){const cid=S.cidBanco||CL.find(c=>c.tipo==='Sociedad').id;delete BANK[cid];toast('Extracto vaciado');render()},
+ bkpost(){const cid=S.cidBanco||CL.find(c=>c.tipo==='Sociedad').id,k=concilia(cid),l=k.bankOnly.filter(x=>x.cta&&x.est!=='Contabilizado'),as=asientos(cid);
+  l.forEach(x=>{const m=x.deb||x.cre,lines=x.deb?[[x.cta,m,0],['1.1.02',0,m]]:[['1.1.02',m,0],[x.cta,0,m]];as.push({org:'Banco',n:as.length+1,f:x.f,desc:'Resumen bancario: '+x.d,l:lines});x.est='Contabilizado'});
+  logA('Conciliación: '+l.length+' movimientos contabilizados en '+cl(cid).n);toast(l.length+' movimientos contabilizados y conciliados ✔');render()},
+ bksync(){const cid=S.cidBanco||CL.find(c=>c.tipo==='Sociedad').id;if(!INTERB[cid])return;const rows=pdfSim('banco').slice(1).map(r=>({f:r[0],d:r[1],deb:r[2],cre:r[3]}));const r=bkLoad(cid,rows,'Interbanking');INTERB[cid].last=new Date().toLocaleString('es-AR');toast(r.n?r.n+' movimientos nuevos importados de Interbanking ✔':'No hay movimientos nuevos');render()},
+ interb(){modal('Conectar Interbanking',`<form data-form="interb"><p>Se abre la pantalla oficial de Interbanking para que el cliente autorice a <b>Sistema VB</b> a leer los movimientos de sus cuentas. No se guardan contraseñas ni se puede operar: es solo lectura.</p><div class="fr"><div><label>Usuario de Interbanking</label><input name="u" value="estudiovb.demo"></div><div><label>Empresa / CUIT</label><input name="c" value="${esc(cl(S.cidBanco||CL.find(x=>x.tipo==='Sociedad').id).cuit)}"></div></div><div class="rec" style="margin:12px 0"><b>Qué se sincroniza</b><ul style="margin:6px 0 0;padding-left:18px"><li>Movimientos de cuentas corrientes y cajas de ahorro</li><li>Saldos al cierre de cada día</li><li>Resúmenes de tarjetas asociadas</li></ul></div><button class="btn pri">Autorizar y conectar (simulado)</button></form>`)},
+ interbdis(){const cid=S.cidBanco||CL.find(c=>c.tipo==='Sociedad').id;delete INTERB[cid];toast('Interbanking desconectado');render()},
+ cardsample(){const cid=S.cidBanco||CL.find(c=>c.tipo==='Sociedad').id,rows=pdfSim('tarjeta').slice(1);cardLoad(cid,rows,'Ejemplo');toast('Resumen de tarjeta cargado y clasificado');render()},
+ cardpost(){const cid=S.cidBanco||CL.find(c=>c.tipo==='Sociedad').id,c=CARD[cid];if(!c||c.est==='Contabilizado')return;
+  if(c.rows.some(x=>!x.cta))return toast('Hay consumos sin cuenta contable');
+  const l=c.rows.map(x=>[x.cta,Math.round(x.imp),0]);l.push(['2.1.06',0,Math.round(sum(c.rows.map(x=>x.imp)))]);
+  const as=asientos(cid);as.push({org:'Tarjeta',n:as.length+1,f:c.cierre,desc:'Resumen tarjeta '+c.banco+' ····'+c.ult,l});c.est='Contabilizado';c.asiento=as.length;
+  logA('Resumen de tarjeta contabilizado en '+cl(cid).n);toast('Resumen contabilizado: asiento N° '+as.length+' ✔');render()},
+ cardpay(){const cid=S.cidBanco||CL.find(c=>c.tipo==='Sociedad').id,c=CARD[cid];if(!c||c.est!=='Contabilizado'||c.pago)return;
+  const t=Math.round(sum(c.rows.map(x=>x.imp))),as=asientos(cid);as.push({org:'Tarjeta',n:as.length+1,f:c.vto,desc:'Pago tarjeta '+c.banco+' ····'+c.ult,l:[['2.1.06',t,0],['1.1.02',0,t]]});c.pago=as.length;
+  bkLoad(cid,[{f:c.vto,d:'PAGO TARJETA '+c.banco.toUpperCase()+' '+c.ult,deb:t,cre:0}],'Tarjeta');
+  toast('Pago registrado y enviado al extracto para conciliar ✔');render()},
+ sueliq(){const emp=CL.filter(c=>c.emp>0),cid=emp.find(c=>c.id===S.cidSue)?S.cidSue:emp[0].id;const L=liquidar(cid);toast('Liquidación lista: '+L.det.length+' recibos y asiento N° '+L.asiento+' ✔');render()},
+ suereliq(){const cid=S.cidSue;delete LIQ[cid+'|'+TODAYISO.slice(0,7)];toast('Liquidación anulada: podés volver a liquidar');render()},
+ sueenv(d,t,e){const cid=S.cidSue,L=LIQ[cid+'|'+TODAYISO.slice(0,7)];if(L&&L.det[+d.i]){L.det[+d.i].env=d.via;setTimeout(render,0)}},
+ sueenvall(){const cid=S.cidSue,L=LIQ[cid+'|'+TODAYISO.slice(0,7)];if(!L)return;L.det.forEach(x=>{if(!x.env)x.env='email'});logA('Recibos enviados a '+L.det.length+' empleados de '+cl(cid).n);toast(L.det.length+' recibos enviados por email ✔');render()},
+ suef931(){const cid=S.cidSue,ym=TODAYISO.slice(0,7),L=LIQ[cid+'|'+ym];if(!L)return;const v=VEN.find(x=>x.cid===cid&&x.fecha.slice(0,7)===ym&&x.tipo.startsWith('F.931'));if(v)v.estado='Presentado';L.f931pres=true;logA('F.931 presentado (simulado) de '+cl(cid).n);toast('F.931 presentado por '+ars(L.f931)+' ✔');render()},
+ suecsv2(){const cid=S.cidSue,L=LIQ[cid+'|'+TODAYISO.slice(0,7)];if(!L)return;download('liquidacion_'+TODAYISO.slice(0,7)+'.csv',csv([['Empleado','CUIL','Bruto','Descuentos','Neto','Contribuciones','Recibo'],...L.det.map(x=>[x.e.n,x.e.cuil,Math.round(x.bruto),Math.round(x.desc),Math.round(x.neto),Math.round(x.patr),x.env?'Enviado por '+x.env:'Pendiente'])]))},
+ suerec(d){
+  const cid=S.cidSue,L=LIQ[cid+'|'+TODAYISO.slice(0,7)],x=L&&L.det[+d.i];if(!x)return;const e=x.e,dd=k=>x.bruto*k/100;
+  modal('Recibo de sueldo',`<div class="rec"><div class="stat"><span>Empleador</span><b>${esc(cl(cid).n)} · ${cl(cid).cuit}</b></div><div class="stat"><span>Empleado</span><b>${esc(e.n)} · CUIL ${e.cuil}</b></div><div class="stat"><span>Cargo</span><b>${esc(e.cargo)}</b></div><div class="stat"><span>Período</span><b>${MESES[TODAY.getMonth()]} ${TODAY.getFullYear()}</b></div>
+  <table style="margin-top:10px"><thead><tr><th>Concepto</th><th class="r">Remunerativo</th><th class="r">Descuentos</th></tr></thead><tbody><tr><td>Sueldo básico</td><td class="r">${ars(e.bas)}</td><td></td></tr><tr><td>Antigüedad (${e.ant} años)</td><td class="r">${ars(x.ant)}</td><td></td></tr><tr><td>Presentismo</td><td class="r">${ars(x.pres)}</td><td></td></tr><tr><td>Jubilación ${LQ.jub}%</td><td></td><td class="r">${ars(dd(LQ.jub))}</td></tr><tr><td>INSSJP ${LQ.pami}%</td><td></td><td class="r">${ars(dd(LQ.pami))}</td></tr><tr><td>Obra social ${LQ.os}%</td><td></td><td class="r">${ars(dd(LQ.os))}</td></tr><tr><td>Sindicato ${LQ.sind}%</td><td></td><td class="r">${ars(dd(LQ.sind))}</td></tr><tr><td><b>Totales</b></td><td class="r"><b>${ars(x.bruto)}</b></td><td class="r"><b>${ars(x.desc)}</b></td></tr><tr><td><b>Neto a cobrar</b></td><td></td><td class="r"><b>${ars(x.neto)}</b></td></tr></tbody></table>
+  <p class="mut" style="margin-top:10px">Convenio ${CONVSEL[cid]||'—'} · Recibo ${x.env?'enviado por '+x.env:'pendiente de envío'}</p></div>
+  <p class="noprint" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri" onclick="window.print()">🖨 Imprimir</button><a class="btn wa" target="_blank" rel="noopener" data-act="sueenv" data-i="${d.i}" data-via="WhatsApp" href="${waLink(e.tel,reciboTxt(cid,x))}">Enviar por WhatsApp</a><a class="btn" data-act="sueenv" data-i="${d.i}" data-via="email" href="mailto:${esc(e.mail)}?subject=${encodeURIComponent('Recibo de sueldo')}&body=${encodeURIComponent(reciboTxt(cid,x))}">Enviar por email</a></p>`)},
+ ajusteir(){const cid=S.cidCont;if(AJ[cid])return;const c=ajustePost(cid);toast('Ajuste calculado, contabilizado (asiento N° '+c.asiento+') y papeles generados ✔');render()},
+ ajustecsv(){const cid=S.cidCont,c=AJ[cid];if(!c)return;download('ajuste_inflacion.csv',csv([['Partida','Mes de origen','Índice origen','Índice cierre','Coeficiente','Saldo histórico','Ajuste','Saldo ajustado'],...c.part.map(x=>[x.n,x.org,x.io,c.cierre,x.coef.toFixed(4),Math.round(x.saldo),Math.round(x.ajuste),Math.round(x.ajustado)]),['RECPAM','','','','','',Math.round(c.recpam),'']]))}
+});
+function cardLoad(cid,rows,src){
+ const out=[];let i=1;
+ rows.forEach(r=>{const f=normFecha(r[0]),d=String(r[1]||'').trim(),imp=toNum(r[2]);if(!f||!d||!imp)return;out.push({id:i++,f,d,imp,cta:clasif(d)||'5.2.08'})});
+ if(!out.length)return 0;
+ CARD[cid]={banco:'Visa Empresas',ult:'4412',cierre:out[out.length-1].f,vto:iso(addD(TODAY,5)),rows:out,est:'Pendiente',src};
+ return out.length;
+}
+Object.assign(CHG,{
+ bkcid(v){S.cidBanco=+v;render()},
+ bkcta(v,t){const cid=S.cidBanco||CL.find(c=>c.tipo==='Sociedad').id,r=(BANK[cid]||{rows:[]}).rows.find(x=>x.id===+t.dataset.id);if(r){r.cta=v;render()}},
+ cardcta(v,t){const cid=S.cidBanco||CL.find(c=>c.tipo==='Sociedad').id,c=CARD[cid];if(c){const r=c.rows.find(x=>x.id===+t.dataset.id);if(r){r.cta=v;render()}}},
+ bkfile(v,t){const f=t.files[0];if(!f)return;const cid=S.cidBanco||CL.find(c=>c.tipo==='Sociedad').id;
+  fileRows(f,'banco',res=>{if(res.err)return toast('No se pudo leer: '+res.err);
+   const rows=res.rows.filter((r,i)=>!(i===0&&/fecha/i.test(String(r[0]))));const r=bkLoad(cid,rows,res.src);
+   logA('Extracto cargado ('+res.src+') en '+cl(cid).n+': '+r.n+' movimientos');
+   if(r.err.length)modal('Lectura del extracto',`<p>${badge(r.n+' movimientos cargados','ok')} ${badge(r.err.length+' filas omitidas','warn')} ${badge(res.src,'info')}</p><div class="list">${r.err.slice(0,15).map(e=>`<div><span>⚠️</span><div class="g">${esc(e)}</div></div>`).join('')}</div>`);
+   else toast(r.n+' movimientos leídos de '+res.src+' ✔');render()});
+  try{t.value=''}catch(e){}},
+ cardfile(v,t){const f=t.files[0];if(!f)return;const cid=S.cidBanco||CL.find(c=>c.tipo==='Sociedad').id;
+  fileRows(f,'tarjeta',res=>{if(res.err)return toast('No se pudo leer: '+res.err);
+   const rows=res.rows.filter((r,i)=>!(i===0&&/fecha/i.test(String(r[0]))));const n=cardLoad(cid,rows,res.src);
+   if(!n)return toast('No se encontraron consumos en el archivo');
+   logA('Resumen de tarjeta cargado ('+res.src+') en '+cl(cid).n);toast(n+' consumos leídos de '+res.src+' ✔');render()});
+  try{t.value=''}catch(e){}}
+});
+Object.assign(FRM,{interb(f){const cid=S.cidBanco||CL.find(c=>c.tipo==='Sociedad').id;INTERB[cid]={u:f.get('u'),last:new Date().toLocaleString('es-AR')};const rows=bkSample(cid);bkLoad(cid,rows,'Interbanking');closeModal();logA('Interbanking conectado para '+cl(cid).n);toast('Interbanking conectado: movimientos importados y conciliados ✔');render()}});
+S.tab.banco='conc';S.cidBanco=11;
+CL.filter(c=>c.emp>0).forEach((c,i)=>{if(!CONVSEL[c.id])CONVSEL[c.id]=CONVS[i%CONVS.length][0]});
+NAV.splice(NAV.findIndex(n=>n[0]==='cont')+1,0,['banco','Conciliación bancaria','🏦']);
+MODS.splice(MODS.findIndex(m=>m[0]==='cont')+1,0,['banco','Conciliación bancaria']);
+SECDEF.push('banco');PERM.sec.banco=true;
+PLAN.splice(PLAN.findIndex(x=>x[0]==='2.1.05')+1,0,['2.1.06','Tarjetas de crédito a pagar','P']);
+PLAN.splice(PLAN.findIndex(x=>x[0]==='5.2.07')+1,0,['5.2.08','Gastos generales','RN'],['5.2.09','Intereses y gastos bancarios','RN']);
 
 /* ============ Core ============ */
 function buildNav(){
