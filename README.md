@@ -37,3 +37,10 @@ Las conexiones con ARCA, la lectura de la IA, las plataformas de e-commerce y la
 
 - **Retenciones y percepciones:** módulo propio para cargar los certificados sufridos de IVA, Ganancias, IIBB (con jurisdicción), seguridad social e impuesto al cheque. Carga manual con validación de CUIT del agente y de certificados duplicados, importación de ARCA (simulada), PDF con IA (simulado) y Excel o CSV (lectura real). Se descuentan automáticamente del IVA y del anticipo de IIBB, se contabilizan contra "Retenciones y percepciones a cuenta" y tienen su papel de trabajo.
 - **Detalle de comprobantes:** cualquier factura de ventas o compras se abre y muestra emisor, receptor, detalle de artículos, neto, IVA, retenciones asociadas, total, CAE y origen, con acceso al asiento que generó. Disponible desde Ventas y compras, desde la ficha del cliente y desde el portal del cliente. Las facturas de honorarios del estudio también se abren en detalle.
+
+## Declaraciones juradas y posición de IVA
+
+- **Débito y crédito por cliente:** primera pestaña de Impuestos. Muestra para el período, y para todos los clientes juntos, las ventas netas, el débito fiscal, las compras netas, el crédito fiscal, el saldo técnico, las retenciones y el saldo final a pagar o a favor, con totales, filtros, gráfico de mayores saldos y exportación. Cada fila abre la liquidación del cliente.
+- **Declaraciones juradas simuladas:** formularios F.2002 (IVA), CM03 (Convenio Multilateral), F.713 (Ganancias), F.931 (seguridad social) y F.184 (recategorización de Monotributo), con sus rubros, vista previa antes de presentar, número de transacción, acuse de recibo y volante electrónico de pago (VEP) que se puede enviar al cliente por WhatsApp. Al presentar se marca el vencimiento correspondiente. Incluye presentación masiva por cliente o de todo el estudio e historial de presentaciones.
+
+Las presentaciones son simuladas: no se envían a ARCA y los formularios tienen una estructura simplificada.

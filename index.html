@@ -467,19 +467,18 @@ V.venc=()=>{
 
 V.imp=()=>{
  const t=S.tab.imp;
- const tabs=`<div class="tabs">${[['iva','IVA – Libros y liquidación'],['mono','Monotributo'],['gan','Ganancias sociedades'],['iibb','IIBB y CM05'],['muni','Tasas municipales'],['lid','Libro IVA Digital'],['rf','Rentas financieras']].map(x=>`<button class="${t===x[0]?'on':''}" data-act="tab" data-v="imp" data-t="${x[0]}">${x[1]}</button>`).join('')}</div>`;
+ const tabs=`<div class="tabs">${[['pos','Débito y crédito por cliente'],['ddjj','Declaraciones juradas'],['iva','IVA – Libros y liquidación'],['mono','Monotributo'],['gan','Ganancias sociedades'],['iibb','IIBB y CM05'],['muni','Tasas municipales'],['lid','Libro IVA Digital'],['rf','Rentas financieras']].map(x=>`<button class="${t===x[0]?'on':''}" data-act="tab" data-v="imp" data-t="${x[0]}">${x[1]}</button>`).join('')}</div>`;
  let body='';
  if(t==='iva'){
   const rs=CL.filter(c=>c.tipo!=='Monotributo'&&c.tipo!=='Persona humana'),cid=rs.find(c=>c.id===S.cidIva)?S.cidIva:rs[0].id,cp=comprobantes(cid,S.ivaYM);
   const row=x=>{const iv=x.neto*x.al/100;return`<tr><td>${x.f}</td><td>${x.cp}</td><td class="r">${ars(x.neto)}</td><td class="r">${x.al}%</td><td class="r">${ars(iv)}</td><td class="r">${ars(x.neto+iv)}</td></tr>`};
-  const deb=sum(cp.v.map(x=>x.neto*x.al/100)),cre=sum(cp.c.map(x=>x.neto*x.al/100)),sal=deb-cre,slda=+(S.saldoLD||0);
-  const rIva=retSum(cid,S.ivaYM,'IVA'),net=sal-slda-rIva;
+  const K=ivaCalc(cid,S.ivaYM),deb=K.deb,cre=K.cre,sal=K.sal,slda=K.slda,rIva=K.ret,net=K.net;
   body=`<div class="card"><div class="fr"><div><label>Cliente</label><select data-chg="ivacid">${clOpts(cid,c=>c.tipo!=='Monotributo'&&c.tipo!=='Persona humana')}</select></div><div><label>Período</label><input type="month" value="${S.ivaYM}" data-chg="ivaym"></div><div><label>Saldo libre disponibilidad anterior</label><input type="number" value="${slda}" data-chg="ivald"></div></div></div>
   <div class="grid g6" style="margin:14px 0">${kpi('Débito fiscal',ars(deb))}${kpi('Crédito fiscal',ars(cre))}${kpi('Saldo técnico',ars(sal),sal>=0?'a favor de ARCA':'a favor del contribuyente',sal>=0?'dn':'up')}${kpi('Retenciones y percepciones',ars(rIva),retCount(cid,S.ivaYM,'IVA')+' cargadas · ver módulo','up')}${kpi('Saldo libre disponibilidad',ars(slda))}${kpi(net>=0?'IVA a pagar':'Saldo a favor',ars(Math.abs(net)),'tras retenciones y saldo a favor',net>=0?'dn':'up')}</div>
   <div class="grid g2"><div class="card"><h3>Libro IVA Ventas</h3><div class="tw"><table><thead><tr><th>Comprobante</th><th>Cliente</th><th class="r">Neto</th><th class="r">Alíc.</th><th class="r">IVA</th><th class="r">Total</th></tr></thead><tbody>${cp.v.map(row).join('')}</tbody></table></div></div>
   <div class="card"><h3>Libro IVA Compras</h3><div class="tw"><table><thead><tr><th>Comprobante</th><th>Proveedor</th><th class="r">Neto</th><th class="r">Alíc.</th><th class="r">IVA</th><th class="r">Total</th></tr></thead><tbody>${cp.c.map(row).join('')}</tbody></table></div></div></div>
   <div class="card" style="margin-top:14px"><h3>Agregar comprobante</h3><form data-form="comp"><div class="fr"><div><label>Libro</label><select name="tp"><option value="V">Ventas</option><option value="C">Compras</option></select></div><div><label>Contraparte</label><input name="cp" required></div><div><label>Neto gravado</label><input type="number" name="neto" required min="1"></div><div><label>Alícuota</label><select name="al"><option>21</option><option>10.5</option><option>27</option><option>0</option></select></div><div><button class="btn pri">Agregar</button></div></div></form>
-  <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn" data-act="ddjjiva">Generar DDJJ IVA (simulado)</button><button class="btn" data-act="csviva">⬇ Exportar libros CSV</button></div><p class="disc">Demo: los comprobantes se importarían automáticamente desde “Mis Comprobantes” de ARCA y se contabilizan en el libro diario.</p></div>`;
+  <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn pri" data-act="ddjjiva">🧾 Ver declaración jurada (F.2002)</button><button class="btn" data-act="csviva">⬇ Exportar libros CSV</button></div><p class="disc">Demo: los comprobantes se importarían automáticamente desde “Mis Comprobantes” de ARCA y se contabilizan en el libro diario.</p></div>`;
  }
  if(t==='mono'){
   const ms=CL.filter(c=>c.tipo==='Monotributo'),sim=+S.monoSim.fac||0,catSim=sim?(MONO.find(m=>sim<=m[1])||['Excluido',0]):null;
@@ -497,8 +496,9 @@ V.imp=()=>{
   <div class="grid g3" style="margin-top:14px">${kpi('Resultado realizado (ventas)',ars(p.real),'acumulado en el año')}${kpi('Resultado no realizado',ars(pv.pl),'valuación a mercado',pv.pl>=0?'up':'dn')}${kpi('Impuesto estimado',ars(base*al/100),'sobre resultado realizado')}</div>
   <p class="disc">El sistema cruza las órdenes ejecutadas de la cartera con el módulo impositivo para preparar la DDJJ de personas humanas. Cálculo orientativo con alícuota editable: validar con el régimen vigente.</p></div>`;
  }
+ if(t==='pos')body=impPos();if(t==='ddjj')body=impDDJJ();
  if(t==='iibb')body=impIIBB();if(t==='muni')body=impMuni();if(t==='lid')body=impLID();
- return`<div class="ph"><div><h1>Impuestos</h1><p>Liquidación y control de IVA, Monotributo, Ganancias y rentas financieras.</p></div></div>${tabs}${body}`;
+ return`<div class="ph"><div><h1>Impuestos</h1><p>Débito y crédito fiscal de todos los clientes, declaraciones juradas, IVA, Monotributo, Ganancias, IIBB, tasas municipales y rentas financieras.</p></div></div>${tabs}${body}`;
 };
 
 V.cont=()=>{
@@ -1754,6 +1754,140 @@ NAV.splice(NAV.findIndex(n=>n[0]==='imp')+1,0,['ret','Retenciones y percepciones
 MODS.splice(MODS.findIndex(m=>m[0]==='imp')+1,0,['ret','Retenciones y percepciones']);
 SECDEF.push('ret');PERM.sec.ret=true;
 PLAN.splice(PLAN.findIndex(x=>x[0]==='1.1.06')+1,0,['1.1.07','Retenciones y percepciones a cuenta','A']);
+
+
+/* ============ Posición de IVA por cliente ============ */
+const SLD={};
+function ivaCalc(cid,ym){
+ const cp=comprobantes(cid,ym);
+ const vNet=sum(cp.v.map(x=>x.neto)),cNet=sum(cp.c.map(x=>x.neto));
+ const deb=sum(cp.v.map(x=>x.neto*x.al/100)),cre=sum(cp.c.map(x=>x.neto*x.al/100));
+ const sal=deb-cre,ret=retSum(cid,ym,'IVA'),slda=+(SLD[cid]||0),net=sal-slda-ret;
+ return{cp,vNet,cNet,deb,cre,sal,ret,slda,net,alV:ivaPorAl(cp.v),alC:ivaPorAl(cp.c)};
+}
+CHG.ivald=v=>{SLD[cpId()]=+v||0;render()};
+const ivaClientes=()=>CL.filter(c=>c.tipo==='Responsable Inscripto'||c.tipo==='Sociedad');
+function impPos(){
+ const ym=S.ivaYM,f=S.posF||'',rows=ivaClientes().map(c=>Object.assign({c},ivaCalc(c.id,ym)))
+  .filter(x=>f==='pagar'?x.net>0:f==='favor'?x.net<0:f==='pend'?!ddjjGet(x.c.id,'IVA',ym):true)
+  .sort((a,b)=>b.net-a.net);
+ const all=ivaClientes().map(c=>Object.assign({c},ivaCalc(c.id,ym)));
+ const tD=sum(all.map(x=>x.deb)),tC=sum(all.map(x=>x.cre)),tR=sum(all.map(x=>x.ret)),tP=sum(all.filter(x=>x.net>0).map(x=>x.net)),tF=-sum(all.filter(x=>x.net<0).map(x=>x.net));
+ const pres=all.filter(x=>ddjjGet(x.c.id,'IVA',ym)).length;
+ const top=all.filter(x=>x.net>0).sort((a,b)=>b.net-a.net).slice(0,6);
+ if(top.length)chartBar('posc',top.map(x=>x.c.n.split(' ')[0].slice(0,9)),top.map(x=>Math.round(x.net)),v=>'$'+num(v/1000)+'k');
+ return`<div class="card" style="margin-bottom:14px"><div class="fr"><div><label>Período</label><input type="month" value="${ym}" data-chg="ivaym"></div><div><label>Ver</label><select data-chg="posf"><option value="">Todos los clientes</option><option value="pagar" ${f==='pagar'?'selected':''}>Solo con saldo a pagar</option><option value="favor" ${f==='favor'?'selected':''}>Solo con saldo a favor</option><option value="pend" ${f==='pend'?'selected':''}>Solo sin DDJJ presentada</option></select></div><div style="display:flex;align-items:flex-end"><button class="btn" data-act="poscsv">⬆ Exportar</button></div></div></div>
+ <div class="grid g6" style="margin-bottom:14px">${kpi('Débito fiscal total',ars(tD),all.length+' clientes')}${kpi('Crédito fiscal total',ars(tC))}${kpi('Retenciones y percepciones',ars(tR),'','up')}${kpi('A pagar en total',ars(tP),'suma de los saldos deudores','dn')}${kpi('Saldos a favor',ars(tF),'quedan para el próximo período','up')}${kpi('DDJJ presentadas',pres+' / '+all.length,pres===all.length?'mes cerrado':'faltan '+(all.length-pres),pres===all.length?'up':'dn')}</div>
+ <div class="card"><h3>Débito y crédito fiscal de cada cliente · ${ym}</h3><div class="tw"><table><thead><tr><th>Cliente</th><th class="r">Ventas netas</th><th class="r">Débito fiscal</th><th class="r">Compras netas</th><th class="r">Crédito fiscal</th><th class="r">Saldo técnico</th><th class="r">Ret. y perc.</th><th class="r">A pagar / a favor</th><th>DDJJ</th></tr></thead><tbody>${rows.map(x=>{const dj=ddjjGet(x.c.id,'IVA',ym);return`<tr class="click" data-act="posver" data-id="${x.c.id}"><td><b>${esc(x.c.n)}</b><br><small class="mut">${x.c.cuit}</small></td><td class="r">${ars(x.vNet)}</td><td class="r">${ars(x.deb)}</td><td class="r">${ars(x.cNet)}</td><td class="r">${ars(x.cre)}</td><td class="r">${ars(x.sal)}</td><td class="r">${x.ret?ars(x.ret):'—'}</td><td class="r"><b class="${x.net>0?'dn':'up'}">${ars(Math.abs(x.net))}</b><br><small class="mut">${x.net>0?'a pagar':'a favor'}</small></td><td>${dj?badge('Presentada','ok'):badge('Pendiente','warn')}</td></tr>`}).join('')||'<tr><td colspan="9" class="mut">Sin clientes para este filtro</td></tr>'}<tr><td><b>Totales (${rows.length})</b></td><td class="r"><b>${ars(sum(rows.map(x=>x.vNet)))}</b></td><td class="r"><b>${ars(sum(rows.map(x=>x.deb)))}</b></td><td class="r"><b>${ars(sum(rows.map(x=>x.cNet)))}</b></td><td class="r"><b>${ars(sum(rows.map(x=>x.cre)))}</b></td><td class="r"><b>${ars(sum(rows.map(x=>x.sal)))}</b></td><td class="r"><b>${ars(sum(rows.map(x=>x.ret)))}</b></td><td class="r"><b>${ars(sum(rows.map(x=>x.net)))}</b></td><td></td></tr></tbody></table></div><p class="disc">Tocá un cliente para abrir su liquidación con los libros de IVA.</p></div>
+ <div class="card" style="margin-top:14px"><h3>Mayores saldos a pagar del período</h3>${top.length?'<canvas id="posc" data-h="220"></canvas>':'<p class="mut">Ningún cliente tiene saldo a pagar este período.</p>'}</div>`;
+}
+
+/* ============ Declaraciones juradas simuladas ============ */
+const DDJJ=[];let DJID=1;
+const FORMS={IVA:['F.2002','IVA por actividad'],Ganancias:['F.713','Impuesto a las Ganancias – Sociedades'],IIBB:['CM03','Convenio Multilateral – Anticipo'],SUSS:['F.931','Aportes y contribuciones a la seguridad social'],Monotributo:['F.184','Recategorización de Monotributo']};
+const ddjjGet=(cid,imp,ym)=>DDJJ.find(d=>d.cid===+cid&&d.imp===imp&&d.ym===ym);
+function ddjjApply(c){
+ if(c.tipo==='Monotributo')return['Monotributo'];
+ if(c.tipo==='Persona humana')return['Ganancias'];
+ const o=['IVA','IIBB','Ganancias'];if(c.emp>0)o.push('SUSS');return o;
+}
+function ddjjCalc(cid,imp,ym){
+ const c=cl(cid);
+ if(imp==='IVA'){const K=ivaCalc(cid,ym);
+  return{importe:Math.max(K.net,0),favor:Math.max(-K.net,0),rub:[
+   ['Rubro 1 · Débito fiscal',K.alV.map(a=>['Neto gravado '+a.al+'%',a.neto]).concat(K.alV.map(a=>['Débito fiscal '+a.al+'%',a.iva])),K.deb],
+   ['Rubro 2 · Crédito fiscal',K.alC.map(a=>['Neto de compras '+a.al+'%',a.neto]).concat(K.alC.map(a=>['Crédito fiscal '+a.al+'%',a.iva])),K.cre],
+   ['Rubro 3 · Saldo técnico',[['Débito fiscal del período',K.deb],['Crédito fiscal del período',-K.cre]],K.sal],
+   ['Rubro 4 · Ingresos directos',[['Retenciones y percepciones sufridas',K.ret],['Saldo de libre disponibilidad anterior',K.slda]],K.ret+K.slda],
+   ['Rubro 5 · Resultado',[['Saldo técnico',K.sal],['Ingresos directos',-(K.ret+K.slda)]],K.net]]};
+ }
+ if(imp==='IIBB'){const k=iibbCalc(cid);
+  return{importe:Math.max(k.saldo,0),favor:Math.max(-k.saldo,0),rub:[
+   ['Rubro 1 · Base imponible',[['Ingresos gravados del período',k.base]],k.base],
+   ['Rubro 2 · Distribución por jurisdicción',k.rows.map(x=>[x.j+' · coef. '+num(x.coef*100,2)+'% · alíc. '+x.al+'%',x.imp]),k.tot],
+   ['Rubro 3 · Deducciones',[['Retenciones y percepciones de IIBB',k.d.ret]],k.d.ret],
+   ['Rubro 4 · Resultado',[['Impuesto determinado',k.tot],['Retenciones y percepciones',-k.d.ret]],k.saldo]]};
+ }
+ if(imp==='Ganancias'){const bs=balanceSyS(cid),ti=-sum(bs.filter(x=>x.t==='RP').map(x=>x.s)),te=sum(bs.filter(x=>x.t==='RN').map(x=>x.s)),rc=ti-te,base=Math.max(rc+S.pgAj,0),det=base*.35,ret=retSum(cid,ym,'Ganancias'),ant=det*.25,sal=det-ret-ant;
+  return{importe:Math.max(sal,0),favor:Math.max(-sal,0),rub:[
+   ['Rubro 1 · Resultado contable',[['Ingresos del ejercicio',ti],['Gastos del ejercicio',-te]],rc],
+   ['Rubro 2 · Ajustes impositivos',[['Ajustes que aumentan o disminuyen la base',S.pgAj]],S.pgAj],
+   ['Rubro 3 · Impuesto determinado',[['Resultado impositivo',base],['Alícuota 35%',det]],det],
+   ['Rubro 4 · Pagos a cuenta',[['Anticipos ingresados',ant],['Retenciones de Ganancias',ret]],ant+ret],
+   ['Rubro 5 · Resultado',[['Impuesto determinado',det],['Pagos a cuenta',-(ant+ret)]],sal]]};
+ }
+ if(imp==='SUSS'){const es=empleados(cid),br=sum(es.map(e=>{const a=e.bas*e.ant*LQ.antp/100;return e.bas+a+(e.bas+a)*LQ.pres/100})),ap=[['Jubilación',LQ.jub],['INSSJP',LQ.pami],['Obra social',LQ.os]],ta=sum(ap.map(x=>br*x[1]/100)),tc=br*LQ.patr/100;
+  return{importe:ta+tc,favor:0,rub:[
+   ['Rubro 1 · Nómina',[['Empleados declarados',es.length],['Remuneración bruta total',br]],br],
+   ['Rubro 2 · Aportes del trabajador',ap.map(x=>[x[0]+' '+x[1]+'%',br*x[1]/100]),ta],
+   ['Rubro 3 · Contribuciones patronales',[['Contribuciones '+LQ.patr+'%',tc]],tc],
+   ['Rubro 4 · Total a ingresar',[['Aportes',ta],['Contribuciones',tc]],ta+tc]]};
+ }
+ const l=MONO.find(m=>m[0]===c.cat)||MONO[0],sug=MONO.find(m=>c.fac12<=m[1])||MONO[MONO.length-1],cuo=CCMA_CUOTA[sug[0]]||50000;
+ return{importe:cuo,favor:0,rub:[
+  ['Rubro 1 · Situación actual',[['Categoría declarada '+c.cat,l[1]],['Ingresos brutos de los últimos 12 meses',c.fac12]],c.fac12],
+  ['Rubro 2 · Categoría que corresponde',[['Tope de la categoría '+sug[0],sug[1]]],sug[1]],
+  ['Rubro 3 · Cuota mensual',[['Categoría '+sug[0],cuo]],cuo]]};
+}
+function ddjjPresentar(cid,imp,ym){
+ if(ddjjGet(cid,imp,ym))return null;
+ const k=ddjjCalc(cid,imp,ym),h=hash(cid+imp+ym);
+ const d={id:DJID++,cid,imp,ym,form:FORMS[imp][0],importe:k.importe,favor:k.favor,rub:k.rub,ts:Date.now(),
+  trans:String(100000000+h%899999999),vep:'',est:'Presentada',por:userN()};
+ DDJJ.unshift(d);
+ const pref={IVA:'IVA',IIBB:'IIBB',SUSS:'F.931',Monotributo:'Cuota Monotributo'}[imp];
+ if(pref){const v=VEN.find(x=>x.cid===cid&&x.fecha.slice(0,7)===ym&&x.tipo.startsWith(pref));if(v)v.estado='Presentado'}
+ logA('DDJJ presentada (simulada): '+FORMS[imp][0]+' · '+cl(cid).n+' · '+ym+' · '+ars(k.importe));
+ return d;
+}
+function impDDJJ(){
+ const cid=CL.find(c=>c.id===S.cidDJ)?S.cidDJ:CL[0].id,c=cl(cid),ym=S.ivaYM,aps=ddjjApply(c);
+ const hist=DDJJ.filter(d=>!S.djF||d.cid===+S.djF).slice(0,30);
+ const cards=aps.map(imp=>{const dj=ddjjGet(cid,imp,ym),k=dj||ddjjCalc(cid,imp,ym);
+  return`<div class="card"><h3>${FORMS[imp][0]} ${dj?badge('Presentada','ok'):badge('Pendiente','warn')}</h3><p class="mut" style="margin:0 0 8px">${FORMS[imp][1]}</p><div class="stat"><span>${k.favor>0?'Saldo a favor':'Importe a ingresar'}</span><b class="${k.favor>0?'up':'dn'}">${ars(k.favor>0?k.favor:k.importe)}</b></div>${dj?`<div class="stat"><span>N° de transacción</span><b>${dj.trans}</b></div><div class="stat"><span>Presentada</span><b>${new Date(dj.ts).toLocaleString('es-AR')}</b></div>`:''}
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">${dj?`<button class="btn" data-act="djform" data-id="${dj.id}">Ver formulario</button><button class="btn" data-act="djacuse" data-id="${dj.id}">Acuse de recibo</button>${dj.importe>0?`<button class="btn ok" data-act="djvep" data-id="${dj.id}">${dj.vep?'Ver VEP':'Generar VEP'}</button>`:''}`:`<button class="btn pri" data-act="djpres" data-imp="${imp}">Generar y presentar</button><button class="btn" data-act="djprev" data-imp="${imp}">Previsualizar</button>`}</div></div>`}).join('');
+ return`<div class="card" style="margin-bottom:14px"><div class="fr"><div><label>Cliente</label><select data-chg="djcid">${clOpts(cid)}</select></div><div><label>Período</label><input type="month" value="${ym}" data-chg="ivaym"></div><div style="display:flex;align-items:flex-end;gap:8px"><button class="btn pri" data-act="djall">Presentar todas las de este cliente</button><button class="btn" data-act="djmes">Presentar el mes de todo el estudio</button></div></div><p class="disc">Demo: las presentaciones son simuladas y no se envían a ARCA. En la versión real se usan los servicios web con la clave fiscal del contribuyente.</p></div>
+ <div class="grid g3" style="margin-bottom:14px">${cards||'<div class="card"><p class="mut">Este cliente no tiene declaraciones juradas configuradas.</p></div>'}</div>
+ <div class="card"><h3>Declaraciones presentadas <span><select data-chg="djf" style="max-width:240px"><option value="">Todos los clientes</option>${clOpts(S.djF)}</select></span></h3><div class="tw"><table><thead><tr><th>Presentada</th><th>Formulario</th><th>Cliente</th><th>Período</th><th class="r">Importe</th><th>N° transacción</th><th>VEP</th><th></th></tr></thead><tbody>${hist.map(d=>`<tr><td>${new Date(d.ts).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</td><td><b>${d.form}</b><br><small class="mut">${d.imp}</small></td><td>${esc(cl(d.cid).n)}</td><td>${d.ym}</td><td class="r">${d.favor>0?'<span class="up">'+ars(d.favor)+' a favor</span>':ars(d.importe)}</td><td>${d.trans}</td><td>${d.vep?badge(d.vep,'ok'):'—'}</td><td><button class="btn sm" data-act="djform" data-id="${d.id}">Formulario</button> <button class="btn sm" data-act="djacuse" data-id="${d.id}">Acuse</button></td></tr>`).join('')||'<tr><td colspan="8" class="mut">Todavía no presentaste declaraciones juradas</td></tr>'}</tbody></table></div></div>`;
+}
+function djFormHTML(cid,imp,ym,d){
+ const c=cl(cid),k=d||ddjjCalc(cid,imp,ym),F=FORMS[imp];
+ return`<div class="rec" id="djdoc"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-bottom:2px solid var(--gold);padding-bottom:10px">
+ <div><b style="font-size:17px">${F[0]}</b><br><small class="mut">${F[1]}</small></div>
+ <div style="text-align:right"><b>${esc(c.n)}</b><br>CUIT ${c.cuit}<br><small class="mut">Período ${ym} · ${c.tipo}</small></div></div>
+ ${k.rub.map(r=>`<h3 style="margin:14px 0 6px;font-size:13px">${r[0]}</h3><table><tbody>${r[1].map(l=>`<tr><td>${esc(l[0])}</td><td class="r">${typeof l[1]==='number'&&Math.abs(l[1])<1000&&Number.isInteger(l[1])?num(l[1]):ars(l[1])}</td></tr>`).join('')}<tr><td><b>Total ${esc(r[0].split('· ')[1]||'')}</b></td><td class="r"><b>${ars(r[2])}</b></td></tr></tbody></table>`).join('')}
+ <div class="stat" style="margin-top:14px;border-top:2px solid var(--gold);padding-top:10px"><span style="font-size:15px"><b>${k.favor>0?'SALDO A FAVOR DEL CONTRIBUYENTE':'SALDO A INGRESAR'}</b></span><b style="font-size:17px" class="${k.favor>0?'up':'dn'}">${ars(k.favor>0?k.favor:k.importe)}</b></div>
+ ${d?`<p class="mut" style="margin-top:10px">Presentada el ${new Date(d.ts).toLocaleString('es-AR')} · N° de transacción ${d.trans} · Usuario ${esc(d.por)}</p>`:'<p class="mut" style="margin-top:10px">Vista previa: todavía no fue presentada.</p>'}
+ </div><p class="disc">Formulario ilustrativo de demostración: la estructura es simplificada y no reemplaza al aplicativo oficial de ARCA.</p>`;
+}
+Object.assign(ACT,{
+ posver(d){S.cidIva=+d.id;S.tab.imp='iva';render()},
+ posf(){},
+ poscsv(){download('iva_por_cliente_'+S.ivaYM+'.csv',csv([['Cliente','CUIT','Ventas netas','Débito fiscal','Compras netas','Crédito fiscal','Saldo técnico','Retenciones','Saldo'],...ivaClientes().map(c=>{const k=ivaCalc(c.id,S.ivaYM);return[c.n,c.cuit,Math.round(k.vNet),Math.round(k.deb),Math.round(k.cNet),Math.round(k.cre),Math.round(k.sal),Math.round(k.ret),Math.round(k.net)]})]))},
+ djpres(d){const cid=S.cidDJ||CL[0].id,dj=ddjjPresentar(cid,d.imp,S.ivaYM);if(!dj)return;render();modal('Declaración jurada presentada',djFormHTML(cid,d.imp,S.ivaYM,dj)+`<p class="noprint" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="djacuse" data-id="${dj.id}">Ver acuse de recibo</button>${dj.importe>0?`<button class="btn ok" data-act="djvep" data-id="${dj.id}">Generar VEP</button>`:''}<button class="btn pri" onclick="window.print()">🖨 Imprimir</button></p>`)},
+ djprev(d){const cid=S.cidDJ||CL[0].id;modal('Vista previa · '+FORMS[d.imp][0],djFormHTML(cid,d.imp,S.ivaYM,null)+`<p class="noprint"><button class="btn pri" data-act="djpres" data-imp="${d.imp}">Presentar esta declaración</button> <button class="btn" onclick="window.print()">🖨 Imprimir</button></p>`)},
+ djform(d){const dj=DDJJ.find(x=>x.id===+d.id);if(!dj)return;modal(dj.form+' · '+cl(dj.cid).n,djFormHTML(dj.cid,dj.imp,dj.ym,dj)+`<p class="noprint" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="djacuse" data-id="${dj.id}">Acuse de recibo</button>${dj.importe>0?`<button class="btn ok" data-act="djvep" data-id="${dj.id}">${dj.vep?'Ver VEP':'Generar VEP'}</button>`:''}<button class="btn pri" onclick="window.print()">🖨 Imprimir</button></p>`)},
+ djacuse(d){const dj=DDJJ.find(x=>x.id===+d.id);if(!dj)return;const c=cl(dj.cid);
+  modal('Acuse de recibo',`<div class="rec" style="text-align:center"><div style="font-size:34px">✅</div><h2 style="margin:6px 0">Presentación aceptada</h2><p class="mut" style="margin:0 0 12px">Constancia de presentación de declaración jurada</p>
+  <div style="text-align:left"><div class="stat"><span>Contribuyente</span><b>${esc(c.n)}</b></div><div class="stat"><span>CUIT</span><b>${c.cuit}</b></div><div class="stat"><span>Formulario</span><b>${dj.form} — ${FORMS[dj.imp][1]}</b></div><div class="stat"><span>Período fiscal</span><b>${dj.ym}</b></div><div class="stat"><span>Importe declarado</span><b>${dj.favor>0?ars(dj.favor)+' a favor':ars(dj.importe)}</b></div><div class="stat"><span>Fecha y hora</span><b>${new Date(dj.ts).toLocaleString('es-AR')}</b></div><div class="stat"><span>N° de transacción</span><b>${dj.trans}</b></div><div class="stat"><span>Presentada por</span><b>${esc(dj.por)}</b></div></div>
+  <div class="pre" style="text-align:center;margin-top:12px">${String(dj.trans+hash(dj.trans)).padEnd(28,'0').slice(0,28).replace(/(.{4})/g,'$1 ')}</div></div>
+  <p class="disc">Acuse simulado, sin validez fiscal.</p><p class="noprint"><button class="btn pri" onclick="window.print()">🖨 Imprimir acuse</button></p>`)},
+ djvep(d){const dj=DDJJ.find(x=>x.id===+d.id);if(!dj)return;if(!dj.vep){dj.vep=String(7000000000+hash('vep'+dj.id+dj.trans)%999999999);logA('VEP generado: '+dj.vep+' · '+ars(dj.importe))}
+  const c=cl(dj.cid),ven=iso(bizDay(addD(TODAY,3)));
+  modal('Volante Electrónico de Pago (VEP)',`<div class="rec"><div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px"><div><b style="font-size:16px">VEP N° ${dj.vep}</b><br><small class="mut">${dj.form} · ${FORMS[dj.imp][1]}</small></div><div style="text-align:right"><b>${esc(c.n)}</b><br>CUIT ${c.cuit}</div></div><hr style="border:0;border-top:1px dashed var(--line);margin:12px 0">
+  <div class="stat"><span>Período</span><b>${dj.ym}</b></div><div class="stat"><span>Importe a pagar</span><b style="font-size:18px">${ars(dj.importe)}</b></div><div class="stat"><span>Vence</span><b>${fd(ven)}</b></div><div class="stat"><span>Red de pago</span><b>Homebanking · Interbanking · Link · Pago Mis Cuentas</b></div>
+  <div class="pre" style="text-align:center;margin-top:12px;letter-spacing:2px">|| ${dj.vep} || ${String(Math.round(dj.importe)).padStart(12,'0')} ||</div></div>
+  <p class="disc">VEP simulado, sin validez para el pago.</p><p class="noprint" style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn wa" target="_blank" rel="noopener" href="${waLink(c.tel,'Hola, le enviamos el VEP N° '+dj.vep+' de '+dj.form+' período '+dj.ym+' por '+ars(dj.importe)+', vence el '+fd(ven)+'. '+S.brand.n)}">Enviar al cliente</a><button class="btn pri" onclick="window.print()">🖨 Imprimir</button></p>`);render()},
+ djall(){const cid=S.cidDJ||CL[0].id;let n=0;ddjjApply(cl(cid)).forEach(i=>{if(ddjjPresentar(cid,i,S.ivaYM))n++});toast(n?n+' declaraciones juradas presentadas ✔':'Ya estaban todas presentadas');render()},
+ djmes(){let n=0;CL.forEach(c=>ddjjApply(c).forEach(i=>{if(ddjjPresentar(c.id,i,S.ivaYM))n++}));toast(n?n+' declaraciones juradas presentadas en todo el estudio ✔':'El mes ya estaba cerrado');render()},
+ ddjjiva(){const cid=cpId();S.cidDJ=cid;const dj=ddjjGet(cid,'IVA',S.ivaYM);if(dj)ACT.djform({id:dj.id});else ACT.djprev({imp:'IVA'})}
+});
+Object.assign(CHG,{
+ posf(v){S.posF=v;render()},
+ djcid(v){S.cidDJ=+v;render()},
+ djf(v){S.djF=v;render()}
+});
+S.cidDJ=1;S.djF='';S.posF='';S.tab.imp='pos';
 
 /* ============ Core ============ */
 function buildNav(){
