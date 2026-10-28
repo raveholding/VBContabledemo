@@ -19,12 +19,40 @@ Inicio, bandeja de entrada (Domicilio Fiscal Electrónico, vencimientos, credenc
 - **Datos de ARCA:** CCMA, Domicilio Fiscal Electrónico por tema, liquidaciones de hacienda, Mis Comprobantes, Portal IVA (Libro IVA Digital), Sistema de Cuentas Tributarias (vencimientos, DDJJ pendientes y deudas con intereses) y Sistema Registral.
 - **Herramientas:** contabilidad (libro diario, estados contables, ajuste por inflación), papeles de trabajo, documentos, reporte mensual y vista del cliente.
 
-## Módulos activables (Configuración → Módulos)
+## Datos de ARCA de toda la cartera (sincronización diaria)
 
-Conciliación bancaria, sueldos, e-commerce, inversiones en bolsa y sitio público.
+Cada pantalla muestra cuándo se sincronizó con ARCA y tiene "Sincronizar ahora". Los clientes sin clave fiscal delegada aparecen marcados.
+
+- **Deudas y vencimientos:** Sistema de Cuentas Tributarias de cada cliente, con deuda e intereses, DDJJ pendientes y próximo vencimiento.
+- **Notificaciones:** alertas del Domicilio Fiscal Electrónico de toda la cartera en la bandeja de entrada.
+- **Mis Comprobantes:** emitidos y recibidos de toda la cartera, con filtros y exportación a Excel.
+- **Libro IVA Digital:** qué período presentó cada cliente, cuándo, y con qué débito y crédito fiscal.
+- **CCMA:** saldo deudor o a favor de cada monotributista y autónomo.
+- **Recategorización:** facturación de 12 meses frente al tope de cada categoría, con la proyección a la próxima recategorización.
+- **Agenda:** vencimientos con los CUIT que alcanza cada uno, y tareas con responsable, tags y estado.
+- **Reportes con tu marca:** llevan el logo y el nombre del estudio.
+
+## API REST y servidor MCP (solo lectura)
+
+Desde *API REST y MCP* se crean claves por sistema, se prueban los 13 endpoints con los datos de la cartera, se configuran webhooks y se descarga `datos-estudio.json`. La carpeta [`servidor/`](servidor/) trae `vb-api.mjs`, que corre con Node.js 18 y no necesita dependencias:
+
+- Sirve esos datos por API REST, con clave `Bearer` y especificación OpenAPI.
+- Funciona como servidor MCP, por consola (para Claude Desktop) o por HTTP, con 10 herramientas de solo lectura.
+
+## Asistente de IA
+
+Responde en castellano preguntas sobre deudas, vencimientos, facturación, Libro IVA, CCMA, recategorización y notificaciones. Funciona dentro del sistema, desde el menú o desde el botón flotante.
+
+- Debajo de cada respuesta muestra las consultas a la API que usó.
+- No modifica nada ni opera ante ARCA.
+- Para preguntas libres, se puede conectar Claude u otro asistente compatible con MCP al servidor MCP.
+
+## Todas las funciones del pedido original
+
+Siguen en el menú: panel general, fichas de clientes, calendario de vencimientos, turnos y tablero, ventas y compras, impuestos, papeles de trabajo, contabilidad, sueldos, conciliación bancaria, documentos, carga de facturas con IA, e-commerce, inversiones en bolsa (mercado en vivo, cartera y órdenes, perfil del inversor), honorarios, portal del cliente, sitio público y exportaciones. Vienen activadas; cada módulo se puede apagar en Configuración → Módulos.
 
 ## Qué es simulado
 
-La sincronización con ARCA, la lectura con IA, las presentaciones de declaraciones juradas, los VEP, Interbanking y las plataformas de e-commerce son simuladas. Las alícuotas, escalas de monotributo, tasa de interés y convenios son valores de ejemplo y se parametrizan en la versión real. La lectura y escritura de Excel y CSV es real.
+La sincronización con ARCA, la lectura con IA, las presentaciones de declaraciones juradas, los VEP, Interbanking y las plataformas de e-commerce son simuladas. Las alícuotas, escalas de monotributo, tasa de interés y convenios son valores de ejemplo y se parametrizan en la versión real. La lectura y escritura de Excel y CSV es real, y el servidor de API y MCP también: sirve los datos que exporta el sistema, pero no se conecta con ARCA.
 
 Desarrollado por **Vincular Business** · WhatsApp (387) 4484132 · vincularbusiness@gmail.com

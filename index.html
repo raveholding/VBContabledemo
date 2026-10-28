@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Sistema VB · Estudio Contable</title>
+<title>Sistema VB · Estudio Contable e Inversiones</title>
 <meta name="description" content="Sistema VB para estudios contables: cartera de clientes, comprobantes, liquidaciones, declaraciones juradas y datos de ARCA. Desarrollado por Vincular Business.">
 <style>
 :root{--bg:#0b1220;--panel:#111a2e;--panel2:#16213a;--line:#243252;--txt:#e8edf7;--mut:#8fa0bf;--gold:#d4af37;--gold2:#f0d77a;--ok:#2fbf8a;--warn:#f2b441;--bad:#ef5b6b;--info:#4f9dff;--shadow:0 6px 24px rgba(0,0,0,.28)}
@@ -204,6 +204,33 @@ details.lq .inner{padding:0 12px 10px}
 @media print{body.printing .app,body.printing #modal,body.printing #login,body.printing #toast,body.printing #pub{display:none!important}body.printing{background:#fff}body.printing #printArea{display:block!important}body.printing .rpt{page-break-after:always;max-width:none;padding:0 0 10px}}
 body.inctx :is(#view,#mbox) div:has(> select[data-chg=ivacid]),body.inctx :is(#view,#mbox) div:has(> select[data-chg=contcid]),body.inctx :is(#view,#mbox) div:has(> select[data-chg=suecid]),body.inctx :is(#view,#mbox) div:has(> select[data-chg=bkcid]),body.inctx :is(#view,#mbox) div:has(> select[data-chg=retcid]),body.inctx :is(#view,#mbox) div:has(> select[data-chg=djcid]),body.inctx :is(#view,#mbox) div:has(> select[data-chg=pfcid]),body.inctx :is(#view,#mbox) div:has(> select[data-chg=portalcid]),body.inctx :is(#view,#mbox) div:has(> select[data-chg=iacid]),body.inctx :is(#view,#mbox) div:has(> select[data-chg=eccid]),body.inctx :is(#view,#mbox) div:has(> select[data-chg=arcacid]),body.inctx :is(#view,#mbox) div:has(> select[data-chg=rfcid]),body.inctx :is(#view,#mbox) div:has(> select[data-chg=docf]),body.inctx :is(#view,#mbox) div:has(> select[data-chg=perfsel]),body.inctx :is(#view,#mbox) span:has(> select[data-chg=djf]){display:none!important}
 @media(max-width:820px){.cbgrid{grid-template-columns:1fr}.amt{grid-template-columns:1fr 130px}.agcal .d{min-height:70px}.agv,.agt{font-size:9px}.modechip{display:none}}
+/* ===== v3 ===== */
+.syncb{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:8px 12px;border-radius:10px;border:1px solid rgba(47,191,138,.4);background:rgba(47,191,138,.08);margin:0 0 12px;font-size:12.5px;color:var(--txt)}
+.syncb .sdot{width:9px;height:9px;border-radius:50%;background:var(--ok);flex:none;box-shadow:0 0 0 3px rgba(47,191,138,.2)}
+.syncb.bad{border-color:rgba(239,91,107,.45);background:rgba(239,91,107,.08)}.syncb.bad .sdot{background:var(--bad);box-shadow:0 0 0 3px rgba(239,91,107,.2)}
+.syncb a{cursor:pointer;color:var(--info);text-decoration:underline}
+a.clk{cursor:pointer;color:var(--txt);text-decoration:none;display:inline-flex;gap:6px;align-items:center}
+.tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.tile{display:flex;flex-direction:column;gap:2px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);cursor:pointer;text-decoration:none;color:var(--txt)}
+.tile:hover{border-color:var(--gold)}.tile span{font-size:22px}.tile b{font-size:13px}.tile small{color:var(--mut);font-size:11.5px}
+#aiFab{position:fixed;right:18px;bottom:18px;z-index:60;display:flex;gap:6px;align-items:center;border:0;border-radius:24px;padding:11px 16px;background:linear-gradient(135deg,var(--gold),#f0d27a);color:#0b1220;font-weight:800;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.35);font-size:14px}
+#aiFab[hidden]{display:none}
+#aiDrw{position:fixed;right:18px;bottom:76px;z-index:61;width:min(430px,calc(100vw - 24px));height:min(620px,calc(100vh - 100px));background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 50px rgba(0,0,0,.45);display:none;flex-direction:column;overflow:hidden}
+#aiDrw.on{display:flex}
+.aihd{display:flex;gap:8px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line)}
+.aibody{flex:1;min-height:0;display:flex}
+.aichat{display:flex;flex-direction:column;gap:8px;flex:1;min-height:0;padding:10px}
+.aichat.full{height:min(640px,calc(100vh - 220px));padding:0}
+.aimsgs{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:8px;padding-right:4px}
+.aim{max-width:92%;padding:9px 12px;border-radius:12px;font-size:13px;line-height:1.45}
+.aim.u{align-self:flex-end;background:var(--gold);color:#0b1220;font-weight:600}
+.aim.a{align-self:flex-start;background:var(--panel2);border:1px solid var(--line)}
+.aim table.mini{margin-top:6px;width:100%}
+.aical{margin-top:6px;font-size:11px;color:var(--mut)}.aical summary{cursor:pointer}.aical .mono{font-size:11px;word-break:break-all}
+.aisug{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}.aisug button{flex:none;border:1px solid var(--line);background:var(--panel2);color:var(--txt);border-radius:16px;padding:5px 10px;font-size:11.5px;cursor:pointer}
+.aiin{display:flex;gap:6px}.aiin input{flex:1}
+@media(max-width:820px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}#aiFab span{display:none}#aiFab{padding:12px 14px}#aiDrw{right:12px;bottom:70px}}
+@media print{#aiFab,#aiDrw{display:none!important}}
 
 @media(max-width:1100px){.g6{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(2,1fr)}.g21,.g12{grid-template-columns:1fr}}
 @media(max-width:820px){
@@ -219,13 +246,13 @@ body.inctx :is(#view,#mbox) div:has(> select[data-chg=ivacid]),body.inctx :is(#v
 <body>
 <div class="app">
  <aside id="side">
-  <div class="brand"><div class="logo">VB</div><div><b id="brandName">Estudio contable VB</b><small>Sistema VB · Estudio contable</small></div></div>
+  <div class="brand"><div class="logo">VB</div><div><b id="brandName">Estudio contable VB</b><small>Sistema VB · Contable e Inversiones</small></div></div>
   <nav class="nav" id="nav"></nav>
  </aside>
  <main>
   <header class="top">
    <button class="ib burger" data-act="menu" aria-label="Menú">☰</button>
-   <div class="search"><input id="gs" placeholder="Buscar cliente o CUIT…" data-inp="gs" autocomplete="off"><div class="sres" id="gsr" hidden></div></div>
+   <div class="search"><input id="gs" placeholder="Buscar cliente, CUIT, ticker…" data-inp="gs" autocomplete="off"><div class="sres" id="gsr" hidden></div></div>
    <div style="flex:1"></div>
    <button class="modechip demo" id="modeChip" data-act="cfgdatos" title="Datos del sistema">Datos de ejemplo</button>
    <button class="ib" data-act="theme" title="Tema claro/oscuro">◐</button>
@@ -239,8 +266,8 @@ body.inctx :is(#view,#mbox) div:has(> select[data-chg=ivacid]),body.inctx :is(#v
   </footer>
  </main>
 </div>
-<div id="login"><div class="lbox"><div class="logo">VB</div><h2 style="margin-top:10px">Sistema VB</h2><p class="mut" style="margin:2px 0 16px">Estudio contable · cartera de clientes y datos de ARCA</p>
- <button class="btn pri" style="width:100%;padding:12px" data-act="loginas" data-r="admin">Entrar como Administrador</button><p class="disc" style="margin:4px 0 12px">Acceso completo: cartera, liquidaciones, declaraciones juradas, contabilidad, configuración y usuarios.</p>
+<div id="login"><div class="lbox"><div class="logo">VB</div><h2 style="margin-top:10px">Sistema VB</h2><p class="mut" style="margin:2px 0 16px">Estudio contable e inversiones · cartera de clientes y datos de ARCA</p>
+ <button class="btn pri" style="width:100%;padding:12px" data-act="loginas" data-r="admin">Entrar como Administrador</button><p class="disc" style="margin:4px 0 12px">Acceso completo: cartera, datos de ARCA, liquidaciones, DDJJ, contabilidad, sueldos, inversiones, API, configuración y usuarios.</p>
  <button class="btn" style="width:100%;padding:12px" data-act="loginas" data-r="sec">Entrar como Secretaria</button><p class="disc" style="margin:4px 0 0">Cartera, carga de comprobantes (a mano y con foto), retenciones, datos de ARCA, documentos, agenda y cobranzas. Sin liquidaciones, declaraciones juradas ni configuración.</p></div></div>
 <div id="pub"></div>
 <div id="modal"><div class="mbox" id="mbox"></div></div>
@@ -2072,7 +2099,7 @@ function retDerived(cid,ym,imp){
 }
 
 /* ---------- Configuración y datos nuevos ---------- */
-const CFG={mode:'ejemplo',mods:{banco:false,sue:false,ecom:false,inv:false,sitio:false},tasaRes:4,hora:'06:00',lastSync:Date.now()-5*3600e3};
+const CFG={v3:1,mode:'ejemplo',mods:{banco:true,sue:true,ecom:true,inv:true,sitio:true},tasaRes:4,hora:'06:00',lastSync:Date.now()-5*3600e3};
 const PAGOS=[];const HAC=[];let NOTIFREAD={};
 S.view='inicio';S.ctx=null;S.cv='resumen';S.rg={d:null,h:null};S.cbF={q:'',tc:'',src:''};S.lq={};S.cart2={q:'',f:{}};S.bdj={t:'',q:''};S.ag={mode:'mes',y:TODAY.getFullYear(),m:TODAY.getMonth(),d:TODAYISO,who:'',tag:'',show:''};S.rpt={tipo:'mensual',sel:{},gen:[]};S.cfgTab='estudio';S.sctTab='venc';S.dfeTema='';
 
@@ -2092,7 +2119,7 @@ function restore(sn){
  if(Array.isArray(A.IAI))IA.items=A.IAI;
  const so=(o,v)=>{if(v&&typeof v==='object'){Object.keys(o).forEach(k=>delete o[k]);Object.assign(o,v)}};
  so(AS,O.AS);so(COMP,O.COMP);so(EMPL,O.EMPL);so(IIBBD,O.IIBBD);so(ARCAX,O.ARCAX);so(ARCAIMP,O.ARCAIMP);so(PF,O.PF);so(ECS,O.ECS);so(BANK,O.BANK);so(CARD,O.CARD);so(LIQ,O.LIQ);so(AJ,O.AJ);so(INFPOST,O.INFPOST);so(SLD,O.SLD);so(CONVSEL,O.CONVSEL);so(INTERB,O.INTERB);so(LQ,O.LQ);
- if(O.CFG){Object.assign(CFG,O.CFG);CFG.mods=Object.assign({banco:false,sue:false,ecom:false,inv:false,sitio:false},O.CFG.mods||{})}
+ if(O.CFG){Object.assign(CFG,O.CFG);CFG.mods=O.CFG.v3?Object.assign({banco:true,sue:true,ecom:true,inv:true,sitio:true},O.CFG.mods||{}):{banco:true,sue:true,ecom:true,inv:true,sitio:true};CFG.v3=1}
  if(O.PERMS)so(PERM.sec,O.PERMS);if(O.BRAND)S.brand=O.BRAND;if(O.MUNI)S.muni=O.MUNI;NOTIFREAD=O.NOTIFREAD||{};
  if(N.NEXTCL)NEXTCL=N.NEXTCL;if(N.VID)VID=N.VID;if(N.FID)FID=N.FID;if(N.DID)DID=N.DID;if(N.OID)OID=N.OID;if(N.LID)LID=N.LID;if(N.RTID)RTID=N.RTID;if(N.DJID)DJID=N.DJID;if(N.CBID)CBID=N.CBID;
  if(N.IANID)IA.nid=N.IANID;if(N.IAAUTO!=null)IA.auto=N.IAAUTO;if(N.PGAJ!=null)S.pgAj=N.PGAJ;if(N.IPC!=null)S.ipc=N.IPC;if(N.APIKEY)API.key=N.APIKEY;
@@ -2585,7 +2612,7 @@ function rptMensual(c){
  const sc=sctCalc(c),ms=lastMonths(12,TODAYISO.slice(0,7)),b=S.brand;
  const rows=ms.map(ym=>{const cp=comprobantes(c.id,ym),v=r2(sum(cp.v.map(x=>(+x.neto||0)+(+x.nng||0)+(+x.ex||0)))),k=sum(cp.c.map(x=>(+x.neto||0)+(+x.nng||0)+(+x.ex||0)));const K=(c.tipo==='Responsable Inscripto'||c.tipo==='Sociedad')?ivaOne(c.id,ym,0,0):null;return{ym,v,k:r2(k),res:r2(v-k),st:K?K.salP:null}});
  const mx=Math.max(1,...rows.map(r=>Math.max(r.v,r.k))),cc=ccmaCalc(c),mono=c.tipo==='Monotributo',m=mono?monoCalc(c):null;
- return`<div class="rpt"><div class="rh"><div class="rl" style="background:${b.color}">${esc(b.ini)}</div><div><b style="font-size:18px">${esc(b.n)}</b><br><span>Reporte mensual · ${MESES[TODAY.getMonth()]} ${TODAY.getFullYear()}</span></div></div>
+ return`<div class="rpt"><div class="rh">${rlogo(b)}<div><b style="font-size:18px">${esc(b.n)}</b><br><span>Reporte mensual · ${MESES[TODAY.getMonth()]} ${TODAY.getFullYear()}</span></div></div>
  <h2>${esc(c.n)}</h2><p class="rs">CUIT ${c.cuit} · ${esc(tipoOf(c).l)}${mono?' · Categoría '+esc(c.cat):''} · Actividad principal: ${esc(c.act||'—')}${c.tipo==='Sociedad'?' · Cierre de ejercicio: '+MESES[(+(c.cierre||12))-1]:''}</p>
  <p class="rs">Impuestos inscriptos: ${impuestosDe(c).map(i=>i.cod+' '+i.n).join(' · ')}</p>
  <h3>Situación de deuda en ARCA</h3><table><tr><td>Capital vencido</td><td class="r">${ars(sc.cv)}</td></tr><tr><td>Capital no vencido</td><td class="r">${ars(sc.cnv)}</td></tr><tr><td>Intereses</td><td class="r">${ars(sc.res+sc.pun)}</td></tr><tr class="t"><td>Total adeudado</td><td class="r">${ars(sc.cv+sc.cnv+sc.res+sc.pun)}</td></tr></table>
@@ -2611,7 +2638,7 @@ V.reportes=()=>{
 
 /* ---------- Configuración ---------- */
 V.config=()=>{
- const t=S.cfgTab,tabs=`<div class="tabs">${[['estudio','Estudio'],['mods','Módulos'],['datos','Datos y copias'],['usuarios','Usuarios y permisos'],['sync','Sincronización y parámetros']].map(([k,l])=>`<button class="${t===k?'on':''}" data-act="cfgtab" data-t="${k}">${l}</button>`).join('')}</div>`;
+ const t=S.cfgTab,tabs=`<div class="tabs">${[['estudio','Estudio'],['mods','Módulos'],['datos','Datos y copias'],['usuarios','Usuarios y permisos'],['sync','Sincronización y parámetros'],['alertas','Alertas automáticas']].map(([k,l])=>`<button class="${t===k?'on':''}" data-act="cfgtab" data-t="${k}">${l}</button>`).join('')}</div>`;
  let b='';
  if(t==='estudio')b=`<div class="grid g2"><div class="card"><h3>Datos del estudio</h3><form data-form="brand"><label>Nombre del estudio</label><input name="n" value="${esc(S.brand.n)}" required><div class="fr" style="margin-top:8px"><div><label>Iniciales del logo</label><input name="ini" maxlength="3" value="${esc(S.brand.ini)}" required></div><div><label>Color de marca</label><input type="color" name="color" value="${S.brand.color}" style="height:38px;padding:2px"></div></div><p><button class="btn pri">Guardar</button></p></form></div>
   <div class="card"><h3>Equipo del estudio</h3><form data-form="staff"><div class="tw"><table><thead><tr><th>Nombre</th><th>Rol</th></tr></thead><tbody>${STAFF.map((s,i)=>`<tr><td><input name="n${i}" value="${esc(s.n)}"></td><td><input name="r${i}" value="${esc(s.r)}"></td></tr>`).join('')}</tbody></table></div><p><button class="btn pri">Guardar equipo</button></p></form><p class="disc">Son los colaboradores que aparecen como responsables de cada cliente y en las tareas de la agenda.</p></div></div>
@@ -2627,6 +2654,7 @@ V.config=()=>{
  if(t==='sync')b=`<div class="grid g2"><div class="card"><h3>Sincronización con ARCA</h3><div class="stat"><span>Frecuencia</span><b>Todos los días a las ${CFG.hora}</b></div><div class="stat"><span>Última sincronización</span><b>${CFG.lastSync?new Date(CFG.lastSync).toLocaleString('es-AR'):'Nunca'}</b></div><div class="stat"><span>Clientes con clave fiscal</span><b>${CL.filter(c=>c.clave).length} de ${CL.length}</b></div><div class="stat"><span>Acceso</span><b>Solo lectura</b></div><p><button class="btn pri" data-act="syncnow">🔄 Sincronizar ahora (simulado)</button></p><p class="disc">En la versión real se leen Mis Comprobantes, el Sistema de Cuentas Tributarias, la CCMA, el Domicilio Fiscal Electrónico, el Portal IVA y el Sistema Registral de cada CUIT, en modo lectura y con la clave fiscal cifrada. En esta demo la sincronización es simulada.</p></div>
   <div class="card"><h3>Parámetros</h3><form data-form="params"><label>Tasa de interés resarcitorio mensual (%)</label><input type="number" step="0.01" name="tasa" value="${CFG.tasaRes}"><p class="disc">Valor de ejemplo, se usa para estimar intereses de deudas vencidas. Verificá la tasa vigente.</p><label style="margin-top:8px">Hora de sincronización diaria</label><input type="time" name="hora" value="${CFG.hora}"><p><button class="btn pri">Guardar</button></p></form>
   <h3 style="margin-top:12px">Escala de Monotributo (ejemplo)</h3><div class="tw" style="max-height:220px"><table><thead><tr><th>Cat.</th><th class="r">Ingresos anuales hasta</th><th class="r">Cuota mensual</th></tr></thead><tbody>${MONO.map(m=>`<tr><td><b>${m[0]}</b></td><td class="r">${ars(m[1])}</td><td class="r">${ars(CCMA_CUOTA[m[0]]||0)}</td></tr>`).join('')}</tbody></table></div><p class="disc">Valores ilustrativos. Se actualizan en cada recategorización (enero y julio).</p></div></div>`;
+ if(t==='alertas')b=`<div class="card" style="max-width:720px"><h3>Alertas automáticas</h3>${['Aviso de vencimientos a clientes por WhatsApp (3 días antes)','Reclamo automático de documentación faltante','Recordatorio de honorarios vencidos','Alerta de tope de Monotributo (85%)','Aviso de nueva notificación en el Domicilio Fiscal Electrónico','Aviso de deuda vencida en el Sistema de Cuentas Tributarias','Aviso de rebalanceo de cartera por desvío de perfil'].map(a=>`<p style="margin:6px 0"><label style="color:var(--txt);font-size:13px"><input type="checkbox" checked> ${a}</label></p>`).join('')}<p class="disc">En la demo los avisos se muestran en la bandeja de entrada; el envío por WhatsApp o email se activa en la versión real.</p></div>`;
  return`<div class="ph"><div><h1>Configuración</h1><p>Datos del estudio, módulos, copias de seguridad, usuarios y parámetros.</p></div></div>${tabs}${b}`;
 };
 
@@ -2912,6 +2940,7 @@ function cbShow(cid,id){
  <div style="text-align:right"><b>${esc(i[1].toUpperCase())}</b><br>N° ${cbNum(x)}<br>Fecha ${fd(x.fe)}</div></div>
  <hr style="border:0;border-top:1px dashed var(--line);margin:12px 0">
  <div class="grid g2"><div><small class="mut">Receptor</small><br><b>${esc(re.n)}</b><br>CUIT ${esc(re.cuit)} · ${esc(re.ci)}</div><div>${x.det?`<small class="mut">Concepto</small><br>${esc(x.det)}`:''}</div></div>
+ ${(()=>{const N=Math.abs(+x.neto||0)+Math.abs(+x.nng||0)+Math.abs(+x.ex||0),it=x.items||(x.gen?cbteItems(Object.assign({},x,{neto:N})):[{d:x.det||(venta?'Venta según comprobante':'Compra según comprobante'),q:1,pu:N,imp:N}]);return`<div class="tw" style="margin-top:10px"><table class="mini"><thead><tr><th>Detalle</th><th class="r">Cantidad</th><th class="r">Precio unitario</th><th class="r">Importe</th></tr></thead><tbody>${it.map(l=>`<tr><td style="white-space:normal">${esc(l.d)}</td><td class="r">${num(l.q)}</td><td class="r">${ars2(l.pu)}</td><td class="r">${ars2(l.imp)}</td></tr>`).join('')}</tbody></table></div>`})()}
  <div class="grid g2" style="margin-top:12px"><div>${ln('Neto gravado'+(tcLetra(x.tc)==='C'?'':' ('+num(x.al,1)+'%)'),x.neto)}${ln('IVA '+num(x.al,1)+'%',cbIva(x))}${ln('No gravado',x.nng)}${ln('Exento',x.ex)}${ln('Percepción de IVA',x.pIva)}${ln('Percepción de IIBB'+(x.pIibbJur?' · '+esc(x.pIibbJur):''),x.pIibb)}${ln('Percepción actividades varias',x.pAV)}${ln('Percepción de Ganancias',x.pGan)}${ln('Impuestos internos',x.iInt)}${ln('Impuesto a los combustibles',x.iComb)}${ln('Otros impuestos',x.otros)}<div class="stat" style="font-size:16px"><span><b>TOTAL</b></span><b>${ars2(cbTot(x))}</b></div></div>
  <div><div class="stat"><span>Autorización</span><b>${esc(x.aut||'—')} ${esc(x.cae||'')}</b></div>${venta?'':`<div class="stat"><span>Tipo de IVA</span><b>${esc(x.tiva||'Directo')}${cbComputa(x)?' · computa crédito':' · no computa crédito'}</b></div><div class="stat"><span>Imputación</span><b>${esc(x.imput||'—')}</b></div>`}<div class="stat"><span>Actividad</span><b>${esc(x.act||'—')}</b></div><div class="stat"><span>${venta?'Tipo de ingreso':'Tipo de gasto'}</span><b>${esc(cta(x.cta)[1])}</b></div><div class="stat"><span>Origen</span><b>${srcBadge(x.src)}</b></div><div class="stat"><span>Período fiscal</span><b>${ymLbl(F.ym)}</b></div></div></div>
  </div>${as?`<h3 style="margin-top:14px">Asiento N° ${as.n}</h3><table><tbody>${as.l.map(l=>`<tr><td>${cta(l[0])[0]} ${esc(cta(l[0])[1])}</td><td class="r">${l[1]?ars2(l[1]):''}</td><td class="r">${l[2]?ars2(l[2]):''}</td></tr>`).join('')}</tbody></table>`:''}
@@ -3102,7 +3131,7 @@ Object.assign(ACT,{
  ivaxls(){const c=cl(S.ctx),ym=S.ivaYM,K=ivaCalc(c.id,ym),li=(L)=>L.map(x=>[fd(x.fe),tcInfo(x.tc)[0],cbNum(x),x.cp,x.cuitCp||'',+x.neto||0,+x.al||0,cbIva(x)]),hd=['Fecha','Tipo','Número','Contraparte','CUIT','Neto','Alícuota','IVA'];
   xlsxDownload('liquidacion_iva_'+c.cuit.replace(/\D/g,'')+'_'+ym+'.xlsx',[{name:'Resumen',rows:[['Concepto','Importe'],['Débito fiscal',K.deb],['Crédito fiscal computable',K.cre],['Saldo técnico del período',K.salP],['Saldo técnico a favor anterior',K.stAnt],['Saldo técnico',K.sal],['Impuesto determinado',K.det],['Retenciones de IVA',K.retC],['Percepciones de IVA',K.percC],['Saldo de libre disponibilidad anterior',K.sldAnt],[K.net>0?'Saldo a pagar':'Saldo a favor',K.net>0?K.net:K.favor]]},{name:'Débito fiscal',rows:[hd,...li(K.cp.v)]},{name:'Crédito fiscal',rows:[hd.concat(['Computa']),...K.cp.c.map(x=>li([x])[0].concat([cbComputa(x)?'Sí':'No'])) ]}])},
  ivaprint(){const c=cl(S.ctx),ym=S.ivaYM,K=ivaCalc(c.id,ym),b=S.brand,al=(A,t)=>A.map(a=>`<tr><td>${t} ${num(a.al,1)}%</td><td class="r">${ars2(a.neto)}</td><td class="r">${ars2(a.iva)}</td></tr>`).join('');
-  printHTML(`<div class="rpt"><div class="rh"><div class="rl" style="background:${b.color}">${esc(b.ini)}</div><div><b style="font-size:18px">${esc(b.n)}</b><br><span>Papel de trabajo · Liquidación de IVA ${ymLbl(ym)}</span></div></div><h2>${esc(c.n)}</h2><p class="rs">CUIT ${c.cuit} · ${esc(tipoOf(c).l)}</p>
+  printHTML(`<div class="rpt"><div class="rh">${rlogo(b)}<div><b style="font-size:18px">${esc(b.n)}</b><br><span>Papel de trabajo · Liquidación de IVA ${ymLbl(ym)}</span></div></div><h2>${esc(c.n)}</h2><p class="rs">CUIT ${c.cuit} · ${esc(tipoOf(c).l)}</p>
   <h3>Débito fiscal</h3><table><tr class="h"><td>Alícuota</td><td class="r">Neto</td><td class="r">IVA</td></tr>${al(K.alV,'Ventas')}<tr class="t"><td>Total</td><td></td><td class="r">${ars2(K.deb)}</td></tr></table>
   <h3>Crédito fiscal</h3><table><tr class="h"><td>Alícuota</td><td class="r">Neto</td><td class="r">IVA</td></tr>${al(K.alC,'Compras')}<tr class="t"><td>Total computable</td><td></td><td class="r">${ars2(K.cre)}</td></tr></table>
   <h3>Determinación</h3><table><tr><td>Saldo técnico del período</td><td class="r">${ars2(K.salP)}</td></tr><tr><td>Saldo técnico a favor anterior</td><td class="r">${ars2(-K.stAnt)}</td></tr><tr><td>Impuesto determinado</td><td class="r">${ars2(K.det)}</td></tr><tr><td>Retenciones</td><td class="r">${ars2(-K.retC)}</td></tr><tr><td>Percepciones</td><td class="r">${ars2(-K.percC)}</td></tr><tr><td>Saldo de libre disponibilidad anterior</td><td class="r">${ars2(-K.sldAnt)}</td></tr><tr class="t"><td>${K.net>0?'Saldo a pagar':'Saldo a favor'}</td><td class="r">${ars2(K.net>0?K.net:K.favor)}</td></tr></table><p class="rf">${esc(b.n)} · ${fd(TODAYISO)}</p></div>`)},
@@ -3139,12 +3168,441 @@ Object.assign(INP,{
 });
 FRM.cb=(f,form)=>cbSave(form);
 document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.matches&&d.matches('details.lq')&&d.dataset.k)S.lq[d.dataset.k]=d.open},true);
+/* =====================================================================
+   SISTEMA VB · API REST + MCP — núcleo compartido (navegador y servidor)
+   Funciones puras sobre una "foto" de datos del estudio. Solo lectura.
+   ===================================================================== */
+const API_VER='1.0.0';
+const API_EPS=[
+ ['GET','/v1/clientes','Lista de clientes de la cartera','tipo (mono|ri|soc|ph), q (nombre o CUIT)'],
+ ['GET','/v1/clientes/{cuit}','Ficha del cliente: datos de inscripción, impuestos y última sincronización',''],
+ ['GET','/v1/clientes/{cuit}/sct','Sistema de Cuentas Tributarias: deudas con intereses, vencimientos y DDJJ pendientes',''],
+ ['GET','/v1/clientes/{cuit}/ccma','Cuenta Corriente de Monotributistas y Autónomos: saldo deudor o a favor',''],
+ ['GET','/v1/clientes/{cuit}/comprobantes','Mis Comprobantes: emitidos y recibidos','tipo (emitidos|recibidos), desde, hasta (AAAA-MM), letra, limit, offset'],
+ ['GET','/v1/clientes/{cuit}/libro-iva','Portal IVA: presentaciones del Libro IVA Digital con débito y crédito fiscal',''],
+ ['GET','/v1/clientes/{cuit}/dfe','Domicilio Fiscal Electrónico: notificaciones','no_leidas (1)'],
+ ['GET','/v1/clientes/{cuit}/monotributo','Categoría, facturación de 12 meses y tope',''],
+ ['GET','/v1/notificaciones','Novedades del DFE de toda la cartera','no_leidas (1), desde (AAAA-MM-DD)'],
+ ['GET','/v1/deudas','Deuda vencida de toda la cartera, de mayor a menor',''],
+ ['GET','/v1/vencimientos','Vencimientos de la cartera','desde, hasta (AAAA-MM-DD), cuit'],
+ ['GET','/v1/recategorizacion','Monotributistas cerca del tope de su categoría','min_pct (por defecto 0)'],
+ ['GET','/v1/estado','Estado de la sincronización y versión de la API','']
+];
+const MCP_TOOLS=[
+ {name:'listar_clientes',description:'Lista los clientes de la cartera del estudio. Filtra por condición (mono, ri, soc, ph) o por texto (nombre o CUIT).',inputSchema:{type:'object',properties:{tipo:{type:'string',enum:['mono','ri','soc','ph']},q:{type:'string',description:'Nombre o CUIT'}}},path:a=>'/v1/clientes',q:a=>({tipo:a.tipo,q:a.q})},
+ {name:'ficha_cliente',description:'Datos de inscripción de un cliente: condición, categoría, actividad, impuestos y fecha de la última sincronización con ARCA.',inputSchema:{type:'object',properties:{cliente:{type:'string',description:'CUIT o nombre del cliente'}},required:['cliente']},path:a=>'/v1/clientes/{c}'},
+ {name:'deuda_y_vencimientos',description:'Sistema de Cuentas Tributarias de un cliente: deudas con intereses, próximos vencimientos y declaraciones juradas pendientes.',inputSchema:{type:'object',properties:{cliente:{type:'string'}},required:['cliente']},path:a=>'/v1/clientes/{c}/sct'},
+ {name:'cuenta_ccma',description:'Cuenta Corriente de Monotributistas y Autónomos de un cliente: saldo deudor o a favor y cuotas.',inputSchema:{type:'object',properties:{cliente:{type:'string'}},required:['cliente']},path:a=>'/v1/clientes/{c}/ccma'},
+ {name:'comprobantes',description:'Comprobantes emitidos o recibidos de un cliente (Mis Comprobantes) con totales, entre dos meses.',inputSchema:{type:'object',properties:{cliente:{type:'string'},tipo:{type:'string',enum:['emitidos','recibidos']},desde:{type:'string',description:'AAAA-MM'},hasta:{type:'string',description:'AAAA-MM'},limit:{type:'number'}},required:['cliente']},path:a=>'/v1/clientes/{c}/comprobantes',q:a=>({tipo:a.tipo,desde:a.desde,hasta:a.hasta,limit:a.limit||50})},
+ {name:'libro_iva',description:'Presentaciones del Libro IVA Digital de un cliente: período, fecha y totales de débito y crédito fiscal.',inputSchema:{type:'object',properties:{cliente:{type:'string'}},required:['cliente']},path:a=>'/v1/clientes/{c}/libro-iva'},
+ {name:'notificaciones_dfe',description:'Notificaciones del Domicilio Fiscal Electrónico. Con cliente devuelve las de ese cliente; sin cliente, las de toda la cartera.',inputSchema:{type:'object',properties:{cliente:{type:'string'},no_leidas:{type:'boolean'}}},path:a=>a.cliente?'/v1/clientes/{c}/dfe':'/v1/notificaciones',q:a=>({no_leidas:a.no_leidas?'1':''})},
+ {name:'deudas_cartera',description:'Clientes con deuda vencida en el Sistema de Cuentas Tributarias, de mayor a menor.',inputSchema:{type:'object',properties:{}},path:a=>'/v1/deudas'},
+ {name:'vencimientos',description:'Vencimientos de la cartera entre dos fechas (AAAA-MM-DD), opcionalmente de un cliente.',inputSchema:{type:'object',properties:{desde:{type:'string'},hasta:{type:'string'},cliente:{type:'string'}}},path:a=>'/v1/vencimientos',q:a=>({desde:a.desde,hasta:a.hasta,cuit:a.cliente})},
+ {name:'recategorizacion',description:'Monotributistas con su facturación de 12 meses frente al tope de la categoría, del más cercano al más lejano.',inputSchema:{type:'object',properties:{min_pct:{type:'number'}}},path:a=>'/v1/recategorizacion',q:a=>({min_pct:a.min_pct})}
+];
+function apiNorm(t){return String(t||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim()}
+function apiFindCli(db,ref){
+ if(ref==null)return null;const d=String(ref).replace(/\D/g,'');
+ if(d.length===11){const c=db.clientes.find(x=>x.cuit.replace(/\D/g,'')===d);if(c)return c}
+ if(/^\d+$/.test(String(ref).trim())){const c=db.clientes.find(x=>String(x.id)===String(ref).trim());if(c)return c}
+ const q=apiNorm(ref);if(!q)return null;
+ return db.clientes.find(x=>apiNorm(x.nombre)===q)||db.clientes.find(x=>apiNorm(x.nombre).includes(q))||null;
+}
+function apiRoute(db,method,path,query){
+ query=query||{};method=String(method||'GET').toUpperCase();
+ const ok=b=>({status:200,body:b}),err=(s,m)=>({status:s,body:{error:m}});
+ if(method!=='GET')return err(405,'La API es de solo lectura: no permite cargar, modificar ni borrar datos, ni operar ante ARCA.');
+ const p=String(path||'').split('?')[0].replace(/\/+$/,'');
+ if(p==='/v1/estado')return ok({api:API_VER,estudio:db.estudio.nombre,generado:db.generado,sincronizacion:db.sync,clientes:db.clientes.length,solo_lectura:true});
+ if(p==='/v1/clientes'){let L=db.clientes;if(query.tipo)L=L.filter(c=>c.tipo===query.tipo);if(query.q){const q=apiNorm(query.q),d=String(query.q).replace(/\D/g,'');L=L.filter(c=>apiNorm(c.nombre).includes(q)||(d.length>3&&c.cuit.replace(/\D/g,'').includes(d)))}
+  return ok({total:L.length,clientes:L.map(c=>({cuit:c.cuit,nombre:c.nombre,condicion:c.condicion,categoria:c.categoria||null,sincronizado:c.sincronizado}))})}
+ if(p==='/v1/deudas'){const L=db.clientes.map(c=>({c,s:db.sct[c.cuit]})).filter(x=>x.s&&x.s.deuda_vencida>0).sort((a,b)=>b.s.deuda_vencida-a.s.deuda_vencida);
+  return ok({total:Math.round(L.reduce((a,x)=>a+x.s.deuda_vencida,0)*100)/100,clientes:L.map(x=>({cuit:x.c.cuit,nombre:x.c.nombre,capital_vencido:x.s.capital_vencido,intereses:x.s.intereses,deuda_vencida:x.s.deuda_vencida,sincronizado:x.c.sincronizado}))})}
+ if(p==='/v1/notificaciones'){let L=[];db.clientes.forEach(c=>(db.dfe[c.cuit]||[]).forEach(n=>L.push(Object.assign({cuit:c.cuit,cliente:c.nombre},n))));
+  if(query.no_leidas==='1'||query.no_leidas===true)L=L.filter(n=>!n.leida);if(query.desde)L=L.filter(n=>n.fecha>=query.desde);L.sort((a,b)=>a.fecha<b.fecha?1:-1);return ok({total:L.length,notificaciones:L})}
+ if(p==='/v1/vencimientos'){let L=db.vencimientos;if(query.desde)L=L.filter(v=>v.fecha>=query.desde);if(query.hasta)L=L.filter(v=>v.fecha<=query.hasta);
+  if(query.cuit){const c=apiFindCli(db,query.cuit);if(!c)return err(404,'No encontré ese cliente en la cartera.');L=L.filter(v=>v.cuit===c.cuit)}
+  return ok({total:L.length,vencimientos:L})}
+ if(p==='/v1/recategorizacion'){const mn=+query.min_pct||0;const L=db.clientes.filter(c=>db.mono[c.cuit]).map(c=>Object.assign({cuit:c.cuit,nombre:c.nombre},db.mono[c.cuit])).filter(x=>x.porcentaje>=mn).sort((a,b)=>b.porcentaje-a.porcentaje);return ok({total:L.length,monotributistas:L})}
+ const m=p.match(/^\/v1\/clientes\/([^/]+)(?:\/([a-z-]+))?$/);
+ if(m){const c=apiFindCli(db,decodeURIComponent(m[1]));if(!c)return err(404,'No encontré ese cliente en la cartera.');const s=m[2]||'';
+  const base={cuit:c.cuit,nombre:c.nombre,sincronizado:c.sincronizado};
+  if(!s)return ok(c);
+  if(s==='sct')return ok(Object.assign(base,db.sct[c.cuit]||{}));
+  if(s==='ccma'){const k=db.ccma[c.cuit];if(!k)return err(404,'Las sociedades no tienen Cuenta Corriente de Monotributistas y Autónomos.');return ok(Object.assign(base,k))}
+  if(s==='libro-iva'){const k=db.libro_iva[c.cuit];if(!k)return err(404,'El cliente no es responsable inscripto: no presenta Libro IVA Digital.');return ok(Object.assign(base,{presentaciones:k}))}
+  if(s==='dfe'){let L=db.dfe[c.cuit]||[];if(query.no_leidas==='1'||query.no_leidas===true)L=L.filter(n=>!n.leida);return ok(Object.assign(base,{total:L.length,notificaciones:L}))}
+  if(s==='monotributo'){const k=db.mono[c.cuit];if(!k)return err(404,'El cliente no es monotributista.');return ok(Object.assign(base,k))}
+  if(s==='comprobantes'){const cp=db.comprobantes[c.cuit]||{emitidos:[],recibidos:[]};let L=[];
+   if(query.tipo!=='recibidos')L=L.concat(cp.emitidos.map(x=>Object.assign({tipo:'emitido'},x)));
+   if(query.tipo!=='emitidos')L=L.concat(cp.recibidos.map(x=>Object.assign({tipo:'recibido'},x)));
+   if(query.desde)L=L.filter(x=>x.fecha.slice(0,7)>=query.desde);if(query.hasta)L=L.filter(x=>x.fecha.slice(0,7)<=query.hasta);
+   if(query.letra)L=L.filter(x=>x.letra===String(query.letra).toUpperCase());
+   L.sort((a,b)=>a.fecha<b.fecha?1:-1);
+   const tot=k=>Math.round(L.filter(x=>x.tipo===k).reduce((a,x)=>a+x.total,0)*100)/100;
+   const lim=Math.min(500,+query.limit||100),off=+query.offset||0;
+   return ok(Object.assign(base,{total_registros:L.length,total_emitido:tot('emitido'),total_recibido:tot('recibido'),limit:lim,offset:off,comprobantes:L.slice(off,off+lim)}))}
+  return err(404,'Recurso inexistente.')}
+ return err(404,'Endpoint inexistente. Consultá GET /v1/estado y la documentación.');
+}
+function mcpCall(db,name,args){
+ const t=MCP_TOOLS.find(x=>x.name===name);if(!t)return{isError:true,content:[{type:'text',text:'Herramienta desconocida: '+name}]};
+ args=args||{};let path=t.path(args);
+ if(path.includes('{c}')){const c=apiFindCli(db,args.cliente);if(!c)return{isError:true,content:[{type:'text',text:'No encontré el cliente "'+(args.cliente||'')+'" en la cartera. Usá listar_clientes para ver los nombres y CUIT.'}]};path=path.replace('{c}',c.cuit.replace(/\D/g,''))}
+ const q=t.q?t.q(args):{};Object.keys(q).forEach(k=>{if(q[k]==null||q[k]==='')delete q[k]});
+ const r=apiRoute(db,'GET',path,q);
+ return{isError:r.status!==200,content:[{type:'text',text:JSON.stringify(r.body,null,1)}]};
+}
+function mcpHandle(db,msg){
+ const id=msg.id,res=r=>({jsonrpc:'2.0',id,result:r}),er=(c,m)=>({jsonrpc:'2.0',id,error:{code:c,message:m}});
+ if(msg.method==='initialize')return res({protocolVersion:(msg.params&&msg.params.protocolVersion)||'2025-06-18',capabilities:{tools:{}},serverInfo:{name:'sistema-vb-estudio',version:API_VER},instructions:'Datos de la cartera del estudio contable (Sistema VB): comprobantes, deuda, saldos, vencimientos y notificaciones del Domicilio Fiscal Electrónico. Solo lectura: no modifica nada ni opera ante ARCA.'});
+ if(msg.method==='notifications/initialized'||(msg.method||'').startsWith('notifications/'))return null;
+ if(msg.method==='ping')return res({});
+ if(msg.method==='tools/list')return res({tools:MCP_TOOLS.map(t=>({name:t.name,description:t.description,inputSchema:t.inputSchema,annotations:{readOnlyHint:true}}))});
+ if(msg.method==='tools/call')return res(mcpCall(db,msg.params&&msg.params.name,msg.params&&msg.params.arguments));
+ if(id==null)return null;
+ return er(-32601,'Método no soportado: '+msg.method);
+}
+/* =====================================================================
+   SISTEMA VB · v3 — todo el pedido original + trabajo estilo Afippi
+   Menú completo, sincronización diaria a la vista, vistas de cartera,
+   API REST + MCP (solo lectura) y asistente de IA
+   ===================================================================== */
+
+/* ---------- Logo del estudio en los reportes ---------- */
+function rlogo(b){b=b||S.brand;return b.logo?`<div class="rl" style="background:#fff;padding:3px"><img src="${b.logo}" alt="" style="max-width:100%;max-height:100%;object-fit:contain"></div>`:`<div class="rl" style="background:${b.color}">${esc(b.ini)}</div>`}
+{const _fb=FRM.brand;FRM.brand=function(f,t){const lg=S.brand.logo;_fb(f,t);if(lg&&!S.brand.logo)S.brand.logo=lg;render()}}
+{const _vr=V.reportes;V.reportes=()=>_vr().replace('<p><button class="btn pri">Guardar marca</button></p></form>',`<p><button class="btn pri">Guardar marca</button></p></form><label style="margin-top:6px">Logo (PNG o JPG, opcional)</label><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><div class="rpt" style="padding:0;margin:0;background:none">${rlogo()}</div><input type="file" accept="image/*" data-chg="logoup" style="max-width:240px">${S.brand.logo?'<button class="btn sm" data-act="logodel">Quitar logo</button>':''}</div>`)}
+CHG.logoup=(v,t)=>{const f=t.files&&t.files[0];if(!f)return;if(f.size>600e3)return toast('El logo debe pesar menos de 600 KB');const r=new FileReader();r.onload=()=>{S.brand.logo=r.result;logA('Logo del estudio actualizado');toast('Logo cargado ✔');render()};r.readAsDataURL(f)};
+ACT.logodel=()=>{delete S.brand.logo;render()};
+
+/* ---------- Menú completo: lo nuevo + todas las funciones del pedido original ---------- */
+Object.assign(VAREA,{sctc:'arca',miscomp:'comprobantes',libroiva:'arca',ccmac:'arca',recat:'cartera',asistente:'inicio'});
+NAVC.length=0;
+[['General'],['inicio','Inicio','🏠'],['dash','Panel general','📊'],['bandeja','Bandeja de entrada','📥'],['agenda','Agenda de vencimientos','🗓️'],['tareas','Turnos y tablero de tareas','📌'],['asistente','Asistente de IA','✨'],
+ ['Cartera'],['mono','Monotributistas','dot:#a77bff'],['ri','Responsables inscriptos','dot:#4f9dff'],['soc','Sociedades','dot:#d4af37'],['ph','Personas humanas','dot:#2fbf8a'],['todos','Todos los clientes','👥'],['cli','Fichas de clientes','🗂️'],
+ ['Datos de ARCA (sincronizados)'],['sctc','Deudas y vencimientos','🏛️'],['miscomp','Mis Comprobantes','🗃️'],['libroiva','Libro IVA Digital','📗'],['ccmac','CCMA monotributo y autónomos','💳'],['recat','Recategorización','📈'],['arca','Domicilio fiscal, cuentas y CCMA','✉️'],
+ ['Estudio contable'],['venc','Calendario de vencimientos','⏰'],['ventas','Ventas y compras','🛒'],['imp','Impuestos y DDJJ','🧾'],['ret','Retenciones y percepciones','🧮'],['posiva','IVA de la cartera','📋'],['papeles','Papeles de trabajo','📑'],['cont','Contabilidad','📒'],['sue','Sueldos y RRHH','💼'],['banco','Conciliación bancaria','🏦'],['docs','Documentos','📁'],['avance','Avance del mes','✅'],
+ ['Digitalización'],['ia','Carga de facturas con IA','🤖'],['ecom','E-commerce y facturación','🛍️'],
+ ['Inversiones en bolsa'],['mkt','Mercado en vivo','📈'],['cart','Cartera y órdenes','💹'],['perf','Perfil del inversor','🎯'],
+ ['Administración'],['hon','Honorarios y cobranzas','💳'],['portal','Portal del cliente','🔐'],['sitio','Sitio público y servicios','🌐'],['reportes','Reportes con tu marca','🎨'],['rep','Exportaciones (CSV)','⬇️'],['api','API REST y MCP','🔌'],['config','Configuración y usuarios','⚙️']
+].forEach(x=>NAVC.push(x));
+{const _go2=go;
+ go=function(v){
+  if(S.view==='cliente'&&S.ctx&&(OLD2C[v]||v==='imp'||v==='arca'))return _go2(v);
+  if(v==='usr'){S.cfgTab='usuarios';return goView('config')}
+  if(v==='cfg')return goView('config');
+  if(V[v])return goView(v);
+  return _go2(v);
+ }}
+{const _bn=buildNav;buildNav=function(){_bn();if(S.view!=='cliente'){const a=$('#nav a[data-v="venc"]');const vp=VEN.filter(v=>venEst(v)==='Vencido'&&CL.some(c=>c.id===v.cid)).length;if(a&&vp)a.insertAdjacentHTML('beforeend',`<span class="badge b-bad">${vp}</span>`);const ia=$('#nav a[data-v="ia"]');const n=IA.items.filter(x=>x.estado==='Revisar'||x.estado==='Admin').length;if(ia&&n)ia.insertAdjacentHTML('beforeend',`<span class="badge b-warn">${n}</span>`);const st=$('#nav a[data-v="sitio"]');const nl=LEADS.filter(l=>l.est==='Nueva').length;if(st&&nl)st.insertAdjacentHTML('beforeend',`<span class="badge b-gold">${nl}</span>`)}}}
+
+/* ---------- Sincronización diaria con ARCA, a la vista ---------- */
+function syncDaily(){
+ if(CFG.mode==='limpio'||!CL.length)return;
+ const hh=(CFG.hora||'06:00').split(':'),t=new Date(TODAY);t.setHours(+hh[0]||6,+hh[1]||0,0,0);
+ const due=Date.now()>=t.getTime()?t.getTime():t.getTime()-864e5;
+ if(!CFG.lastSync||CFG.lastSync<due){CFG.lastSync=due+((CL.length*37)%9)*60e3;CL.forEach(c=>{if(c.clave)c.sync=CFG.lastSync})}
+}
+const fsync=ts=>{if(!ts)return'nunca';const d=new Date(ts),h=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'),dd=Math.round((new Date(TODAY)-new Date(d.getFullYear(),d.getMonth(),d.getDate()))/864e5);return(dd<=0?'hoy':dd===1?'ayer':fd(iso(d)))+' a las '+h};
+function syncBar(c,fuente){
+ const ok=!!c.clave;
+ return`<div class="syncb ${ok?'':'bad'}"><span class="sdot"></span><div style="flex:1;min-width:0">${ok?`<b>${esc(fuente)}</b> sincronizado con ARCA ${fsync(c.sync||CFG.lastSync)} · se actualiza todos los días a las ${esc(CFG.hora)}`:`<b>${esc(fuente)}</b>: no se pudo sincronizar — falta o venció la clave fiscal delegada. Se muestran los últimos datos guardados.`}</div><button class="btn sm" data-act="sync1" data-id="${c.id}">⟳ Sincronizar ahora</button></div>`;
+}
+function syncBarAll(fuente){
+ const al=CL.filter(c=>c.clave).length;
+ return`<div class="syncb"><span class="sdot"></span><div style="flex:1;min-width:0"><b>${esc(fuente)}</b> de toda la cartera · última sincronización con ARCA ${fsync(CFG.lastSync)} · ${al} de ${CL.length} clientes al día${CL.length>al?` · <a data-act="go" data-v="bandeja">${CL.length-al} con clave inválida</a>`:''}</div>${S.role==='admin'?'<button class="btn sm" data-act="syncnow">⟳ Sincronizar ahora</button>':''}</div>`;
+}
+ACT.sync1=d=>{const c=cl(+d.id);if(!c.clave)return toast('Este cliente no tiene la clave fiscal delegada: cargala en su ficha para poder sincronizar');c.sync=Date.now();logA('Sincronización con ARCA (simulada) · '+c.n);toast('Datos de '+c.n+' sincronizados (simulado)');render()};
+[['sct','Sistema de Cuentas Tributarias'],['dfe','Domicilio Fiscal Electrónico'],['ccma','Cuenta Corriente de Monotributistas y Autónomos'],['portaliva','Portal IVA · Libro IVA Digital'],['mono','Facturación para recategorización'],['ventas','Mis Comprobantes (emitidos)'],['compras','Mis Comprobantes (recibidos)'],['registral','Sistema Registral'],['hac','Liquidaciones de hacienda']].forEach(([k,f])=>{const o=CV[k];if(o)CV[k]=c=>syncBar(c,f)+o(c)});
+{const _vb=V.bandeja;V.bandeja=()=>syncBarAll('Domicilio Fiscal Electrónico y alertas')+_vb()}
+
+/* ---------- Utilidades de las vistas de cartera ---------- */
+const cliLink=c=>`<a class="clk" data-act="cgo2" data-id="${c.id}" data-v="resumen">${avatar(c,26)} <b>${esc(c.n)}</b></a><br><small class="mut">${c.cuit}</small>`;
+const syncCell=c=>c.clave?`<small class="mut">${fsync(c.sync||CFG.lastSync)}</small>`:'<span class="badge b-bad">🔑 Clave</span>';
+const pageHead=(t,p,btn)=>`<div class="ph"><div><h1>${t}</h1><p>${p}</p></div>${btn?`<div style="display:flex;gap:8px;flex-wrap:wrap">${btn}</div>`:''}</div>`;
+const noCli=()=>`<div class="card" style="text-align:center;padding:30px"><p class="mut">Todavía no hay clientes en la cartera.</p><button class="btn pri" data-act="go" data-v="todos">Ir a la cartera</button></div>`;
+S.v3=S.v3||{mc:{d:ymAdd(TODAYISO.slice(0,7),-1),h:TODAYISO.slice(0,7),t:'',tipo:'',cid:'',l:'',q:''},li:{ym:ymAdd(TODAYISO.slice(0,7),-1)},rc:{f:''},sc:{f:''}};
+
+/* ---------- 1 · Deudas y vencimientos (SCT de toda la cartera) ---------- */
+V.sctc=()=>{
+ if(!CL.length)return pageHead('Deudas y vencimientos','Sistema de Cuentas Tributarias de cada cliente.')+noCli();
+ const R=CL.map(c=>({c,s:sctCalc(c)})),F=S.v3.sc.f;
+ let L=R.filter(o=>!F||(F==='deuda'&&o.s.vencida>0)||(F==='ddjj'&&o.s.ddjj.length)||(F==='clave'&&!o.c.clave));
+ L.sort((a,b)=>b.s.vencida-a.s.vencida||(a.s.venc[0]?a.s.venc[0].venc:'9')<(b.s.venc[0]?b.s.venc[0].venc:'9')?-1:1);
+ const tv=sum(R.map(o=>o.s.vencida)),ti=sum(R.map(o=>o.s.res)),tn=sum(R.map(o=>o.s.cnv)),dj=sum(R.map(o=>o.s.ddjj.length)),pv=R.map(o=>o.s.venc[0]).filter(Boolean).sort((a,b)=>a.venc<b.venc?-1:1)[0];
+ const chip=(k,l)=>`<button class="${F===k?'on':''}" data-act="v3f" data-g="sc" data-k="${k}">${l}</button>`;
+ return pageHead('Deudas y vencimientos','Sistema de Cuentas Tributarias de cada cliente, a la vista: deudas con sus intereses, vencimientos que vienen y declaraciones juradas pendientes.',`<button class="btn" data-act="x3sct">⬇ Excel</button>`)+syncBarAll('Sistema de Cuentas Tributarias')+
+ `<div class="grid g4" style="margin-bottom:14px">${kpi('Deuda vencida de la cartera',ars(tv),R.filter(o=>o.s.vencida>0).length+' clientes',tv>0?'dn':'up')}${kpi('Intereses resarcitorios',ars(ti),'incluidos en la deuda vencida')}${kpi('Deuda no vencida',ars(tn),'DDJJ presentadas sin pagar')}${kpi('DDJJ pendientes',dj,pv?'próximo vencimiento '+fd(pv.venc):'',dj?'dn':'up')}</div>
+ <div class="card" style="margin-bottom:10px"><div class="chips">${chip('','Todos')}${chip('deuda','Con deuda vencida')}${chip('ddjj','Con DDJJ pendientes')}${chip('clave','Sin sincronizar')}</div></div>
+ <div class="card"><div class="tw"><table><thead><tr><th>Cliente</th><th class="r">Deuda vencida</th><th class="r">No vencido</th><th>DDJJ pendientes</th><th>Próximo vencimiento</th><th>Sincronizado</th></tr></thead><tbody>${L.map(o=>{const s=o.s,v=s.venc[0];return`<tr class="click" data-act="cgo2" data-id="${o.c.id}" data-v="sct"><td>${cliCell(o.c)}</td><td class="r">${s.vencida?`<b class="dn">${ars(s.vencida)}</b><br><small class="mut">${ars(s.cv)} + ${ars(s.res)} int.</small>`:'<span class="up">Sin deuda</span>'}</td><td class="r">${s.cnv?ars(s.cnv):'—'}</td><td style="white-space:normal;min-width:150px">${s.ddjj.length?s.ddjj.slice(0,2).map(d=>badge(esc(d.imp.split(' - ')[1]||d.imp)+' '+d.per.slice(4,6)+'/'+d.per.slice(0,4),'warn'))+(s.ddjj.length>2?' <small class="mut">+'+(s.ddjj.length-2)+'</small>':'')+'':'<span class="mut">—</span>'}</td><td style="white-space:normal">${v?`<small>${esc(v.imp.split(' - ')[1]||v.imp)}</small><br><b>${fd(v.venc)}</b>`:'—'}</td><td>${syncCell(o.c)}</td></tr>`}).join('')||'<tr><td colspan="6" class="mut">No hay clientes con este filtro.</td></tr>'}</tbody></table></div></div>`;
+};
+ACT.v3f=d=>{S.v3[d.g].f=S.v3[d.g].f===d.k?'':d.k;render()};
+ACT.x3sct=()=>xlsxDownload('deudas-y-vencimientos.xlsx',[{name:'Deudas',rows:[['Cliente','CUIT','Impuesto','Período','Vencimiento','Capital','Intereses','Vencida'],...CL.flatMap(c=>sctCalc(c).deudas.map(d=>[c.n,c.cuit,d.imp,d.per,d.venc,d.cap,d.res,d.vencida?'Sí':'No']))]},{name:'Vencimientos',rows:[['Cliente','CUIT','Impuesto','Período','Vencimiento','Detalle'],...CL.flatMap(c=>sctCalc(c).venc.map(v=>[c.n,c.cuit,v.imp,v.per,v.venc,v.det]))]},{name:'DDJJ pendientes',rows:[['Cliente','CUIT','Impuesto','Período','Vencimiento'],...CL.flatMap(c=>sctCalc(c).ddjj.map(v=>[c.n,c.cuit,v.imp,v.per,v.venc]))]}]);
+
+/* ---------- 3 · Mis Comprobantes de toda la cartera ---------- */
+function mcRows(){
+ const F=S.v3.mc,ms=ymRange(F.d,F.h),q=(F.q||'').toLowerCase(),out=[];
+ CL.filter(c=>(!F.tipo||tipoOf(c).k===F.tipo)&&(!F.cid||c.id===+F.cid)).forEach(c=>ms.forEach(ym=>{const o=comprobantes(c.id,ym);
+  [['v','Emitido'],['c','Recibido']].forEach(([k,l])=>{if(F.t&&F.t!==k)return;o[k].forEach(x=>{if(F.l&&tcLetra(x.tc)!==F.l)return;if(q&&!((x.cp||'')+' '+(x.cuitCp||'')+' '+cbNum(x)).toLowerCase().includes(q))return;out.push({c,x,k,l,ym})})})}));
+ return out.sort((a,b)=>(a.x.fe||a.ym)<(b.x.fe||b.ym)?1:-1);
+}
+V.miscomp=()=>{
+ if(!CL.length)return pageHead('Mis Comprobantes','Comprobantes emitidos y recibidos de toda la cartera.')+noCli();
+ const F=S.v3.mc,R=mcRows(),em=R.filter(o=>o.k==='v'),re=R.filter(o=>o.k==='c'),sel=(k,opts)=>`<select data-chg="mcf" data-k="${k}">${opts.map(([v,l])=>`<option value="${v}" ${String(F[k])===String(v)?'selected':''}>${esc(l)}</option>`).join('')}</select>`;
+ return pageHead('Mis Comprobantes','La facturación de toda tu cartera sin entrar a ARCA: comprobantes emitidos y recibidos de cada cliente, listos para mirar, filtrar y exportar.',`<button class="btn pri" data-act="x3mc">⬇ Exportar a Excel</button>`)+syncBarAll('Mis Comprobantes')+
+ `<div class="card" style="margin-bottom:12px"><div class="fr"><div><label>Desde</label><input type="month" data-chg="mcf" data-k="d" value="${F.d}"></div><div><label>Hasta</label><input type="month" data-chg="mcf" data-k="h" value="${F.h}"></div><div><label>Emitidos / recibidos</label>${sel('t',[['','Todos'],['v','Emitidos (ventas)'],['c','Recibidos (compras)']])}</div><div><label>Condición del cliente</label>${sel('tipo',[['','Todas'],...Object.values(TIPOS).map(t=>[t.k,t.pl])])}</div></div>
+ <div class="fr" style="margin-top:8px"><div><label>Cliente</label>${sel('cid',[['','Toda la cartera'],...CL.map(c=>[c.id,c.n])])}</div><div><label>Letra</label>${sel('l',[['','Todas'],['A','A'],['B','B'],['C','C'],['M','M']])}</div><div style="grid-column:span 2"><label>Buscar contraparte, CUIT o número</label><input data-chg="mcf" data-k="q" value="${esc(F.q)}" placeholder="Ej.: Distribuidora, 30-7…, 00003-"></div></div></div>
+ <div class="grid g4" style="margin-bottom:12px">${kpi('Comprobantes',num(R.length),ymLbl(F.d)+' a '+ymLbl(F.h))}${kpi('Total emitido',ars(sum(em.map(o=>cbTot(o.x)))),em.length+' comprobantes')}${kpi('Total recibido',ars(sum(re.map(o=>cbTot(o.x)))),re.length+' comprobantes')}${kpi('IVA débito − crédito',ars(sum(em.map(o=>cbIva(o.x)))-sum(re.map(o=>cbIva(o.x)))),'sobre los comprobantes filtrados')}</div>
+ <div class="card"><div class="tw"><table class="cbt"><thead><tr><th>Cliente</th><th>Fecha</th><th></th><th>Comprobante</th><th>Contraparte</th><th class="r">Neto</th><th class="r">IVA</th><th class="r">Total</th><th>Origen</th></tr></thead><tbody>${R.slice(0,300).map(o=>`<tr class="click" data-act="cbshow" data-cid="${o.c.id}" data-id="${o.x.id}"><td>${avatar(o.c,22)} <small><b>${esc(o.c.n)}</b></small></td><td>${fd(o.x.fe||o.ym+'-01')}</td><td>${badge(o.l,o.k==='v'?'ok':'info')}</td><td>${tcBadge(o.x)} <span class="mono">${cbNum(o.x)}</span></td><td><small>${esc(o.x.cp||'')}</small><br><small class="mut">${esc(o.x.cuitCp||'')}</small></td><td class="r">${ars2(o.x.neto)}</td><td class="r">${ars2(cbIva(o.x))}</td><td class="r"><b>${ars2(cbTot(o.x))}</b></td><td>${srcBadge(o.x.src)}</td></tr>`).join('')||'<tr><td colspan="9" class="mut">No hay comprobantes con estos filtros.</td></tr>'}</tbody></table></div>${R.length>300?`<p class="disc">Se muestran los primeros 300 de ${num(R.length)}. La exportación a Excel incluye todos.</p>`:''}</div>`;
+};
+CHG.mcf=(v,t)=>{S.v3.mc[t.dataset.k]=v;render()};
+ACT.x3mc=()=>{const R=mcRows(),row=o=>{const i=tcInfo(o.x.tc);return[o.c.n,o.c.cuit,o.x.fe||o.ym+'-01',o.x.tc+' - '+i[1],o.x.pv,o.x.nro,o.x.cp||'',o.x.cuitCp||'',r2(o.x.neto),+o.x.al||0,r2(cbIva(o.x)),r2(cbTot(o.x)),o.x.cae||'',o.x.src||'']},h=['Cliente','CUIT cliente','Fecha','Tipo','Punto de venta','Número','Contraparte','CUIT contraparte','Neto','Alícuota','IVA','Total','CAE','Origen'];
+ xlsxDownload('mis-comprobantes-cartera.xlsx',[{name:'Emitidos',rows:[h,...R.filter(o=>o.k==='v').map(row)]},{name:'Recibidos',rows:[h,...R.filter(o=>o.k==='c').map(row)]}]);logA('Exportación de Mis Comprobantes de la cartera');toast('Excel generado ✔')};
+
+/* ---------- 4 · Libro IVA Digital de la cartera ---------- */
+function libroRows(c,n){
+ const cur=TODAYISO.slice(0,7);
+ return lastMonths(n,ymAdd(cur,-1)).reverse().map(ym=>{const K=ivaOne(c.id,ym,0,0),dj=ddjjGet(c.id,'IVA',ym),pres=djPresentada(c.id,'IVA',ym),v=djVen(c.id,'IVA',ym);
+  return{ym,K,pres,fecha:dj?iso(new Date(dj.ts)):(pres&&v?iso(addD(pd(v.fecha),-1-(hash(c.id+ym)%3))):null),venc:v?v.fecha:null}});
+}
+const ivaCli=()=>CL.filter(c=>c.tipo==='Responsable Inscripto'||c.tipo==='Sociedad');
+V.libroiva=()=>{
+ const L=ivaCli(),ym=S.v3.li.ym,ms=lastMonths(6,ymAdd(TODAYISO.slice(0,7),-1));
+ if(!L.length)return pageHead('Libro IVA Digital','Presentaciones del Libro IVA Digital de los responsables inscriptos.')+noCli();
+ const R=L.map(c=>{const rows=libroRows(c,6);return{c,rows,r:rows.find(x=>x.ym===ym)||libroRows(c,12).find(x=>x.ym===ym)}});
+ const pres=R.filter(o=>o.r&&o.r.pres).length;
+ return pageHead('Libro IVA Digital','Cada presentación del Libro IVA Digital de tus clientes leída del Portal IVA: qué período se presentó, cuándo y con qué totales de débito y crédito fiscal.',`<button class="btn" data-act="x3li">⬇ Excel</button>`)+syncBarAll('Portal IVA')+
+ `<div class="card" style="margin-bottom:12px"><div class="fr"><div><label>Período</label><input type="month" max="${ymAdd(TODAYISO.slice(0,7),-1)}" value="${ym}" data-chg="lim"></div></div></div>
+ <div class="grid g4" style="margin-bottom:12px">${kpi('Presentados '+ymLbl(ym),pres+' de '+R.length,'',pres===R.length?'up':'dn')}${kpi('Débito fiscal declarado',ars(sum(R.filter(o=>o.r&&o.r.pres).map(o=>o.r.K.deb))),'clientes presentados')}${kpi('Crédito fiscal declarado',ars(sum(R.filter(o=>o.r&&o.r.pres).map(o=>o.r.K.cre))),'clientes presentados')}${kpi('Pendientes',R.length-pres,'para presentar',R.length-pres?'dn':'up')}</div>
+ <div class="card" style="margin-bottom:12px"><h3>${ymLbl(ym)}</h3><div class="tw"><table><thead><tr><th>Cliente</th><th>Estado</th><th>Presentado el</th><th>Formulario</th><th class="r">Débito fiscal</th><th class="r">Crédito fiscal</th><th class="r">Saldo técnico</th><th>Sincronizado</th></tr></thead><tbody>${R.map(o=>{const r=o.r;return`<tr class="click" data-act="cgo2" data-id="${o.c.id}" data-v="portaliva"><td>${cliCell(o.c)}</td><td>${r&&r.pres?badge('Presentado','ok'):badge(r&&r.venc&&r.venc<TODAYISO?'Vencido sin presentar':'Pendiente',r&&r.venc&&r.venc<TODAYISO?'bad':'warn')}</td><td>${r&&r.fecha?fd(r.fecha):'—'}</td><td>F.2083</td><td class="r">${r?ars(r.K.deb):'—'}</td><td class="r">${r?ars(r.K.cre):'—'}</td><td class="r"><b class="${r&&r.K.salP>0?'dn':'up'}">${r?ars(r.K.salP):'—'}</b></td><td>${syncCell(o.c)}</td></tr>`}).join('')}</tbody></table></div></div>
+ <div class="card"><h3>Últimos 6 períodos</h3><div class="tw"><table><thead><tr><th>Cliente</th>${ms.map(m=>`<th style="text-align:center">${ymLbl2(m)}</th>`).join('')}</tr></thead><tbody>${R.map(o=>`<tr><td><b>${esc(o.c.n)}</b></td>${ms.map(m=>{const r=o.rows.find(x=>x.ym===m);return`<td style="text-align:center" title="${r&&r.fecha?'Presentado el '+fd(r.fecha):'Sin presentar'}">${r&&r.pres?'<span class="up">✔</span>':'<span class="dn">✕</span>'}</td>`}).join('')}</tr>`).join('')}</tbody></table></div></div>`;
+};
+CHG.lim=v=>{if(v){S.v3.li.ym=v;render()}};
+ACT.x3li=()=>xlsxDownload('libro-iva-digital-cartera.xlsx',[{name:'Presentaciones',rows:[['Cliente','CUIT','Período','Presentado','Fecha de presentación','Débito fiscal','Crédito fiscal','Saldo técnico'],...ivaCli().flatMap(c=>libroRows(c,12).map(r=>[c.n,c.cuit,r.ym,r.pres?'Sí':'No',r.fecha||'',r.K.deb,r.K.cre,r.K.salP]))]}]);
+
+/* ---------- 5 · CCMA de la cartera ---------- */
+V.ccmac=()=>{
+ const R=CL.filter(c=>c.tipo!=='Sociedad').map(c=>({c,k:ccmaCalc(c)})).filter(o=>o.k).sort((a,b)=>b.k.neto-a.k.neto);
+ if(!R.length)return pageHead('CCMA','Cuenta Corriente de Monotributistas y Autónomos.')+noCli();
+ return pageHead('CCMA · Monotributo y autónomos','La Cuenta Corriente de Monotributistas y Autónomos de cada cliente, sin entrar al portal: el saldo deudor o a favor de cada CUIT.',`<button class="btn" data-act="x3cc">⬇ Excel</button>`)+syncBarAll('CCMA')+
+ `<div class="grid g4" style="margin-bottom:12px">${kpi('Saldo deudor total',ars(sum(R.map(o=>o.k.deudor))),R.filter(o=>o.k.deudor>0).length+' clientes',sum(R.map(o=>o.k.deudor))>0?'dn':'up')}${kpi('Saldo a favor total',ars(sum(R.map(o=>o.k.favor))),R.filter(o=>o.k.favor>0).length+' clientes')}${kpi('Monotributistas',R.filter(o=>o.k.mono).length)}${kpi('Autónomos',R.filter(o=>!o.k.mono).length)}</div>
+ <div class="card"><div class="tw"><table><thead><tr><th>Cliente</th><th>Régimen</th><th class="r">Cuota mensual</th><th class="r">Saldo deudor</th><th class="r">Saldo a favor</th><th>Cuotas impagas</th><th>Sincronizado</th></tr></thead><tbody>${R.map(o=>{const imp=o.k.rows.filter(r=>r.sal>0&&r.vencido);return`<tr class="click" data-act="cgo2" data-id="${o.c.id}" data-v="ccma"><td>${cliCell(o.c)}</td><td>${o.k.mono?badge('Monotributo · Cat. '+esc(o.c.cat),'info'):badge('Autónomos','gold')}</td><td class="r">${ars(o.k.cuota)}</td><td class="r">${o.k.deudor?`<b class="dn">${ars(o.k.deudor)}</b>`:'—'}</td><td class="r">${o.k.favor?`<b class="up">${ars(o.k.favor)}</b>`:'—'}</td><td style="white-space:normal">${o.k.sinDato?'<span class="mut">Sin dato (sincronizar)</span>':imp.length?imp.map(r=>badge(ymLbl2(r.ym),'bad')).join(' '):'<span class="up">Al día</span>'}</td><td>${syncCell(o.c)}</td></tr>`}).join('')}</tbody></table></div></div>`;
+};
+ACT.x3cc=()=>xlsxDownload('ccma-cartera.xlsx',[{name:'CCMA',rows:[['Cliente','CUIT','Régimen','Período','Vencimiento','Cuota','Pagado','Saldo'],...CL.flatMap(c=>{const k=ccmaCalc(c);return k?k.rows.map(r=>[c.n,c.cuit,k.mono?'Monotributo':'Autónomos',r.ym,r.venc,r.cuota,r.pag==null?'':r.pag,r.sal==null?'':r.sal]):[]})]}]);
+
+/* ---------- 6 · Recategorización ---------- */
+function nextRecat(){const y=TODAY.getFullYear(),c=[new Date(y,0,20),new Date(y,6,20),new Date(y+1,0,20)].find(d=>d>=TODAY);return c}
+function recatRows(){
+ return CL.filter(c=>c.tipo==='Monotributo').map(c=>{const m=monoCalc(c),last3=m.rows.slice(-3),avg=sum(last3.map(r=>r.v))/3,nr=nextRecat(),mesesH=Math.max(0,(nr.getFullYear()-TODAY.getFullYear())*12+nr.getMonth()-TODAY.getMonth());
+  const proy=r2(sum(m.rows.slice(mesesH).map(r=>r.v))+avg*mesesH+(+c.fac0||0)),ps=MONO.find(x=>proy<=x[1]),idx=MONO.findIndex(x=>x[0]===c.cat),si=MONO.findIndex(x=>x[0]===m.sug);
+  const est=m.excl?['Exclusión','bad']:si>idx?['Debe subir a '+m.sug,'bad']:m.pct>=85?['Muy cerca del tope','bad']:m.pct>=75?['Cerca del tope','warn']:si>=0&&si<idx?['Puede bajar a '+m.sug,'info']:['En su categoría','ok'];
+  return{c,m,avg,proy,ps:ps?ps[0]:'Excluido',est,margen:r2(m.tope-m.fac)}}).sort((a,b)=>b.m.pct-a.m.pct);
+}
+V.recat=()=>{
+ const R0=recatRows(),F=S.v3.rc.f,R=R0.filter(o=>!F||(F==='cerca'&&o.m.pct>=75)||(F==='sube'&&/subir|Exclus/.test(o.est[0]))||(F==='baja'&&/bajar/.test(o.est[0])));
+ if(!R0.length)return pageHead('Recategorización','Monotributistas de la cartera.')+noCli();
+ const nr=nextRecat(),chip=(k,l)=>`<button class="${F===k?'on':''}" data-act="v3f" data-g="rc" data-k="${k}">${l}</button>`;
+ return pageHead('Recategorización','La facturación sincronizada de cada monotributista cruzada con su categoría: quién se está acercando al tope antes de que sea un problema.',`<button class="btn" data-act="x3rc">⬇ Excel</button>`)+syncBarAll('Facturación de Mis Comprobantes')+
+ `<div class="grid g4" style="margin-bottom:12px">${kpi('Próxima recategorización',fd(iso(nr)),'semestral: enero y julio')}${kpi('Cerca del tope (≥75%)',R0.filter(o=>o.m.pct>=75).length,'de '+R0.length+' monotributistas',R0.some(o=>o.m.pct>=75)?'dn':'up')}${kpi('Deben subir de categoría',R0.filter(o=>/subir|Exclus/.test(o.est[0])).length,'',R0.some(o=>/subir|Exclus/.test(o.est[0]))?'dn':'up')}${kpi('Pueden bajar',R0.filter(o=>/bajar/.test(o.est[0])).length,'ahorro en la cuota')}</div>
+ <div class="card" style="margin-bottom:10px"><div class="chips">${chip('','Todos')}${chip('cerca','Cerca del tope')}${chip('sube','Deben subir')}${chip('baja','Pueden bajar')}</div></div>
+ <div class="card"><div class="tw"><table><thead><tr><th>Cliente</th><th>Cat.</th><th style="min-width:200px">Facturación 12 meses / tope</th><th class="r">Margen al tope</th><th>Proyección</th><th>Situación</th></tr></thead><tbody>${R.map(o=>`<tr class="click" data-act="cgo2" data-id="${o.c.id}" data-v="mono"><td>${cliCell(o.c)}</td><td><b style="font-size:16px">${esc(o.c.cat)}</b></td><td><div class="bar"><i style="width:${Math.min(100,o.m.pct)}%;${o.m.pct>=85?'background:var(--bad)':o.m.pct>=75?'background:var(--warn)':''}"></i></div><small class="${o.m.pct>=75?'dn':'mut'}">${num(o.m.pct,0)}% · ${ars(o.m.fac)} de ${ars(o.m.tope)}</small></td><td class="r">${o.margen>0?ars(o.margen):'<b class="dn">Superado</b>'}</td><td><b>Cat. ${esc(o.ps)}</b><br><small class="mut">${ars(o.proy)} · prom. ${ars(o.avg)}/mes</small></td><td>${badge(o.est[0],o.est[1])}</td></tr>`).join('')||'<tr><td colspan="6" class="mut">No hay monotributistas con este filtro.</td></tr>'}</tbody></table></div><p class="disc">Escala de categorías de ejemplo (Configuración → Sincronización y parámetros). La proyección suma lo facturado en los meses que siguen dentro del período más el promedio de los últimos 3 meses.</p></div>`;
+};
+ACT.x3rc=()=>xlsxDownload('recategorizacion.xlsx',[{name:'Recategorización',rows:[['Cliente','CUIT','Categoría','Facturación 12 meses','Tope','% del tope','Categoría que corresponde','Proyección','Categoría proyectada','Situación'],...recatRows().map(o=>[o.c.n,o.c.cuit,o.c.cat,o.m.fac,o.m.tope,r2(o.m.pct),o.m.sug,o.proy,o.ps,o.est[0]])]}]);
+
+/* =====================================================================
+   9 · API REST + MCP
+   ===================================================================== */
+let _dbC=null,_dbT=0;
+function apiDb(fresh){
+ if(!fresh&&_dbC&&Date.now()-_dbT<1500)return _dbC;
+ const syncIso=c=>c.clave&&(c.sync||CFG.lastSync)?new Date(c.sync||CFG.lastSync).toISOString():null;
+ const db={version:1,generado:new Date().toISOString(),estudio:{nombre:S.brand.n},sync:{frecuencia:'diaria a las '+CFG.hora,ultima:CFG.lastSync?new Date(CFG.lastSync).toISOString():null,origen:'ARCA (simulado en la demo)'},clientes:[],sct:{},ccma:{},mono:{},comprobantes:{},libro_iva:{},dfe:{},vencimientos:[],claves:APIK.keys.filter(k=>!k.rev&&k.h).map(k=>k.h)};
+ const ms=lastMonths(12,TODAYISO.slice(0,7));
+ CL.forEach(c=>{const cu=c.cuit;
+  db.clientes.push({id:c.id,cuit:cu,nombre:c.n,tipo:tipoOf(c).k,condicion:tipoOf(c).l,categoria:c.tipo==='Monotributo'?c.cat:null,actividad:c.act||'',domicilio:[c.dom,c.loc,c.prov].filter(Boolean).join(', '),alta:c.alta||null,impuestos:impuestosDe(c).map(i=>({codigo:i.cod,impuesto:i.n,detalle:i.obs,estado:i.est})),responsable:(STAFF[c.resp]||{}).n||null,credenciales_ok:!!c.clave,sincronizado:syncIso(c)});
+  const s=sctCalc(c);
+  db.sct[cu]={deuda_vencida:s.vencida,capital_vencido:s.cv,intereses:s.res,capital_no_vencido:s.cnv,deudas:s.deudas.map(d=>({impuesto:d.imp,concepto:d.conc,periodo:d.per,vencimiento:d.venc,capital:d.cap,intereses:d.res,vencida:d.vencida})),vencimientos:s.venc.map(v=>({impuesto:v.imp,periodo:v.per,vencimiento:v.venc,detalle:v.det})),ddjj_pendientes:s.ddjj.map(v=>({impuesto:v.imp,periodo:v.per,vencimiento:v.venc}))};
+  const k=ccmaCalc(c);if(k)db.ccma[cu]={regimen:k.mono?'Monotributo':'Autónomos',cuota_mensual:k.cuota,saldo_deudor:k.deudor,saldo_a_favor:k.favor,saldo_neto:k.neto,sin_dato:k.sinDato,movimientos:k.rows.map(r=>({periodo:r.ym,vencimiento:r.venc,cuota:r.cuota,pagado:r.pag,saldo:r.sal}))};
+  if(c.tipo==='Monotributo'){const m=monoCalc(c);db.mono[cu]={categoria:c.cat,facturacion_12m:m.fac,tope:m.tope,porcentaje:Math.round(m.pct*10)/10,categoria_que_corresponde:m.sug,exclusion:m.excl,meses:m.rows.map(r=>({periodo:r.ym,facturado:r.v}))}}
+  const em=[],re=[];ms.forEach(ym=>{const o=comprobantes(c.id,ym),f=x=>{const i=tcInfo(x.tc);return{id:x.id,fecha:x.fe||ym+'-01',codigo:x.tc,comprobante:i[1],letra:i[3],punto_venta:x.pv,numero:x.nro,contraparte:x.cp||'',cuit_contraparte:x.cuitCp||'',neto:r2(x.neto),alicuota:+x.al||0,iva:r2(cbIva(x)),total:r2(cbTot(x)),cae:x.cae||null,origen:x.src||'Sistema'}};o.v.forEach(x=>em.push(f(x)));o.c.forEach(x=>re.push(f(x)))});
+  db.comprobantes[cu]={emitidos:em,recibidos:re};
+  if(c.tipo==='Responsable Inscripto'||c.tipo==='Sociedad')db.libro_iva[cu]=libroRows(c,12).map(r=>({periodo:r.ym,presentado:r.pres,fecha_presentacion:r.fecha,formulario:'F.2083',ventas_neto:r.K.vNet,debito_fiscal:r.K.deb,compras_neto:r.K.cNet,credito_fiscal:r.K.cre,saldo_tecnico:r.K.salP}));
+  db.dfe[cu]=DFE.filter(x=>x.cid===c.id).map(x=>({id:x.id,fecha:x.f,tema:x.tema,asunto:x.t,leida:!!x.leida,plazo:x.plazo||null})).sort((a,b)=>a.fecha<b.fecha?1:-1);
+ });
+ const d1=iso(addD(TODAY,-30)),d2=iso(addD(TODAY,120));
+ VEN.filter(v=>v.fecha>=d1&&v.fecha<=d2&&v.estado!=='No corresponde'&&CL.some(c=>c.id===v.cid)).forEach(v=>{const c=cl(v.cid);db.vencimientos.push({cuit:c.cuit,cliente:c.n,obligacion:v.tipo,fecha:v.fecha,estado:venEst(v)})});
+ _dbC=db;_dbT=Date.now();return db;
+}
+/* claves de API (en este navegador) */
+const APIK={keys:[],hooks:[],tab:'inicio',ep:0,cuit:'',qs:'',out:null,tool:'deuda_y_vencimientos',targs:'',tout:null,newKey:null};
+try{const t=localStorage.getItem('svb_api_v1');if(t){const o=JSON.parse(t);APIK.keys=o.keys||[];APIK.hooks=o.hooks||[]}}catch(e){}
+function apiSave(){try{localStorage.setItem('svb_api_v1',JSON.stringify({keys:APIK.keys,hooks:APIK.hooks}))}catch(e){}}
+async function sha256(t){try{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}catch(e){return null}}
+const rhex=n=>{const a=new Uint8Array(n);(crypto.getRandomValues?crypto.getRandomValues(a):a.forEach((_,i)=>a[i]=Math.random()*256|0));return[...a].map(x=>x.toString(16).padStart(2,'0')).join('')};
+const USOS=[['🧮','Software fiscal y liquidación de impuestos','Liquidás sobre comprobantes y deuda que ya están sincronizados, en vez de esperar a que el contador los baje del portal.'],
+ ['🔁','Auditoría y conciliación','Cruzás lo que tu usuario declaró contra lo que figura en ARCA, con la fecha de sincronización a la vista para saber contra qué estás comparando.'],
+ ['🏢','ERP y gestión comercial','Sumás el módulo impositivo sin construir la integración con ARCA desde cero ni sostenerla después.'],
+ ['✨','Agentes de IA','El agente que ya corre en tu producto consulta los datos por MCP, con permiso del estudio y sin que le pases una clave fiscal.'],
+ ['⚡','Automatización que hoy corre RPA','Cambiás el robot que navega el portal por un endpoint con contrato, versión y límites publicados.']];
+const WHEV=[['dfe.nueva','Nueva notificación en el Domicilio Fiscal Electrónico'],['sct.deuda','Aparece deuda vencida en el Sistema de Cuentas Tributarias'],['mono.tope','Un monotributista supera el 85% del tope'],['comprobantes.nuevos','Llegan comprobantes nuevos de Mis Comprobantes'],['libroiva.presentado','Se registra una presentación del Libro IVA Digital'],['sync.error','Falla la sincronización de un cliente (clave inválida)']];
+const _apiOld=V.api;
+const apiBase=()=>'https://api.'+(apiNorm(S.brand.n).replace(/ /g,'')||'estudio')+'.sistemavb.com.ar';
+function epPath(i){const e=API_EPS[i];return e[1].replace('{cuit}',(APIK.cuit||(CL[0]||{}).cuit||'20-00000000-0').replace(/\D/g,''))}
+V.api=()=>{
+ const t=APIK.tab,tabs=`<div class="tabs">${[['inicio','Resumen'],['claves','Claves de acceso'],['ref','Endpoints y consola'],['mcp','Servidor MCP'],['srv','Instalar el servidor'],['hooks','Webhooks'],['carga','Carga de comprobantes (anterior)']].map(([k,l])=>`<button class="${t===k?'on':''}" data-act="apitab" data-t="${k}">${l}</button>`).join('')}</div>`;
+ const db=apiDb(),act=APIK.keys.filter(k=>!k.rev);let b='';
+ if(t==='inicio')b=`<div class="grid g2"><div class="card"><h3>La API de ARCA que tu software necesita</h3><p>Los datos que el estudio sincroniza todos los días desde ARCA —comprobantes, deudas, saldos, vencimientos, Libro IVA Digital y notificaciones del Domicilio Fiscal Electrónico— disponibles para otros sistemas por <b>API REST</b> y para asistentes de IA por <b>MCP</b>.</p>
+  <div class="stat"><span>Versión</span><b>v${API_VER}</b></div><div class="stat"><span>Acceso</span><b>Solo lectura · clave por sistema</b></div><div class="stat"><span>Clientes expuestos</span><b>${db.clientes.length}</b></div><div class="stat"><span>Última sincronización</span><b>${fsync(CFG.lastSync)}</b></div><div class="stat"><span>Claves activas</span><b>${act.length}</b></div><div class="stat"><span>Endpoints</span><b>${API_EPS.length} REST · ${MCP_TOOLS.length} herramientas MCP</b></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="btn pri" data-act="apitab" data-t="claves">🔑 Crear una clave</button><button class="btn" data-act="apitab" data-t="ref">▶ Probar la API</button><button class="btn" data-act="apidl">⬇ Datos para el servidor</button></div>
+  <p class="disc">Nada se escribe ni se presenta ante ARCA por esta vía: la API y el MCP solo leen. La conexión con ARCA es simulada en la demo.</p></div>
+  <div class="card"><h3>Para qué productos</h3><p class="mut" style="margin-top:-4px">Si tu producto trabaja con la información fiscal de un contribuyente argentino, la parte de ARCA la podés dejar de mantener.</p><div class="list">${USOS.map(u=>`<div style="align-items:flex-start"><span style="font-size:20px">${u[0]}</span><div class="g"><b>${u[1]}</b><span class="mut" style="white-space:normal">${u[2]}</span></div></div>`).join('')}</div></div></div>`;
+ if(t==='claves')b=`${APIK.newKey?`<div class="modebar" style="border-style:solid"><span>🔑</span><div style="flex:1;min-width:0"><b>Copiá la clave ahora: no se vuelve a mostrar completa.</b><div class="pre" style="margin:6px 0 0;user-select:all">${esc(APIK.newKey)}</div></div><button class="btn sm" data-act="apicopy">Copiar</button><button class="btn sm" data-act="apinkok">Listo</button></div>`:''}
+  <div class="grid g2"><div class="card"><h3>Nueva clave</h3><form data-form="apinew"><label>Nombre (qué sistema la usa)</label><input name="n" required placeholder="Ej.: ERP del cliente, Agente de IA, Power BI"><label style="margin-top:8px">Alcance</label><select name="sc"><option value="all">Toda la cartera</option>${CL.map(c=>`<option value="${c.id}">Solo ${esc(c.n)}</option>`).join('')}</select><p class="disc">Todas las claves son de solo lectura.</p><button class="btn pri">Crear clave</button></form></div>
+  <div class="card"><h3>Claves del estudio</h3><div class="tw"><table><thead><tr><th>Nombre</th><th>Clave</th><th>Alcance</th><th>Creada</th><th>Último uso</th><th></th></tr></thead><tbody>${APIK.keys.map(k=>`<tr><td><b>${esc(k.n)}</b></td><td class="mono">${esc(k.pre)}••••</td><td><small>${k.sc==='all'?'Toda la cartera':esc(cl(+k.sc).n||'Cliente')}</small></td><td><small>${fd(k.f)}</small></td><td><small>${k.u?new Date(k.u).toLocaleString('es-AR'):'—'}</small></td><td>${k.rev?badge('Revocada','bad'):`<button class="btn sm bad" data-act="apirev" data-id="${k.id}">Revocar</button>`}</td></tr>`).join('')||'<tr><td colspan="6" class="mut">Todavía no hay claves.</td></tr>'}</tbody></table></div></div></div>`;
+ if(t==='ref'){const e=API_EPS[APIK.ep]||API_EPS[0],needC=e[1].includes('{cuit}'),p=epPath(APIK.ep),full=p+(APIK.qs?'?'+APIK.qs.replace(/^\?/,''):''),ex=act[0];
+  b=`<div class="grid g2"><div class="card"><h3>Consola</h3><label>Endpoint</label><select data-chg="apiep2">${API_EPS.map((x,i)=>`<option value="${i}" ${i===APIK.ep?'selected':''}>${x[0]} ${x[1]}</option>`).join('')}</select>
+   ${needC?`<label style="margin-top:8px">Cliente</label><select data-chg="apicuit">${CL.map(c=>`<option value="${c.cuit}" ${c.cuit===(APIK.cuit||(CL[0]||{}).cuit)?'selected':''}>${esc(c.n)} · ${c.cuit}</option>`).join('')}</select>`:''}
+   <label style="margin-top:8px">Parámetros (opcional)</label><input data-chg="apiqs" value="${esc(APIK.qs)}" placeholder="${esc(e[3]?e[3].split(',')[0].split(' (')[0]+'=…':'sin parámetros')}"><p class="disc">${esc(e[2])}${e[3]?' · Parámetros: '+esc(e[3]):''}</p>
+   <button class="btn pri" data-act="apirun2">▶ Ejecutar</button>
+   <div class="pre" style="margin-top:10px">curl -H "Authorization: Bearer ${ex?esc(ex.pre)+'…':'TU_CLAVE'}" \\\n  "${apiBase()}${esc(full)}"</div></div>
+   <div class="card"><h3>Respuesta ${APIK.out?`<span class="badge b-${APIK.out.status===200?'ok':'bad'}">${APIK.out.status}</span> <small class="mut">${APIK.out.ms} ms · ${num(APIK.out.size/1024,1)} KB</small>`:''}</h3><pre class="pre" style="max-height:470px;overflow:auto;white-space:pre">${APIK.out?esc(APIK.out.txt):'Elegí un endpoint y tocá Ejecutar. La consola responde con los datos reales de esta cartera.'}</pre></div></div>
+   <div class="card" style="margin-top:14px"><h3>Referencia</h3><div class="tw"><table><thead><tr><th>Método</th><th>Ruta</th><th>Devuelve</th><th>Parámetros</th></tr></thead><tbody>${API_EPS.map((x,i)=>`<tr class="click" data-act="apisel" data-i="${i}"><td>${badge(x[0],'ok')}</td><td class="mono">${x[1]}</td><td style="white-space:normal">${esc(x[2])}</td><td style="white-space:normal"><small>${esc(x[3]||'—')}</small></td></tr>`).join('')}</tbody></table></div><p class="disc">Autenticación con <span class="mono">Authorization: Bearer &lt;clave&gt;</span>. Todas las respuestas son JSON en UTF-8, con montos en pesos y fechas AAAA-MM-DD. Cualquier método distinto de GET devuelve 405: la API es de solo lectura. Especificación OpenAPI en <span class="mono">/v1/openapi.json</span>.</p></div>`}
+ if(t==='mcp'){const tool=MCP_TOOLS.find(x=>x.name===APIK.tool)||MCP_TOOLS[0];
+  b=`<div class="grid g2"><div class="card"><h3>Servidor MCP del estudio</h3><p>Conectá Claude u otro asistente compatible con MCP y preguntale por tus clientes en castellano. El asistente consulta la misma información que ves en el sistema y <b>no puede modificar nada ni operar ante ARCA</b>.</p>
+   <div class="list">${MCP_TOOLS.map(x=>`<div><span class="mono" style="min-width:170px">${x.name}</span><div class="g"><span class="mut" style="white-space:normal">${esc(x.description)}</span></div></div>`).join('')}</div></div>
+   <div class="card"><h3>Probar una herramienta</h3><label>Herramienta</label><select data-chg="mcptool">${MCP_TOOLS.map(x=>`<option ${x.name===tool.name?'selected':''}>${x.name}</option>`).join('')}</select><label style="margin-top:8px">Argumentos (JSON)</label><textarea rows="3" data-chg="mcpargs" class="mono">${esc(APIK.targs||JSON.stringify(tool.inputSchema.required?{cliente:(CL[0]||{}).n||''}:{}))}</textarea><p><button class="btn pri" data-act="mcprun">▶ tools/call</button></p><pre class="pre" style="max-height:300px;overflow:auto;white-space:pre">${APIK.tout?esc(APIK.tout):'El resultado aparece acá, igual que lo recibe el asistente.'}</pre></div></div>
+   <div class="card" style="margin-top:14px"><h3>Conectar Claude Desktop</h3><p class="mut">En Claude Desktop: Configuración → Desarrollador → Editar configuración, y agregá:</p><div class="pre">${esc(JSON.stringify({mcpServers:{'estudio-vb':{command:'node',args:['C:/SistemaVB/vb-api.mjs','--mcp','--datos','C:/SistemaVB/datos-estudio.json']}}},null,2))}</div><p class="mut">Para un servidor publicado en internet (conector remoto): URL <span class="mono">${esc(apiBase())}/mcp</span> con la clave como <span class="mono">Authorization: Bearer</span>.</p></div>`}
+ if(t==='srv')b=`<div class="grid g2"><div class="card"><h3>1 · Descargar los datos</h3><p>Archivo con la foto de la cartera (clientes, comprobantes de 12 meses, SCT, CCMA, Libro IVA, DFE y vencimientos) y las claves de API activas (solo su huella, nunca la clave).</p><button class="btn pri" data-act="apidl">⬇ datos-estudio.json</button><p class="disc">En la versión con nube el servidor lee la base directamente y se actualiza solo después de cada sincronización.</p></div>
+  <div class="card"><h3>2 · Iniciar el servidor</h3><p>Necesita Node.js 18 o superior. Sin dependencias.</p><div class="pre">node vb-api.mjs --datos datos-estudio.json --puerto 8787</div><p>API REST en <span class="mono">http://localhost:8787/v1/…</span> y MCP remoto en <span class="mono">http://localhost:8787/mcp</span>.</p><div class="pre">node vb-api.mjs --mcp --datos datos-estudio.json</div><p>Modo MCP por consola (stdio) para Claude Desktop.</p><p class="disc">El archivo <span class="mono">vb-api.mjs</span> está en la carpeta <span class="mono">servidor/</span> del repositorio, con su guía de uso.</p></div></div>`;
+ if(t==='hooks')b=`<div class="grid g2"><div class="card"><h3>Nuevo webhook</h3><form data-form="hooknew"><label>URL que recibe el aviso</label><input name="u" type="url" required placeholder="https://tu-sistema.com/avisos-vb"><label style="margin-top:8px">Eventos</label>${WHEV.map(e=>`<p style="margin:4px 0"><label style="color:var(--txt);font-size:13px;margin:0"><input type="checkbox" name="e_${e[0]}" checked> <span class="mono">${e[0]}</span> · ${e[1]}</label></p>`).join('')}<button class="btn pri">Agregar</button></form></div>
+  <div class="card"><h3>Webhooks configurados</h3><div class="tw"><table><thead><tr><th>URL</th><th>Eventos</th><th></th></tr></thead><tbody>${APIK.hooks.map(h=>`<tr><td class="mono" style="white-space:normal">${esc(h.u)}</td><td><small>${h.e.join(', ')}</small></td><td style="white-space:nowrap"><button class="btn sm" data-act="hooktest" data-id="${h.id}">Probar</button> <button class="btn sm bad" data-act="hookdel" data-id="${h.id}">✕</button></td></tr>`).join('')||'<tr><td colspan="3" class="mut">Sin webhooks.</td></tr>'}</tbody></table></div><p class="disc">En la demo la prueba muestra el aviso que se enviaría (firmado con HMAC-SHA256) sin mandarlo.</p></div></div>`;
+ if(t==='carga')b=_apiOld().replace(/^<div class="ph">[\s\S]*?<\/div><\/div>/,'');
+ return pageHead('API REST y servidor MCP','Integrá los datos fiscales de tu cartera a cualquier sistema o asistente de IA. Solo lectura, con clave por sistema.')+tabs+b;
+};
+Object.assign(ACT,{
+ apitab(d){APIK.tab=d.t;render()},
+ apisel(d){APIK.ep=+d.i;APIK.qs='';APIK.out=null;render();window.scrollTo(0,0)},
+ apirun2(){const t0=performance.now(),p=epPath(APIK.ep),q=Object.fromEntries(new URLSearchParams(APIK.qs.replace(/^\?/,'')));const r=apiRoute(apiDb(true),'GET',p,q),txt=JSON.stringify(r.body,null,2);APIK.out={status:r.status,txt:txt.length>60000?txt.slice(0,60000)+'\n… (respuesta recortada en pantalla)':txt,ms:Math.max(1,Math.round(performance.now()-t0)),size:txt.length};const k=APIK.keys.find(k=>!k.rev);if(k){k.u=Date.now();apiSave()}logA('Consulta de API: GET '+p);render()},
+ apirev(d){const k=APIK.keys.find(x=>x.id===+d.id);if(k){k.rev=true;apiSave();logA('Clave de API revocada: '+k.n);toast('Clave revocada')}render()},
+ apicopy(){try{navigator.clipboard.writeText(APIK.newKey);toast('Clave copiada')}catch(e){toast('Seleccioná la clave y copiala')}},
+ apinkok(){APIK.newKey=null;render()},
+ apidl(){const db=apiDb(true),b=new Blob([JSON.stringify(db)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='datos-estudio.json';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);logA('Descarga de datos para la API');toast('datos-estudio.json descargado ('+db.clientes.length+' clientes)')},
+ mcprun(){let a={};try{a=APIK.targs?JSON.parse(APIK.targs):{}}catch(e){APIK.tout='Los argumentos no son un JSON válido.';return render()}const r=mcpHandle(apiDb(true),{jsonrpc:'2.0',id:1,method:'tools/call',params:{name:APIK.tool,arguments:a}});APIK.tout=JSON.stringify(r,null,2);render()},
+ hooktest(d){const h=APIK.hooks.find(x=>x.id===+d.id);if(!h)return;const c=CL[0]||{n:'Cliente',cuit:''},ev=h.e[0]||'dfe.nueva';modal('Aviso de prueba',`<p>POST <span class="mono">${esc(h.u)}</span></p><div class="pre">X-VB-Evento: ${ev}\nX-VB-Firma: sha256=${rhex(32)}\n\n${esc(JSON.stringify({evento:ev,fecha:new Date().toISOString(),estudio:S.brand.n,cliente:{cuit:c.cuit,nombre:c.n},datos:{detalle:(WHEV.find(e=>e[0]===ev)||[])[1]}},null,2))}</div><p class="disc">Demo: el aviso no se envía.</p>`)},
+ hookdel(d){APIK.hooks=APIK.hooks.filter(x=>x.id!==+d.id);apiSave();render()}
+});
+Object.assign(CHG,{apiep2(v){APIK.ep=+v;APIK.qs='';APIK.out=null;render()},apicuit(v){APIK.cuit=v;APIK.out=null;render()},apiqs(v){APIK.qs=v},mcptool(v){APIK.tool=v;const t=MCP_TOOLS.find(x=>x.name===v);APIK.targs=JSON.stringify(t&&t.inputSchema.required?{cliente:(CL[0]||{}).n||''}:{});APIK.tout=null;render()},mcpargs(v){APIK.targs=v}});
+Object.assign(FRM,{
+ async apinew(f){const k='vb_live_'+rhex(20),h=await sha256(k);APIK.keys.unshift({id:Date.now(),n:String(f.get('n')).trim(),sc:f.get('sc'),pre:k.slice(0,12),h,f:TODAYISO,u:null});APIK.newKey=k;apiSave();logA('Clave de API creada: '+f.get('n'));render()},
+ hooknew(f){const e=WHEV.map(x=>x[0]).filter(x=>f.get('e_'+x));if(!e.length)return toast('Elegí al menos un evento');APIK.hooks.push({id:Date.now(),u:String(f.get('u')),e});apiSave();logA('Webhook agregado: '+f.get('u'));toast('Webhook agregado ✔');render()}
+});
+
+/* =====================================================================
+   10 · Asistente de IA (solo lectura)
+   ===================================================================== */
+const AI={msgs:[],open:false};
+const AISUG0=()=>['¿Quién tiene deuda vencida?','¿Qué vence esta semana?','¿Quién está cerca del tope del monotributo?','Notificaciones sin leer del DFE','¿Cuánto facturó el mes pasado '+((CL.find(c=>c.tipo==='Monotributo')||CL[0]||{n:'un cliente'}).n.split(' ').slice(0,2).join(' '))+'?','¿Presentaron todos el Libro IVA?'];
+const AISTOP=new Set(['sa','srl','sas','de','del','la','las','los','el','y','e','dr','dra','lic','cpn','ing','sh','s','a','l','r','cia','hnos','hermanos','grupo','servicios','comercial','estudio','asociados']);
+function aiFindCli(db,t,raw){
+ const d=(raw.match(/\d{2}-?\d{8}-?\d/)||[''])[0].replace(/\D/g,'');if(d.length===11){const c=db.clientes.find(x=>x.cuit.replace(/\D/g,'')===d);if(c)return c}
+ const words=new Set(t.split(' '));let best=null,bs=0;
+ db.clientes.forEach(c=>{const tk=apiNorm(c.nombre).split(' ').filter(w=>w.length>=3&&!AISTOP.has(w));if(!tk.length)return;const hit=tk.filter(w=>words.has(w)||(w.length>=5&&t.includes(w))).length;const sc=hit+hit/tk.length;if(hit&&sc>bs){bs=sc;best=c}});
+ return best;
+}
+function aiPeriod(t){
+ const cur=TODAYISO.slice(0,7),M=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+ let m=t.match(/ultimos? (\d+) meses/);if(m)return{d:ymAdd(cur,-(+m[1]-1)),h:cur,l:'los últimos '+m[1]+' meses'};
+ if(/(12 meses|ultimo ano|anual|en el ano)/.test(t))return{d:ymAdd(cur,-11),h:cur,l:'los últimos 12 meses'};
+ if(/(mes pasado|mes anterior|ultimo mes)/.test(t)){const y=ymAdd(cur,-1);return{d:y,h:y,l:ymLbl(y)}}
+ for(let i=0;i<12;i++)if(new RegExp('\\b'+M[i]+'\\b').test(t)){let y=TODAY.getFullYear();if(i+1>TODAY.getMonth()+1)y--;const ym=y+'-'+String(i+1).padStart(2,'0');return{d:ym,h:ym,l:ymLbl(ym)}}
+ return{d:cur,h:cur,l:ymLbl(cur)+' (mes en curso)'};
+}
+function aiRange(t){
+ if(/\bhoy\b/.test(t))return[TODAYISO,TODAYISO,'hoy'];if(/\bmanana\b/.test(t)){const d=iso(addD(TODAY,1));return[d,d,'mañana']}
+ let m=t.match(/proximos? (\d+) dias/);if(m)return[TODAYISO,iso(addD(TODAY,+m[1])),'en los próximos '+m[1]+' días'];
+ if(/este mes|del mes/.test(t)){const e=new Date(TODAY.getFullYear(),TODAY.getMonth()+1,0);return[TODAYISO,iso(e),'lo que queda del mes']}
+ if(/proximo mes|mes que viene/.test(t)){const a=new Date(TODAY.getFullYear(),TODAY.getMonth()+1,1),e=new Date(TODAY.getFullYear(),TODAY.getMonth()+2,0);return[iso(a),iso(e),'el mes que viene']}
+ if(/vencid|atrasad/.test(t))return[iso(addD(TODAY,-30)),iso(addD(TODAY,-1)),'en los últimos 30 días (vencidos)'];
+ return[TODAYISO,iso(addD(TODAY,7)),'en los próximos 7 días'];
+}
+function aiAnswer(q){
+ const db=apiDb(),t=apiNorm(q),calls=[],G=(p,qq)=>{qq=qq||{};Object.keys(qq).forEach(k=>{if(qq[k]==null||qq[k]==='')delete qq[k]});calls.push('GET '+p+(Object.keys(qq).length?'?'+new URLSearchParams(qq):''));return apiRoute(db,'GET',p,qq).body};
+ const out=h=>({h,calls}),A=x=>ars(x),cu=c=>c.cuit.replace(/\D/g,''),c=aiFindCli(db,t,q),tbl=(hd,rows)=>`<table class="mini"><thead><tr>${hd.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table>`;
+ if(!t)return out('Escribí una pregunta.');
+ if(/^(carga|cargame|cargar|presenta|presentame|presentar|paga|pagame|pagar|borra|borrar|elimina|eliminar|modifica|modificar|cambia|cambiar|emiti|emitir|genera|generar|anula|anular|manda|envia|enviar|crea|crear)\b/.test(t))
+  return out('🔒 Soy un asistente de <b>solo lectura</b>: puedo consultar los datos de tus clientes, pero no puedo cargar, modificar ni borrar nada, ni operar ante ARCA. Para eso usá las pantallas del sistema.');
+ if(/^(hola|buenas|buen dia|ayuda|que (podes|sabes|puedo)|como funciona)/.test(t)&&!c)
+  return out(`Hola 👋 Puedo responder sobre los datos sincronizados de tu cartera (${db.clientes.length} clientes): deudas e intereses del SCT, vencimientos, comprobantes emitidos y recibidos, Libro IVA Digital, saldos de la CCMA, recategorización del monotributo y notificaciones del Domicilio Fiscal Electrónico. Probá con alguna de las sugerencias.`);
+ if(/(cuantos clientes|lista(do)? de clientes|que clientes|mis clientes|cartera)/.test(t)&&!c){const tp=/monotribut/.test(t)?'mono':/inscript/.test(t)?'ri':/sociedad/.test(t)?'soc':/persona/.test(t)?'ph':'';const r=G('/v1/clientes',{tipo:tp});return out(`Tenés <b>${r.total}</b> ${tp?Object.values(TIPOS).find(x=>x.k===tp).pl.toLowerCase():'clientes en la cartera'}:<br>`+r.clientes.slice(0,25).map(x=>`• ${esc(x.nombre)} <small class="mut">${x.cuit} · ${esc(x.condicion)}${x.categoria?' '+x.categoria:''}</small>`).join('<br>'))}
+ if(/(notific|dfe|domicilio fiscal|intimac|requerimient|buzon)/.test(t)){
+  const nl=/(sin leer|no leid|nueva|pendiente)/.test(t)?'1':'';
+  if(c){const r=G('/v1/clientes/'+cu(c)+'/dfe',{no_leidas:nl});return out(r.total?`<b>${esc(c.nombre)}</b> tiene ${r.total} notificación(es)${nl?' sin leer':''} en el DFE:<br>`+r.notificaciones.slice(0,10).map(n=>`• ${fd(n.fecha)} · <b>${esc(n.tema)}</b>: ${esc(n.asunto)}${n.leida?'':' <span class="badge b-bad">sin leer</span>'}`).join('<br>'):`<b>${esc(c.nombre)}</b> no tiene notificaciones${nl?' sin leer':''} en el Domicilio Fiscal Electrónico. Sincronizado ${c.sincronizado?fsync(Date.parse(c.sincronizado)):'—'}.`)}
+  const r=G('/v1/notificaciones',{no_leidas:'1'});return out(r.total?`Hay <b>${r.total}</b> notificaciones sin leer en el DFE de la cartera:<br>`+r.notificaciones.slice(0,12).map(n=>`• ${fd(n.fecha)} · <b>${esc(n.cliente)}</b> · ${esc(n.tema)}: ${esc(n.asunto)}`).join('<br>'):'No hay notificaciones sin leer en el Domicilio Fiscal Electrónico de tu cartera. ✔')}
+ if(/(tope|recateg|categoria|exclusi|excluid)/.test(t)){
+  if(c){const r=G('/v1/clientes/'+cu(c)+'/monotributo');if(r.error)return out(esc(c.nombre)+': '+esc(r.error));return out(`<b>${esc(c.nombre)}</b> está en la categoría <b>${r.categoria}</b>. Facturó ${A(r.facturacion_12m)} en los últimos 12 meses, el <b>${num(r.porcentaje,1)}%</b> del tope de ${A(r.tope)}. ${r.exclusion?'⚠️ Supera la última categoría: posible exclusión.':r.categoria_que_corresponde!==r.categoria?'Según lo facturado le corresponde la categoría <b>'+r.categoria_que_corresponde+'</b>.':'Está bien categorizado.'}`)}
+  const r=G('/v1/recategorizacion',{min_pct:'75'});return out(r.total?`<b>${r.total}</b> monotributista(s) están al 75% del tope o más:<br>`+tbl(['Cliente','Cat.','% del tope','Corresponde'],r.monotributistas.map(x=>`<tr><td>${esc(x.nombre)}</td><td>${x.categoria}</td><td class="r"><b class="${x.porcentaje>=85?'dn':''}">${num(x.porcentaje,1)}%</b></td><td>${x.exclusion?'Exclusión':x.categoria_que_corresponde}</td></tr>`))+`<br><small class="mut">Próxima recategorización: ${fd(iso(nextRecat()))}.</small>`:'Ningún monotributista está cerca del tope de su categoría. ✔')}
+ if(/(ccma|cuenta corriente|autonomo|cuota)/.test(t)||(/saldo/.test(t)&&c&&db.ccma[c.cuit]&&!/(iva|libro)/.test(t))){
+  if(c){const r=G('/v1/clientes/'+cu(c)+'/ccma');if(r.error)return out(esc(c.nombre)+': '+esc(r.error));const imp=r.movimientos.filter(m=>m.saldo>0&&m.vencimiento<TODAYISO);return out(`CCMA de <b>${esc(c.nombre)}</b> (${r.regimen}): cuota mensual ${A(r.cuota_mensual)}. ${r.saldo_deudor>0?`Saldo deudor <b class="dn">${A(r.saldo_deudor)}</b> (${imp.map(m=>ymLbl2(m.periodo)).join(', ')}).`:'Sin saldo deudor.'}${r.saldo_a_favor>0?` Saldo a favor ${A(r.saldo_a_favor)}.`:''}${r.sin_dato?' Hay períodos sin dato: conviene sincronizar.':''}`)}
+  const L=db.clientes.filter(x=>db.ccma[x.cuit]&&db.ccma[x.cuit].saldo_deudor>0);calls.push('GET /v1/clientes/{cuit}/ccma (por cliente)');return out(L.length?`${L.length} cliente(s) con saldo deudor en la CCMA:<br>`+L.sort((a,b)=>db.ccma[b.cuit].saldo_deudor-db.ccma[a.cuit].saldo_deudor).map(x=>`• ${esc(x.nombre)}: <b class="dn">${A(db.ccma[x.cuit].saldo_deudor)}</b>`).join('<br>'):'Nadie tiene saldo deudor en la CCMA. ✔')}
+ if(/(libro iva|portal iva|2083|presento|presentaron|presentado|presentacion)/.test(t)){
+  if(c){const r=G('/v1/clientes/'+cu(c)+'/libro-iva');if(r.error)return out(esc(c.nombre)+': '+esc(r.error));return out(`Libro IVA Digital de <b>${esc(c.nombre)}</b>:<br>`+tbl(['Período','Estado','Fecha','Débito','Crédito'],r.presentaciones.slice(0,6).map(p=>`<tr><td>${ymLbl2(p.periodo)}</td><td>${p.presentado?'✔ Presentado':'✕ Pendiente'}</td><td>${p.fecha_presentacion?fd(p.fecha_presentacion):'—'}</td><td class="r">${A(p.debito_fiscal)}</td><td class="r">${A(p.credito_fiscal)}</td></tr>`)))}
+  const ym=aiPeriod(t).d<TODAYISO.slice(0,7)?aiPeriod(t).d:ymAdd(TODAYISO.slice(0,7),-1),L=db.clientes.filter(x=>db.libro_iva[x.cuit]);calls.push('GET /v1/clientes/{cuit}/libro-iva (por cliente)');
+  const no=L.filter(x=>{const p=db.libro_iva[x.cuit].find(y=>y.periodo===ym);return!p||!p.presentado});
+  return out(`Libro IVA Digital de ${ymLbl(ym)}: presentaron <b>${L.length-no.length} de ${L.length}</b> responsables inscriptos.${no.length?'<br>Faltan: '+no.map(x=>esc(x.nombre)).join(', ')+'.':' ✔'}`)}
+ if(/(deud|debe|deben|interes|sct|cuentas tributarias|saldo)/.test(t)){
+  if(c){const r=G('/v1/clientes/'+cu(c)+'/sct');return out(r.deuda_vencida>0?`<b>${esc(c.nombre)}</b> tiene deuda vencida por <b class="dn">${A(r.deuda_vencida)}</b> (capital ${A(r.capital_vencido)} + intereses ${A(r.intereses)}):<br>`+r.deudas.filter(d=>d.vencida).map(d=>`• ${esc(d.impuesto)} · período ${d.periodo.slice(4,6)}/${d.periodo.slice(0,4)} · venció ${fd(d.vencimiento)} · ${A(d.capital+d.intereses)}`).join('<br>')+(r.ddjj_pendientes.length?`<br>Además tiene ${r.ddjj_pendientes.length} DDJJ pendiente(s).`:''):`<b>${esc(c.nombre)}</b> no tiene deuda vencida en el Sistema de Cuentas Tributarias.${r.capital_no_vencido?` Tiene ${A(r.capital_no_vencido)} no vencido.`:''}${r.vencimientos[0]?` Próximo vencimiento: ${esc(r.vencimientos[0].impuesto)} el ${fd(r.vencimientos[0].vencimiento)}.`:''}`)}
+  const r=G('/v1/deudas');return out(r.clientes.length?`La cartera tiene <b class="dn">${A(r.total)}</b> de deuda vencida en ${r.clientes.length} cliente(s):<br>`+tbl(['Cliente','Capital','Intereses','Total'],r.clientes.map(x=>`<tr><td>${esc(x.nombre)}</td><td class="r">${A(x.capital_vencido)}</td><td class="r">${A(x.intereses)}</td><td class="r"><b>${A(x.deuda_vencida)}</b></td></tr>`)):'Ningún cliente tiene deuda vencida en el Sistema de Cuentas Tributarias. ✔')}
+ if(/(venc|vence|vencen|agenda|calendario)/.test(t)){
+  const [d1,d2,l]=aiRange(t),r=G('/v1/vencimientos',{desde:d1,hasta:d2,cuit:c?cu(c):''}),L=r.vencimientos.filter(v=>/vencid/.test(t)?v.estado==='Vencido':v.estado!=='Presentado');
+  return out(L.length?`${c?'<b>'+esc(c.nombre)+'</b> tiene':'Hay'} <b>${L.length}</b> vencimiento(s) ${/vencid/.test(t)?'sin presentar ':'pendientes '}${l}:<br>`+L.slice(0,20).map(v=>`• ${fd(v.fecha)} · ${esc(v.obligacion)}${c?'':' · '+esc(v.cliente)}${v.estado==='Vencido'?' <span class="badge b-bad">vencido</span>':''}`).join('<br>')+(L.length>20?'<br>…':''):`No hay vencimientos pendientes ${l}${c?' para '+esc(c.nombre):''}. ✔`)}
+ if(/(factur|vend|venta|emiti|ingres|compr|recib|gast|comprobante|iva)/.test(t)){
+  const P=aiPeriod(t),tp=/(compr|recib|gast|proveedor)/.test(t)&&!/(factur|vend|venta|emiti)/.test(t)?'recibidos':/(factur|vend|venta|emiti|ingres)/.test(t)?'emitidos':'';
+  if(c){const r=G('/v1/clientes/'+cu(c)+'/comprobantes',{desde:P.d,hasta:P.h,tipo:tp,limit:'500'});const iv=k=>sum(r.comprobantes.filter(x=>x.tipo===k).map(x=>x.iva));
+   return out(`<b>${esc(c.nombre)}</b> · ${P.l}:<br>${tp!=='recibidos'?`• Emitido: <b>${A(r.total_emitido)}</b> en ${r.comprobantes.filter(x=>x.tipo==='emitido').length} comprobantes (IVA débito ${A(iv('emitido'))})<br>`:''}${tp!=='emitidos'?`• Recibido: <b>${A(r.total_recibido)}</b> en ${r.comprobantes.filter(x=>x.tipo==='recibido').length} comprobantes (IVA crédito ${A(iv('recibido'))})`:''}`)}
+  calls.push('GET /v1/clientes/{cuit}/comprobantes?desde='+P.d+'&hasta='+P.h+' (por cliente)');
+  const L=db.clientes.map(x=>{const cp=db.comprobantes[x.cuit],f=y=>y.fecha.slice(0,7)>=P.d&&y.fecha.slice(0,7)<=P.h;return{x,e:sum(cp.emitidos.filter(f).map(y=>y.total)),r:sum(cp.recibidos.filter(f).map(y=>y.total))}}).sort((a,b)=>tp==='recibidos'?b.r-a.r:b.e-a.e);
+  return out(`${tp==='recibidos'?'Compras':'Facturación'} de la cartera · ${P.l}: <b>${A(sum(L.map(o=>tp==='recibidos'?o.r:o.e)))}</b>.<br>`+tbl(['Cliente','Emitido','Recibido'],L.slice(0,10).map(o=>`<tr><td>${esc(o.x.nombre)}</td><td class="r">${A(o.e)}</td><td class="r">${A(o.r)}</td></tr>`)))}
+ if(c){const f=G('/v1/clientes/'+cu(c)),s=G('/v1/clientes/'+cu(c)+'/sct'),dn=G('/v1/clientes/'+cu(c)+'/dfe',{no_leidas:'1'}),m=db.mono[c.cuit]?G('/v1/clientes/'+cu(c)+'/monotributo'):null;
+  return out(`<b>${esc(f.nombre)}</b> · CUIT ${f.cuit} · ${esc(f.condicion)}${f.categoria?' categoría '+f.categoria:''}<br>${esc(f.actividad||'')}<br>• Impuestos: ${f.impuestos.map(i=>esc(i.impuesto)).join(', ')}<br>• Deuda vencida: ${s.deuda_vencida>0?'<b class="dn">'+A(s.deuda_vencida)+'</b>':'no tiene'}${s.vencimientos[0]?'<br>• Próximo vencimiento: '+esc(s.vencimientos[0].impuesto)+' el '+fd(s.vencimientos[0].vencimiento):''}<br>• DFE: ${dn.total?dn.total+' notificación(es) sin leer':'sin novedades'}${m?`<br>• Monotributo: ${num(m.porcentaje,1)}% del tope de la categoría ${m.categoria}`:''}<br><small class="mut">Sincronizado ${f.sincronizado?fsync(Date.parse(f.sincronizado)):'— (clave inválida)'}</small>`)}
+ return out('No llegué a entender la pregunta. Puedo responder sobre <b>deudas</b>, <b>vencimientos</b>, <b>facturación y compras</b>, <b>Libro IVA</b>, <b>CCMA</b>, <b>recategorización</b> y <b>notificaciones del DFE</b>, de un cliente (nombralo) o de toda la cartera.');
+}
+function aiChat(full){
+ return`<div class="aichat ${full?'full':''}"><div class="aimsgs" id="aiMsgs">${AI.msgs.length?AI.msgs.map(m=>m.r==='u'?`<div class="aim u">${esc(m.t)}</div>`:`<div class="aim a">${m.h}${m.calls&&m.calls.length?`<details class="aical"><summary>Consultas a la API (${m.calls.length})</summary>${m.calls.map(x=>`<div class="mono">${esc(x)}</div>`).join('')}</details>`:''}</div>`).join(''):`<div class="aim a">Hola 👋 Preguntame en castellano por tus clientes: deudas, vencimientos, comprobantes, saldos y notificaciones. <b>Solo leo</b>: no modifico nada ni opero ante ARCA.</div>`}</div>
+ <div class="aisug">${AISUG0().map(s=>`<button data-act="aisug" data-q="${esc(s)}">${esc(s)}</button>`).join('')}</div>
+ <form class="aiin" data-form="aiask"><input name="q" placeholder="Ej.: ¿Cuánto debe ${esc(((CL[0]||{}).n||'el cliente').split(' ').slice(0,2).join(' '))}?" autocomplete="off"><button class="btn pri">Enviar</button></form></div>`;
+}
+function aiAsk(q){q=String(q||'').trim();if(!q)return;AI.msgs.push({r:'u',t:q});let a;try{a=aiAnswer(q)}catch(e){console.error(e);a={h:'No pude consultar los datos: '+esc(e.message),calls:[]}}AI.msgs.push({r:'a',h:a.h,calls:a.calls});if(AI.msgs.length>60)AI.msgs.splice(0,2);aiRefresh()}
+function aiRefresh(){if(S.view==='asistente')render();const d=$('#aiDrw');if(d&&AI.open){d.querySelector('.aibody').innerHTML=aiChat(false)}document.querySelectorAll('#aiMsgs').forEach(m=>m.scrollTop=m.scrollHeight);const i=document.querySelector((S.view==='asistente'?'#view':'#aiDrw')+' .aiin input');if(i)i.focus()}
+FRM.aiask=f=>aiAsk(f.get('q'));
+ACT.aisug=d=>aiAsk(d.q);
+ACT.aiopen=()=>{if(S.view==='asistente')return;AI.open=!AI.open;aiDrawer()};
+ACT.aiclose=()=>{AI.open=false;aiDrawer()};
+ACT.aiclear=()=>{AI.msgs=[];aiRefresh()};
+function aiDrawer(){
+ let d=$('#aiDrw');if(!d){d=document.createElement('div');d.id='aiDrw';document.body.appendChild(d)}
+ d.className=AI.open?'on':'';d.innerHTML=AI.open?`<div class="aihd"><b>✨ Asistente del estudio</b><span class="badge b-ok">Solo lectura</span><span style="flex:1"></span><button class="btn sm" data-act="aiclear" title="Borrar conversación">Limpiar</button><button class="btn sm" data-act="aiclose">✕</button></div><div class="aibody">${aiChat(false)}</div>`:'';
+ if(AI.open){const m=d.querySelector('#aiMsgs');if(m)m.scrollTop=m.scrollHeight;const i=d.querySelector('input');if(i)i.focus()}
+}
+V.asistente=()=>pageHead('Asistente de IA','Preguntale por los datos de tus clientes en castellano, sin recorrer el panel. Consulta la misma información que ves en el sistema: comprobantes, deuda, saldos y notificaciones del Domicilio Fiscal Electrónico.','<button class="btn" data-act="aiclear">Limpiar conversación</button>')+
+ `<div class="grid g21"><div class="card">${aiChat(true)}</div><div><div class="card"><h3>🔒 Solo lectura</h3><p class="mut">El asistente puede leer, no puede modificar nada ni operar ante ARCA. Cada respuesta muestra qué consultas hizo a la API, para que sepas de dónde sale el dato.</p></div>
+ <div class="card" style="margin-top:14px"><h3>Conectar tu propio asistente</h3><p class="mut">Claude, ChatGPT u otro asistente compatible con MCP pueden conectarse al servidor MCP del estudio y responder preguntas libres con los mismos datos.</p><button class="btn" data-act="apimcp">Ver cómo conectarlo</button></div></div></div>`;
+ACT.apimcp=()=>{APIK.tab='mcp';go('api')};
+function aiFab(){let b=$('#aiFab');if(!b){b=document.createElement('button');b.id='aiFab';b.dataset.act='aiopen';b.title='Asistente de IA';b.innerHTML='✨<span>Asistente</span>';document.body.appendChild(b)}b.hidden=!S.role||S.view==='asistente'||document.body.classList.contains('pub');if(b.hidden&&AI.open){AI.open=false;aiDrawer()}}
+{const _r3=render;render=function(){_r3();try{aiFab()}catch(e){}if(S.view==='asistente'){const m=$('#aiMsgs');if(m)m.scrollTop=m.scrollHeight}}}
+
+/* ---------- Inicio: accesos a las funciones de ARCA ---------- */
+{const _vi=V.inicio;V.inicio=()=>{const h=_vi();if(!CL.length)return h;const R=CL.map(c=>sctCalc(c)),un=DFE.filter(x=>!x.leida&&CL.some(c=>c.id===x.cid)).length,tp=CL.filter(c=>c.tipo==='Monotributo'&&monoCalc(c).pct>=75).length,lp=ivaCli().filter(c=>{const r=libroRows(c,1)[0];return r&&!r.pres}).length;
+ const tiles=[['sctc','🏛️','Deudas y vencimientos',ars(sum(R.map(s=>s.vencida)))+' vencido'],['bandeja','✉️','Notificaciones DFE',un+' sin leer'],['miscomp','🗃️','Mis Comprobantes','emitidos y recibidos'],['libroiva','📗','Libro IVA Digital',lp?lp+' sin presentar':'al día'],['ccmac','💳','CCMA','saldos por CUIT'],['recat','📈','Recategorización',tp+' cerca del tope'],['agenda','🗓️','Agenda','vencimientos y tareas'],['reportes','🎨','Reportes','con tu marca'],['api','🔌','API y MCP','integraciones'],['asistente','✨','Asistente IA','preguntá en castellano']];
+ return h+`<div class="card" style="margin-top:14px"><h3>Datos de ARCA de tu cartera</h3>${syncBarAll('Sincronización diaria')}<div class="tiles">${tiles.map(x=>`<a class="tile" data-act="go" data-v="${x[0]}"><span>${x[1]}</span><b>${x[2]}</b><small>${esc(x[3])}</small></a>`).join('')}</div></div>`}}
+
 
 Object.assign(ACT,{cfgdatos(){if(S.role!=='admin')return toast(CFG.mode==='limpio'?'Trabajando con datos propios guardados en este navegador':'Estás viendo datos de ejemplo');S.cfgTab='datos';goView('config')}});
 /* ---------- Arranque ---------- */
 const _RESTORED=loadSaved();
 normalizeAll();
 if(!_RESTORED)seedExtras();
+syncDaily();
 
 /* ============ Core ============ */
 function buildNav(){
