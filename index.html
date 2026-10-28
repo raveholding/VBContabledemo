@@ -439,7 +439,7 @@ function ficha(id){
   <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><a class="btn wa" target="_blank" rel="noopener" href="${waLink(c.tel,'Hola '+c.n+', ¿cómo está?')}">WhatsApp</a><button class="btn" data-act="portalOf" data-id="${c.id}">Ver portal del cliente</button>${c.inv&&can('cart')?`<button class="btn" data-act="cartOf" data-id="${c.id}">Ver cartera</button>`:''}</div></div>
  <div><div class="card"><h3>Obligaciones abiertas</h3><div class="list">${ven.map(v=>`<div><div class="g"><b>${v.tipo}</b><span class="mut">${fd(v.fecha)}</span></div>${badge(v.estado,stBadge(v.estado))}</div>`).join('')||'<span class="mut">Sin obligaciones abiertas</span>'}</div></div>
  <div class="card" style="margin-top:14px"><h3>Honorarios recientes</h3><div class="list">${fs.map(f=>`<div><div class="g"><b>${f.con}</b><span class="mut">${ars(f.imp)}</span></div>${badge(estF(f),stBadge(estF(f)))}</div>`).join('')}</div></div></div></div>
- <div class="card" style="margin-top:14px"><h3>Documentos (${ds.length})</h3><div class="tw"><table><tbody>${ds.map(d=>`<tr><td>${d.tipo}</td><td>${fd(d.fecha)}</td><td>${badge(d.estado,stBadge(d.estado))}</td></tr>`).join('')}</tbody></table></div></div>`);
+ ${fichaCbtes(c)}<div class="card" style="margin-top:14px"><h3>Documentos (${ds.length})</h3><div class="tw"><table><tbody>${ds.map(d=>`<tr><td>${d.tipo}</td><td>${fd(d.fecha)}</td><td>${badge(d.estado,stBadge(d.estado))}</td></tr>`).join('')}</tbody></table></div></div>`);
 }
 function newCli(){modal('Nuevo cliente',`<form data-form="newcli"><div class="fr"><div><label>Nombre / Razón social</label><input name="n" required></div><div><label>CUIT</label><input name="cuit" placeholder="20-12345678-9" required pattern="\\d{2}-\\d{8}-\\d"></div><div><label>Condición</label><select name="tipo"><option>Monotributo</option><option>Responsable Inscripto</option><option>Sociedad</option><option>Persona humana</option></select></div></div>
  <div class="fr"><div><label>Honorario mensual</label><input type="number" name="hon" value="60000" min="0"></div><div><label>WhatsApp (con 549…)</label><input name="tel" value="549387"></div><div><label>Responsable</label><select name="resp">${STAFF.map((s,i)=>`<option value="${i}">${s.n}</option>`).join('')}</select></div></div>
@@ -473,9 +473,9 @@ V.imp=()=>{
   const rs=CL.filter(c=>c.tipo!=='Monotributo'&&c.tipo!=='Persona humana'),cid=rs.find(c=>c.id===S.cidIva)?S.cidIva:rs[0].id,cp=comprobantes(cid,S.ivaYM);
   const row=x=>{const iv=x.neto*x.al/100;return`<tr><td>${x.f}</td><td>${x.cp}</td><td class="r">${ars(x.neto)}</td><td class="r">${x.al}%</td><td class="r">${ars(iv)}</td><td class="r">${ars(x.neto+iv)}</td></tr>`};
   const deb=sum(cp.v.map(x=>x.neto*x.al/100)),cre=sum(cp.c.map(x=>x.neto*x.al/100)),sal=deb-cre,slda=+(S.saldoLD||0);
-  const net=sal-slda;
+  const rIva=retSum(cid,S.ivaYM,'IVA'),net=sal-slda-rIva;
   body=`<div class="card"><div class="fr"><div><label>Cliente</label><select data-chg="ivacid">${clOpts(cid,c=>c.tipo!=='Monotributo'&&c.tipo!=='Persona humana')}</select></div><div><label>Período</label><input type="month" value="${S.ivaYM}" data-chg="ivaym"></div><div><label>Saldo libre disponibilidad anterior</label><input type="number" value="${slda}" data-chg="ivald"></div></div></div>
-  <div class="grid g4" style="margin:14px 0">${kpi('Débito fiscal',ars(deb))}${kpi('Crédito fiscal',ars(cre))}${kpi('Saldo técnico',ars(sal),sal>=0?'a favor de ARCA':'a favor del contribuyente',sal>=0?'dn':'up')}${kpi(net>=0?'IVA a pagar':'Saldo a favor',ars(Math.abs(net)),'tras saldo de libre disp.',net>=0?'dn':'up')}</div>
+  <div class="grid g6" style="margin:14px 0">${kpi('Débito fiscal',ars(deb))}${kpi('Crédito fiscal',ars(cre))}${kpi('Saldo técnico',ars(sal),sal>=0?'a favor de ARCA':'a favor del contribuyente',sal>=0?'dn':'up')}${kpi('Retenciones y percepciones',ars(rIva),retCount(cid,S.ivaYM,'IVA')+' cargadas · ver módulo','up')}${kpi('Saldo libre disponibilidad',ars(slda))}${kpi(net>=0?'IVA a pagar':'Saldo a favor',ars(Math.abs(net)),'tras retenciones y saldo a favor',net>=0?'dn':'up')}</div>
   <div class="grid g2"><div class="card"><h3>Libro IVA Ventas</h3><div class="tw"><table><thead><tr><th>Comprobante</th><th>Cliente</th><th class="r">Neto</th><th class="r">Alíc.</th><th class="r">IVA</th><th class="r">Total</th></tr></thead><tbody>${cp.v.map(row).join('')}</tbody></table></div></div>
   <div class="card"><h3>Libro IVA Compras</h3><div class="tw"><table><thead><tr><th>Comprobante</th><th>Proveedor</th><th class="r">Neto</th><th class="r">Alíc.</th><th class="r">IVA</th><th class="r">Total</th></tr></thead><tbody>${cp.c.map(row).join('')}</tbody></table></div></div></div>
   <div class="card" style="margin-top:14px"><h3>Agregar comprobante</h3><form data-form="comp"><div class="fr"><div><label>Libro</label><select name="tp"><option value="V">Ventas</option><option value="C">Compras</option></select></div><div><label>Contraparte</label><input name="cp" required></div><div><label>Neto gravado</label><input type="number" name="neto" required min="1"></div><div><label>Alícuota</label><select name="al"><option>21</option><option>10.5</option><option>27</option><option>0</option></select></div><div><button class="btn pri">Agregar</button></div></div></form>
@@ -588,7 +588,7 @@ V.hon=()=>{
  chartBar('hc',[3,2,1,0].map(k=>MESES[new Date(TODAY.getFullYear(),TODAY.getMonth()-k,1).getMonth()].slice(0,3)),[3,2,1,0].map(k=>sum(FACT.filter(f=>f.est==='Cobrada'&&f.em.slice(0,7)===iso(new Date(TODAY.getFullYear(),TODAY.getMonth()-k,1)).slice(0,7)).map(f=>f.imp))),v=>'$'+num(v/1000)+'k');
  return`<div class="ph"><div><h1>Honorarios y cobranzas</h1><p>Abonos mensuales, facturas de honorarios, cuenta corriente y recordatorios de cobro.</p></div><div style="display:flex;gap:8px"><button class="btn" data-act="genhon">Generar honorarios del mes</button><button class="btn pri" data-act="newfact">+ Factura</button></div></div>
  <div class="grid g4" style="margin-bottom:14px">${kpi('Facturado este mes',ars(sum(mes.map(f=>f.imp))))}${kpi('Cobrado este mes',ars(sum(mes.filter(f=>f.est==='Cobrada').map(f=>f.imp))),'','up')}${kpi('Por cobrar',ars(pend))}${kpi('Vencido',ars(venc),venc?'reclamar':'sin mora',venc?'dn':'up')}</div>
- <div class="grid g21"><div class="card"><div class="fr" style="margin-bottom:10px"><div><label>Estado</label><select data-chg="honf"><option value="">Todos</option>${['Pendiente','Vencida','Cobrada'].map(e=>`<option ${S.honF===e?'selected':''}>${e}</option>`).join('')}</select></div></div><div class="tw" style="max-height:480px"><table><thead><tr><th>N°</th><th>Cliente</th><th>Concepto</th><th>Vence</th><th class="r">Importe</th><th>Estado</th><th></th></tr></thead><tbody>${list.map(f=>`<tr><td>C ${String(f.id).padStart(8,'0')}</td><td>${esc(cl(f.cid).n)}</td><td>${f.con}</td><td>${fd(f.ve)}</td><td class="r">${ars(f.imp)}</td><td>${badge(estF(f),stBadge(estF(f)))}</td><td>${f.est!=='Cobrada'?`<button class="btn sm ok" data-act="cobrar" data-id="${f.id}">Cobrar</button> <a class="btn sm wa" target="_blank" rel="noopener" href="${waLink(cl(f.cid).tel,'Hola, le recordamos que está pendiente de pago '+f.con+' por '+ars(f.imp)+' (vence '+fd(f.ve)+'). Muchas gracias. Estudio contable VB')}">Recordar</a>`:''}</td></tr>`).join('')}</tbody></table></div></div>
+ <div class="grid g21"><div class="card"><div class="fr" style="margin-bottom:10px"><div><label>Estado</label><select data-chg="honf"><option value="">Todos</option>${['Pendiente','Vencida','Cobrada'].map(e=>`<option ${S.honF===e?'selected':''}>${e}</option>`).join('')}</select></div></div><div class="tw" style="max-height:480px"><table><thead><tr><th>N°</th><th>Cliente</th><th>Concepto</th><th>Vence</th><th class="r">Importe</th><th>Estado</th><th></th></tr></thead><tbody>${list.map(f=>`<tr class="click" data-act="honver" data-id="${f.id}"><td>C ${String(f.id).padStart(8,'0')}</td><td>${esc(cl(f.cid).n)}</td><td>${f.con}</td><td>${fd(f.ve)}</td><td class="r">${ars(f.imp)}</td><td>${badge(estF(f),stBadge(estF(f)))}</td><td>${f.est!=='Cobrada'?`<button class="btn sm ok" data-act="cobrar" data-id="${f.id}">Cobrar</button> <a class="btn sm wa" target="_blank" rel="noopener" href="${waLink(cl(f.cid).tel,'Hola, le recordamos que está pendiente de pago '+f.con+' por '+ars(f.imp)+' (vence '+fd(f.ve)+'). Muchas gracias. Estudio contable VB')}">Recordar</a>`:''}</td></tr>`).join('')}</tbody></table></div></div>
  <div class="card"><h3>Cobrado por mes</h3><canvas id="hc" data-h="230"></canvas></div></div>`;
 };
 
@@ -599,6 +599,7 @@ V.portal=()=>{
  <div class="grid g3"><div class="card"><h3>Próximos vencimientos</h3><div class="list">${ven.map(v=>`<div><div class="g"><b>${v.tipo}</b><span class="mut">${fd(v.fecha)}</span></div>${badge(v.estado,stBadge(v.estado))}</div>`).join('')||'<span class="mut">Todo al día ✔</span>'}</div></div>
  <div class="card"><h3>Mis honorarios</h3><div class="list">${fs.map(f=>`<div><div class="g"><b>${f.con}</b><span class="mut">${ars(f.imp)} · vence ${fd(f.ve)}</span></div>${badge(estF(f),stBadge(estF(f)))}</div>`).join('')||'<span class="mut">Sin deuda ✔</span>'}</div></div>
  <div class="card"><h3>Mis documentos</h3><div class="list">${ds.slice(0,4).map(d=>`<div><div class="g"><b>${d.tipo}</b><span class="mut">${fd(d.fecha)}</span></div>${badge(d.estado,stBadge(d.estado))}</div>`).join('')}</div><label class="btn pri" style="margin:10px 0 0;cursor:pointer">⬆ Enviar documentos<input type="file" hidden data-chg="portalup" multiple></label></div></div>
+ <div class="card" style="margin-top:14px"><h3>Mis facturas del período</h3>${(()=>{const cp=comprobantes(c.id,S.ivaYM),r=retList(c.id,S.ivaYM);return`<div class="grid g3">${kpi('Ventas',ars(sum(cp.v.map(x=>x.neto*(1+x.al/100)))),cp.v.length+' comprobantes')}${kpi('Compras',ars(sum(cp.c.map(x=>x.neto*(1+x.al/100)))),cp.c.length+' comprobantes')}${kpi('Retenciones sufridas',ars(sum(r.map(x=>x.monto))),r.length+' certificados')}</div><div class="tw" style="margin-top:10px"><table><thead><tr><th>Tipo</th><th>Comprobante</th><th>Fecha</th><th>Contraparte</th><th class="r">Total</th></tr></thead><tbody>${cp.v.slice(0,3).map((x,i)=>`<tr class="click" data-act="cbte" data-cid="${c.id}" data-tp="v" data-i="${i}"><td>${badge('Venta','ok')}</td><td>${x.f}</td><td>${fd(x.fe)}</td><td>${esc(x.cp)}</td><td class="r">${ars(x.neto*(1+x.al/100))}</td></tr>`).join('')}${cp.c.slice(0,3).map((x,i)=>`<tr class="click" data-act="cbte" data-cid="${c.id}" data-tp="c" data-i="${i}"><td>${badge('Compra','info')}</td><td>${x.f}</td><td>${fd(x.fe)}</td><td>${esc(x.cp)}</td><td class="r">${ars(x.neto*(1+x.al/100))}</td></tr>`).join('')}</tbody></table></div>`})()}</div>
  ${pv?`<div class="card" style="margin-top:14px"><h3>Mi cartera de inversiones</h3><div class="grid g3">${kpi('Patrimonio',ars(pv.total))}${kpi('Resultado',ars(pv.pl),'no realizado',pv.pl>=0?'up':'dn')}${kpi('Perfil',c.perfil||'Sin evaluar')}</div></div>`:''}
  <div style="margin-top:14px"><a class="btn wa" target="_blank" rel="noopener" href="${waLink('5493874484132','Hola, consulta desde el portal del cliente de '+c.n)}">💬 Hablar con mi contador</a></div>`;
 };
@@ -1018,12 +1019,12 @@ function importCbtes(text,cid,ym){
 V.ventas=()=>{
  const cid=cpId(),ym=S.ivaYM,cp=comprobantes(cid,ym),ex=arcaExtras(cid,ym),imp=!!ARCAIMP[cid+'|'+ym],falt=imp?0:ex.v.length+ex.c.length;
  const bdg=x=>badge(x.src||'Sistema',x.src==='ARCA'?'info':x.src==='IA'?'gold':x.src==='E-commerce'?'ok':'info');
- const row=(x,pend)=>{const iv=x.neto*x.al/100;return`<tr><td>${x.f}</td><td>${esc(x.cp)}</td><td class="r">${ars(x.neto)}</td><td class="r">${ars(iv)}</td><td class="r">${ars(x.neto+iv)}</td><td>${pend?badge('En ARCA · falta cargar','warn'):bdg(x)}</td></tr>`};
+ const row=(x,pend,tp,i)=>{const iv=x.neto*x.al/100;return`<tr ${pend?'':`class="click" data-act="cbte" data-tp="${tp}" data-i="${i}"`}><td>${x.f}</td><td>${esc(x.cp)}</td><td class="r">${ars(x.neto)}</td><td class="r">${ars(iv)}</td><td class="r">${ars(x.neto+iv)}</td><td>${pend?badge('En ARCA · falta cargar','warn'):bdg(x)+' <span class="mut">· ver detalle</span>'}</td></tr>`};
  const head='<thead><tr><th>Comprobante</th><th>Contraparte</th><th class="r">Neto</th><th class="r">IVA</th><th class="r">Total</th><th>Origen</th></tr></thead>';
- return`<div class="ph"><div><h1>Ventas y compras</h1><p>Importación y exportación de comprobantes con “Mis Comprobantes” de ARCA, carga por foto con IA y facturación de e-commerce, todo en un mismo libro.</p></div></div>${cpHead()}
+ return`<div class="ph"><div><h1>Ventas y compras</h1><p>Importación y exportación de comprobantes con “Mis Comprobantes” de ARCA, carga por foto con IA y facturación de e-commerce. Tocá cualquier comprobante para ver el detalle completo.</p></div></div>${cpHead()}
  <div class="grid g4" style="margin-bottom:14px">${kpi('Ventas del período',ars(sum(cp.v.map(x=>x.neto))),cp.v.length+' comprobantes')}${kpi('Compras del período',ars(sum(cp.c.map(x=>x.neto))),cp.c.length+' comprobantes')}${kpi('En ARCA sin cargar',falt,falt?'importalos con un clic':'conciliado ✔',falt?'dn':'up')}${kpi('Cargados con IA / e-commerce',cp.c.concat(cp.v).filter(x=>x.src==='IA'||x.src==='E-commerce').length,'sin tipeo manual','up')}</div>
  <div class="card" style="margin-bottom:14px"><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri" data-act="arcaimp" ${imp?'disabled':''}>⬇ Importar de ARCA (simulado)</button><label class="btn" style="margin:0;cursor:pointer">📄 Importar CSV<input type="file" accept=".csv,.txt" hidden data-chg="vtcsv"></label><button class="btn" data-act="vtplant">Plantilla CSV</button><button class="btn" data-act="vtexp">⬆ Exportar comprobantes</button><button class="btn" data-act="go" data-v="ia">🤖 Cargar con IA</button></div><p class="disc">Formato CSV: fecha;tipo (V/C);número;contraparte;neto;alícuota. En la versión real la importación se conecta a “Mis Comprobantes” con tu clave fiscal.</p></div>
- <div class="grid g2"><div class="card"><h3>Ventas</h3><div class="tw"><table>${head}<tbody>${cp.v.map(x=>row(x)).join('')}${imp?'':ex.v.map(x=>row(x,1)).join('')}</tbody></table></div></div><div class="card"><h3>Compras</h3><div class="tw"><table>${head}<tbody>${cp.c.map(x=>row(x)).join('')}${imp?'':ex.c.map(x=>row(x,1)).join('')}</tbody></table></div></div></div>`;
+ <div class="grid g2"><div class="card"><h3>Ventas</h3><div class="tw"><table>${head}<tbody>${cp.v.map((x,i)=>row(x,0,'v',i)).join('')}${imp?'':ex.v.map(x=>row(x,1)).join('')}</tbody></table></div></div><div class="card"><h3>Compras</h3><div class="tw"><table>${head}<tbody>${cp.c.map((x,i)=>row(x,0,'c',i)).join('')}${imp?'':ex.c.map(x=>row(x,1)).join('')}</tbody></table></div></div></div>`;
 };
 
 /* ============ Impuestos: IIBB, municipal, Libro IVA Digital ============ */
@@ -1062,10 +1063,11 @@ function ivaPorAl(list){const m={};list.forEach(x=>{m[x.al]=m[x.al]||{neto:0,iva
 S.pgAj=3500000;
 V.papeles=()=>{
  const t=S.tab.papeles,cid=cpId(),cp=comprobantes(cid,S.ivaYM);
- const tabs=subTabs('papeles',[['iva','IVA'],['iibb','IIBB'],['gan','Ganancias'],['cargas','Cargas sociales']]);
+ const tabs=subTabs('papeles',[['iva','IVA'],['ret','Retenciones y percepciones'],['iibb','IIBB'],['gan','Ganancias'],['cargas','Cargas sociales']]);
  let b='';
  if(t==='iva'){const v=ivaPorAl(cp.v),c=ivaPorAl(cp.c),deb=sum(v.map(x=>x.iva)),cre=sum(c.map(x=>x.iva)),tb=a=>`<table><thead><tr><th>Alícuota</th><th class="r">Neto</th><th class="r">IVA</th></tr></thead><tbody>${a.map(x=>`<tr><td>${x.al}%</td><td class="r">${ars(x.neto)}</td><td class="r">${ars(x.iva)}</td></tr>`).join('')}<tr><td><b>Total</b></td><td class="r"><b>${ars(sum(a.map(x=>x.neto)))}</b></td><td class="r"><b>${ars(sum(a.map(x=>x.iva)))}</b></td></tr></tbody></table>`;
   b=`<div class="card">${papHead('IVA · determinación',cid)}<div class="grid g2"><div><h3>Débito fiscal (ventas)</h3>${tb(v)}</div><div><h3>Crédito fiscal (compras)</h3>${tb(c)}</div></div><div class="stat" style="margin-top:12px"><span>Saldo técnico</span><b>${ars(deb-cre)}</b></div><div class="stat"><span>${deb-cre>=0?'IVA a pagar':'Saldo a favor'}</span><b>${ars(Math.abs(deb-cre))}</b></div></div>`}
+ if(t==='ret')b=retPapel(cid,S.ivaYM);
  if(t==='iibb'){const k=iibbCalc(cid);b=`<div class="card">${papHead('IIBB · Convenio Multilateral',cid)}<table><thead><tr><th>Jurisdicción</th><th class="r">Coeficiente</th><th class="r">Base</th><th class="r">Alícuota</th><th class="r">Impuesto</th></tr></thead><tbody>${k.rows.map(x=>`<tr><td>${x.j}</td><td class="r">${num(x.coef*100,2)}%</td><td class="r">${ars(x.baseJ)}</td><td class="r">${x.al}%</td><td class="r">${ars(x.imp)}</td></tr>`).join('')}</tbody></table><div class="stat"><span>Impuesto determinado</span><b>${ars(k.tot)}</b></div><div class="stat"><span>Retenciones y percepciones</span><b>${ars(k.d.ret)}</b></div><div class="stat"><span>Saldo</span><b>${ars(k.saldo)}</b></div></div>`}
  if(t==='gan'){const bs=balanceSyS(cid),ing=bs.filter(x=>x.t==='RP'),egr=bs.filter(x=>x.t==='RN'),ti=-sum(ing.map(x=>x.s)),te=sum(egr.map(x=>x.s)),rc=ti-te,base=Math.max(rc+S.pgAj,0);
   b=`<div class="card">${papHead('Ganancias · conciliación contable-impositiva',cid)}<table><tbody>${ing.map(x=>`<tr><td>${x.n}</td><td class="r">${ars(-x.s)}</td></tr>`).join('')}${egr.map(x=>`<tr><td>(−) ${x.n}</td><td class="r">${ars(x.s)}</td></tr>`).join('')}<tr><td><b>Resultado contable</b></td><td class="r"><b>${ars(rc)}</b></td></tr><tr><td>Ajustes impositivos (+/−)</td><td class="r"><input type="number" style="width:140px" value="${S.pgAj}" data-chg="pgaj"></td></tr><tr><td><b>Resultado impositivo</b></td><td class="r"><b>${ars(base)}</b></td></tr><tr><td>Impuesto determinado (35%)</td><td class="r"><b>${ars(base*.35)}</b></td></tr></tbody></table><p class="disc">Parte del balance contable del ejercicio. Alícuota de ejemplo.</p></div>`}
@@ -1600,6 +1602,158 @@ MODS.splice(MODS.findIndex(m=>m[0]==='cont')+1,0,['banco','Conciliación bancari
 SECDEF.push('banco');PERM.sec.banco=true;
 PLAN.splice(PLAN.findIndex(x=>x[0]==='2.1.05')+1,0,['2.1.06','Tarjetas de crédito a pagar','P']);
 PLAN.splice(PLAN.findIndex(x=>x[0]==='5.2.07')+1,0,['5.2.08','Gastos generales','RN'],['5.2.09','Intereses y gastos bancarios','RN']);
+
+
+/* ============ Retenciones y percepciones ============ */
+const IMPS=[['IVA','RG 2854 · Retención de IVA'],['Ganancias','RG 830 · Retención de Ganancias'],['IIBB','Régimen provincial de IIBB'],['SUSS','RG 1784 · Seguridad social'],['Cheque','Ley 25.413 · Impuesto al cheque']];
+const AGENTES=[['Supermercados del Norte S.A.','30-61234567-0'],['Distribuidora Andina S.R.L.','30-71102233-0'],['YPF S.A.','30-54668997-0'],['Banco Nación Argentina','30-50001091-0'],['Telecom Argentina S.A.','30-63945373-0'],['Constructora del Valle S.A.','30-70811111-0']].map(a=>[a[0],mkCuit(a[1])]);
+const RET=[];let RTID=1;
+const retPer=x=>String(x.fecha).slice(0,7);
+const retList=(cid,ym,imp)=>RET.filter(x=>x.cid===+cid&&(!ym||retPer(x)===ym)&&(!imp||x.imp===imp));
+const retSum=(cid,ym,imp)=>sum(retList(cid,ym,imp).map(x=>x.monto));
+const retCount=(cid,ym,imp)=>retList(cid,ym,imp).length;
+function retAdd(o){const e=[];
+ if(!o.ag)e.push('Falta el agente de retención');
+ if(!cuitOk(o.cuit))e.push('CUIT del agente inválido ('+o.cuit+')');
+ if(!(o.monto>0))e.push('El importe debe ser mayor a cero');
+ if(!o.fecha||!normFecha(o.fecha))e.push('Fecha inválida');
+ if(o.cert&&RET.some(x=>x.cid===o.cid&&x.cert===o.cert&&x.cuit===o.cuit))e.push('Ya existe un certificado '+o.cert+' de ese agente');
+ if(e.length)return{err:e};
+ RET.push(Object.assign({id:RTID++,est:'Computada'},o));return{ok:1};
+}
+(function seed(){
+ CL.forEach(c=>{const r=rng(c.id*373),ym=TODAYISO.slice(0,7),n=2+Math.floor(r()*4);
+  for(let i=0;i<n;i++){const ag=AGENTES[Math.floor(r()*AGENTES.length)],im=IMPS[Math.floor(r()*(c.tipo==='Monotributo'?3:5))][0];
+   RET.push({id:RTID++,cid:c.id,tipo:r()<.6?'Retención':'Percepción',imp:im,jur:im==='IIBB'?['Salta','Tucumán','Jujuy'][Math.floor(r()*3)]:'',ag:ag[0],cuit:ag[1],cbte:'0001-'+String(Math.floor(1000+r()*90000)).padStart(8,'0'),cert:String(100000+Math.floor(r()*899999)),fecha:iso(new Date(TODAY.getFullYear(),TODAY.getMonth(),1+Math.floor(r()*Math.max(TODAY.getDate()-1,1)))),monto:Math.round((8000+r()*180000)/100)*100,est:'Computada',src:'Ejemplo'})}});
+})();
+const _iibbCalc=iibbCalc;
+iibbCalc=function(cid){const k=_iibbCalc(cid),r=retSum(cid,S.ivaYM,'IIBB');k.d=Object.assign({},k.d,{ret:r});k.saldo=k.tot-r;return k};
+V.ret=()=>{
+ const cid=CL.find(c=>c.id===S.cidRet)?S.cidRet:CL[0].id,ym=S.ivaYM,list=retList(cid,ym).filter(x=>!S.retF||x.imp===S.retF).sort((a,b)=>a.fecha<b.fecha?1:-1);
+ const tot=i=>retSum(cid,ym,i),sinC=retList(cid,ym).filter(x=>x.est!=='Contabilizada').length;
+ return`<div class="ph"><div><h1>Retenciones y percepciones</h1><p>Cargá las retenciones y percepciones sufridas de cada impuesto. Se descuentan solas del IVA y de Ingresos Brutos, y se contabilizan como saldo a favor.</p></div><div style="display:flex;gap:10px;flex-wrap:wrap"><div><label>Cliente</label><select data-chg="retcid">${clOpts(cid)}</select></div><div><label>Período</label><input type="month" value="${ym}" data-chg="ivaym"></div></div></div>
+ <div class="grid g6" style="margin-bottom:14px">${IMPS.map(i=>kpi(i[0],ars(tot(i[0])),retCount(cid,ym,i[0])+' comprobantes')).join('')}${kpi('Total del período',ars(retSum(cid,ym)),'a cuenta de impuestos','up')}</div>
+ <div class="card" style="margin-bottom:14px"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="btn pri" data-act="retarca">⬇ Importar de ARCA (Mis Retenciones)</button><label class="btn" style="margin:0;cursor:pointer">📄 Subir certificados PDF (IA)<input type="file" accept=".pdf" hidden data-chg="retfile"></label><label class="btn" style="margin:0;cursor:pointer">📊 Subir Excel o CSV<input type="file" accept=".xlsx,.csv,.txt" hidden data-chg="retfile"></label><button class="btn" data-act="retplant">Plantilla</button><div style="flex:1"></div>${sinC?`<button class="btn ok" data-act="retpost">Contabilizar ${sinC} sin registrar</button>`:badge('Todas contabilizadas','ok')}<button class="btn" data-act="retcsv">⬆ Exportar</button></div><p class="disc">Columnas del archivo: fecha, tipo (Retención/Percepción), impuesto, agente, CUIT, comprobante, certificado, importe.</p></div>
+ <div class="card" style="margin-bottom:14px"><h3>Carga manual</h3><form data-form="retnew"><div class="fr"><div><label>Tipo</label><select name="tipo"><option>Retención</option><option>Percepción</option></select></div><div><label>Impuesto</label><select name="imp">${IMPS.map(i=>`<option value="${i[0]}">${i[0]} — ${i[1]}</option>`).join('')}</select></div><div><label>Jurisdicción (solo IIBB)</label><input name="jur" list="jur" placeholder="Salta"><datalist id="jur">${JURIS.map(j=>`<option>${j[0]}</option>`).join('')}</datalist></div><div><label>Fecha</label><input type="date" name="fecha" value="${TODAYISO}" required></div></div>
+ <div class="fr"><div><label>Agente de retención</label><input name="ag" list="ags" required><datalist id="ags">${AGENTES.map(a=>`<option>${a[0]}</option>`).join('')}</datalist></div><div><label>CUIT del agente</label><input name="cuit" placeholder="30-12345678-9" required></div><div><label>Comprobante origen</label><input name="cbte" placeholder="0001-00001234"></div><div><label>N° de certificado</label><input name="cert"></div><div><label>Importe</label><input type="number" name="monto" min="1" step="any" required></div><div><button class="btn pri">Agregar</button></div></div></form><p class="disc">Valida el CUIT del agente con su dígito verificador y avisa si el certificado ya fue cargado.</p></div>
+ <div class="card"><h3>Detalle del período <span><select data-chg="retf" style="max-width:220px"><option value="">Todos los impuestos</option>${IMPS.map(i=>`<option ${S.retF===i[0]?'selected':''}>${i[0]}</option>`).join('')}</select></span></h3><div class="tw"><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Impuesto</th><th>Agente</th><th>Comprobante</th><th>Certificado</th><th class="r">Importe</th><th>Estado</th><th></th></tr></thead><tbody>${list.map(x=>`<tr><td>${fd(x.fecha)}</td><td>${badge(x.tipo,x.tipo==='Retención'?'info':'gold')}</td><td><b>${x.imp}</b>${x.jur?'<br><small class="mut">'+esc(x.jur)+'</small>':''}</td><td>${esc(x.ag)}<br><small class="mut">${x.cuit}</small></td><td>${esc(x.cbte||'—')}</td><td>${esc(x.cert||'—')}</td><td class="r"><b>${ars(x.monto)}</b></td><td>${badge(x.est,x.est==='Contabilizada'?'ok':'warn')}${x.src?' '+badge(x.src,'info'):''}</td><td><button class="btn sm bad" data-act="retdel" data-id="${x.id}">✕</button></td></tr>`).join('')||'<tr><td colspan="9" class="mut">No hay retenciones cargadas en este período</td></tr>'}</tbody></table></div>
+ <div class="stat" style="margin-top:10px"><span><b>Total</b></span><b>${ars(sum(list.map(x=>x.monto)))}</b></div></div>
+ <div class="grid g3" style="margin-top:14px"><div class="card"><h3>Impacto en IVA</h3><p class="mut">Las de IVA se restan del saldo a pagar del período en <b>Impuestos → IVA</b>.</p><button class="btn" data-act="retgo" data-v="iva">Ver liquidación de IVA</button></div><div class="card"><h3>Impacto en IIBB</h3><p class="mut">Las de Ingresos Brutos se descuentan del anticipo en <b>Impuestos → IIBB</b>.</p><button class="btn" data-act="retgo" data-v="iibb">Ver IIBB</button></div><div class="card"><h3>Papel de trabajo</h3><p class="mut">Resumen por impuesto con el detalle de cada certificado.</p><button class="btn" data-act="retpap">Ver papel de trabajo</button></div></div>`;
+};
+function retPapel(cid,ym){
+ const l=retList(cid,ym);
+ return`<div class="card">${papHead('Retenciones y percepciones sufridas',cid)}<div class="tw"><table><thead><tr><th>Impuesto</th><th class="r">Retenciones</th><th class="r">Percepciones</th><th class="r">Total</th></tr></thead><tbody>${IMPS.map(i=>{const r=sum(l.filter(x=>x.imp===i[0]&&x.tipo==='Retención').map(x=>x.monto)),p=sum(l.filter(x=>x.imp===i[0]&&x.tipo==='Percepción').map(x=>x.monto));return r||p?`<tr><td><b>${i[0]}</b><br><small class="mut">${i[1]}</small></td><td class="r">${ars(r)}</td><td class="r">${ars(p)}</td><td class="r"><b>${ars(r+p)}</b></td></tr>`:''}).join('')}<tr><td><b>Total</b></td><td class="r"><b>${ars(sum(l.filter(x=>x.tipo==='Retención').map(x=>x.monto)))}</b></td><td class="r"><b>${ars(sum(l.filter(x=>x.tipo==='Percepción').map(x=>x.monto)))}</b></td><td class="r"><b>${ars(sum(l.map(x=>x.monto)))}</b></td></tr></tbody></table></div>
+ <h3 style="margin-top:14px">Detalle</h3><div class="tw"><table><thead><tr><th>Fecha</th><th>Impuesto</th><th>Agente</th><th>CUIT</th><th>Certificado</th><th class="r">Importe</th></tr></thead><tbody>${l.map(x=>`<tr><td>${fd(x.fecha)}</td><td>${x.imp} ${x.tipo==='Percepción'?'(perc.)':''}</td><td>${esc(x.ag)}</td><td>${x.cuit}</td><td>${esc(x.cert||'—')}</td><td class="r">${ars(x.monto)}</td></tr>`).join('')||'<tr><td colspan="6" class="mut">Sin movimientos</td></tr>'}</tbody></table></div></div>`;
+}
+
+/* ============ Detalle de comprobantes ============ */
+const _comprobantes=comprobantes;
+comprobantes=function(cid,ym){
+ const o=_comprobantes(cid,ym);
+ ['v','c'].forEach(k=>o[k].forEach(x=>{
+  if(!x.fe){const d=new Date(+ym.slice(0,4),+ym.slice(5,7)-1,1+hash(x.f+cid)%27);x.fe=iso(d)}
+  if(!x.cuitCp)x.cuitCp=mkCuit('30-'+(60000000+hash(x.cp)%39000000)+'-0');
+ }));
+ return o;
+};
+const PRODS=['Mercadería general','Servicio profesional','Insumos y materiales','Flete y logística','Mantenimiento y reparaciones','Producto terminado','Repuestos','Servicio de asesoramiento'];
+function cbteItems(x){
+ const r=rng(hash(x.f+x.cp)),n=1+Math.floor(r()*3),out=[];let rest=x.neto;
+ for(let i=0;i<n;i++){
+  const part=i===n-1?rest:Math.max(100,Math.round(rest*(.3+r()*.35)/100)*100);rest-=part;
+  const q=1+Math.floor(r()*8);out.push({d:PRODS[Math.floor(r()*PRODS.length)],q,pu:part/q,imp:part});
+ }
+ return out;
+}
+function cbteDetalle(cid,tp,i,back){
+ const cp=comprobantes(cid,S.ivaYM),x=(tp==='v'?cp.v:cp.c)[i];if(!x)return;
+ const c=cl(cid),it=cbteItems(x),iva=x.neto*x.al/100,venta=tp==='v';
+ const emisor=venta?{n:c.n,cuit:c.cuit}:{n:x.cp,cuit:x.cuitCp},recep=venta?{n:x.cp,cuit:x.cuitCp}:{n:c.n,cuit:c.cuit};
+ const rets=RET.filter(r=>r.cid===cid&&r.cbte===x.f),tot=x.neto+iva+sum(rets.map(r=>r.monto));
+ const as=asientos(cid).find(a=>a.desc.includes(x.f));
+ modal('Comprobante '+x.f,`<div class="rec">
+ <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><small class="mut">Emisor</small><br><b>${esc(emisor.n)}</b><br>CUIT ${emisor.cuit}</div><div style="text-align:center"><div style="font-size:26px;font-weight:800;border:1px solid var(--line);border-radius:8px;padding:2px 14px">${venta?'A':'A'}</div><small class="mut">${venta?'Factura de venta':'Factura de compra'}</small></div><div style="text-align:right"><b>N° ${x.f}</b><br>Fecha ${fd(x.fe)}<br><small class="mut">Período ${S.ivaYM}</small></div></div>
+ <hr style="border:0;border-top:1px dashed var(--line);margin:12px 0">
+ <div class="stat"><span>Receptor</span><b>${esc(recep.n)} · CUIT ${recep.cuit}</b></div>
+ <div class="tw" style="margin-top:10px"><table><thead><tr><th>Detalle</th><th class="r">Cantidad</th><th class="r">Precio unitario</th><th class="r">Importe</th></tr></thead><tbody>${it.map(l=>`<tr><td>${esc(l.d)}</td><td class="r">${num(l.q)}</td><td class="r">${ars(l.pu)}</td><td class="r">${ars(l.imp)}</td></tr>`).join('')}</tbody></table></div>
+ <div class="stat" style="margin-top:10px"><span>Subtotal neto gravado</span><b>${ars(x.neto)}</b></div>
+ <div class="stat"><span>IVA ${x.al}%</span><b>${ars(iva)}</b></div>
+ ${rets.map(r=>`<div class="stat"><span>${r.tipo} de ${r.imp}${r.jur?' · '+esc(r.jur):''}</span><b>${ars(r.monto)}</b></div>`).join('')}
+ <div class="stat"><span><b>Total del comprobante</b></span><b>${ars(tot)}</b></div>
+ <div class="stat"><span>Origen</span><b>${esc(x.src||'Carga del sistema')}</b></div>
+ ${venta?`<div class="stat"><span>CAE (demo)</span><b>${('7'+String(hash(x.f+cid)).padStart(13,'0')).slice(0,14)}</b></div>`:''}
+ </div>
+ <p class="noprint" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">${back==='ficha'?`<button class="btn" data-act="ficha" data-id="${cid}">← Volver a la ficha</button>`:''}${as?`<button class="btn" data-act="cbteas" data-cid="${cid}">Ver asiento N° ${as.n}</button>`:''}<button class="btn pri" onclick="window.print()">🖨 Imprimir</button></p>
+ <p class="disc">Comprobante ilustrativo: el detalle de artículos es de ejemplo. En la versión real se toma el detalle que trae “Mis Comprobantes” o el que leyó la IA del archivo.</p>`);
+}
+function fichaCbtes(c){
+ const ym=S.ivaYM,cp=comprobantes(c.id,ym),rets=retList(c.id,ym);
+ const row=(x,tp,i)=>`<tr class="click" data-act="cbte" data-cid="${c.id}" data-tp="${tp}" data-i="${i}" data-back="ficha"><td>${badge(tp==='v'?'Venta':'Compra',tp==='v'?'ok':'info')}</td><td>${x.f}</td><td>${fd(x.fe)}</td><td style="white-space:normal">${esc(x.cp)}</td><td class="r">${ars(x.neto*(1+x.al/100))}</td><td class="mut">ver detalle</td></tr>`;
+ return`<div class="card" style="margin-top:14px"><h3>Facturas del cliente · ${ym} <button class="btn sm" data-act="cbtesgo" data-id="${c.id}">Ver todas</button></h3><div class="tw" style="max-height:260px"><table><thead><tr><th>Tipo</th><th>Comprobante</th><th>Fecha</th><th>Contraparte</th><th class="r">Total</th><th></th></tr></thead><tbody>${cp.v.slice(0,4).map((x,i)=>row(x,'v',i)).join('')}${cp.c.slice(0,4).map((x,i)=>row(x,'c',i)).join('')}</tbody></table></div>
+ <div class="stat" style="margin-top:8px"><span>Ventas del período</span><b>${ars(sum(cp.v.map(x=>x.neto*(1+x.al/100))))}</b></div><div class="stat"><span>Compras del período</span><b>${ars(sum(cp.c.map(x=>x.neto*(1+x.al/100))))}</b></div><div class="stat"><span>Retenciones y percepciones sufridas</span><b>${ars(sum(rets.map(x=>x.monto)))} <small class="mut">(${rets.length})</small></b></div></div>`;
+}
+
+/* ============ Acciones ============ */
+Object.assign(ACT,{
+ cbte(d){const cid=d.cid?+d.cid:cpId();cbteDetalle(cid,d.tp,+d.i,d.back)},
+ cbteas(d){closeModal();S.cidCont=+d.cid;S.tab.cont='diario';go('cont')},
+ cbtesgo(d){closeModal();S.cidIva=+d.id;go('ventas')},
+ honver(d){
+  const f=FACT.find(x=>x.id===+d.id);if(!f)return;const c=cl(f.cid),neto=Math.round(f.imp/1.21),iva=f.imp-neto;
+  modal('Factura de honorarios',`<div class="rec"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><small class="mut">Emisor</small><br><b>${esc(S.brand.n)}</b><br>CUIT 30-70123456-8</div><div style="text-align:right"><b>FACTURA C N° ${String(f.id).padStart(8,'0')}</b><br>Emitida ${fd(f.em)}<br>Vence ${fd(f.ve)}</div></div><hr style="border:0;border-top:1px dashed var(--line);margin:12px 0">
+  <div class="stat"><span>Cliente</span><b>${esc(c.n)} · CUIT ${c.cuit}</b></div><div class="stat"><span>Concepto</span><b>${esc(f.con)}</b></div><div class="stat"><span>Servicios incluidos</span><b>${esc(c.serv.join(', '))}</b></div>
+  <div class="stat" style="margin-top:8px"><span>Neto</span><b>${ars(neto)}</b></div><div class="stat"><span>IVA 21%</span><b>${ars(iva)}</b></div><div class="stat"><span><b>Total</b></span><b>${ars(f.imp)}</b></div><div class="stat"><span>Estado</span><b>${estF(f)}</b></div></div>
+  <p class="noprint" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">${f.est!=='Cobrada'?`<button class="btn ok" data-act="cobrar" data-id="${f.id}" onclick="closeModal()">Registrar cobro</button><a class="btn wa" target="_blank" rel="noopener" href="${waLink(c.tel,'Hola, le enviamos la factura de honorarios '+f.con+' por '+ars(f.imp)+', con vencimiento el '+fd(f.ve)+'. Gracias. '+S.brand.n)}">Enviar por WhatsApp</a>`:''}<button class="btn pri" onclick="window.print()">🖨 Imprimir</button></p>`);
+ },
+ retarca(){const cid=S.cidRet||CL[0].id,r=rng(hash('arcaret'+cid+S.ivaYM));let n=0;
+  for(let i=0;i<3;i++){const ag=AGENTES[Math.floor(r()*AGENTES.length)],im=IMPS[Math.floor(r()*3)][0],cert=String(700000+Math.floor(r()*99999));
+   if(RET.some(x=>x.cid===cid&&x.cert===cert))continue;
+   RET.push({id:RTID++,cid,tipo:r()<.5?'Retención':'Percepción',imp:im,jur:im==='IIBB'?'Salta':'',ag:ag[0],cuit:ag[1],cbte:'0001-'+String(Math.floor(1000+r()*90000)).padStart(8,'0'),cert,fecha:iso(new Date(TODAY.getFullYear(),TODAY.getMonth(),1+Math.floor(r()*Math.max(TODAY.getDate()-1,1)))),monto:Math.round((10000+r()*150000)/100)*100,est:'Computada',src:'ARCA'});n++}
+  logA('Retenciones importadas de ARCA para '+cl(cid).n+': '+n);toast(n+' certificados importados de ARCA ✔');render()},
+ retplant(){download('plantilla_retenciones.csv',csv([['fecha','tipo','impuesto','agente','cuit','comprobante','certificado','importe'],[TODAYISO,'Retención','IVA','Supermercados del Norte S.A.',mkCuit('30-61234567-0'),'0001-00001234','123456',45000],[TODAYISO,'Percepción','IIBB','YPF S.A.',mkCuit('30-54668997-0'),'0001-00009876','987654',12800]]))},
+ retcsv(){const cid=S.cidRet||CL[0].id;download('retenciones_'+S.ivaYM+'.csv',csv([['fecha','tipo','impuesto','jurisdiccion','agente','cuit','comprobante','certificado','importe'],...retList(cid,S.ivaYM).map(x=>[x.fecha,x.tipo,x.imp,x.jur||'',x.ag,x.cuit,x.cbte||'',x.cert||'',x.monto])]))},
+ retdel(d){const i=RET.findIndex(x=>x.id===+d.id);if(i>=0){RET.splice(i,1);toast('Certificado eliminado')}render()},
+ retpost(){const cid=S.cidRet||CL[0].id,l=retList(cid,S.ivaYM).filter(x=>x.est!=='Contabilizada');if(!l.length)return;
+  const tot=Math.round(sum(l.map(x=>x.monto))),ret=Math.round(sum(l.filter(x=>x.tipo==='Retención').map(x=>x.monto))),per=tot-ret,li=[['1.1.07',tot,0]];
+  if(ret)li.push(['1.1.03',0,ret]);if(per)li.push(['2.1.01',0,per]);
+  const as=asientos(cid);as.push({org:'Retenciones',n:as.length+1,f:TODAYISO,desc:'Retenciones y percepciones sufridas – '+S.ivaYM,l:li});
+  l.forEach(x=>x.est='Contabilizada');logA('Retenciones contabilizadas en '+cl(cid).n+': '+l.length);toast(l.length+' certificados contabilizados · asiento N° '+as.length+' ✔');render()},
+ retgo(d){S.cidIva=S.cidRet||CL[0].id;S.tab.imp=d.v;go('imp')},
+ retpap(){const cid=S.cidRet||CL[0].id;modal('Papel de trabajo · retenciones',retPapel(cid,S.ivaYM)+'<p class="noprint"><button class="btn pri" onclick="window.print()">🖨 Imprimir</button></p>')}
+});
+Object.assign(CHG,{
+ retcid(v){S.cidRet=+v;render()},
+ retf(v){S.retF=v;render()},
+ retfile(v,t){const f=t.files[0];if(!f)return;const cid=S.cidRet||CL[0].id;
+  fileRows(f,'ret',res=>{if(res.err)return toast('No se pudo leer: '+res.err);
+   const rows=res.rows.filter((r,i)=>!(i===0&&/fecha/i.test(String(r[0]))));let n=0;const err=[];
+   rows.forEach((r,i)=>{const o={cid,fecha:normFecha(r[0]),tipo:/perc/i.test(r[1]||'')?'Percepción':'Retención',imp:(IMPS.find(x=>new RegExp(x[0],'i').test(r[2]||''))||['IVA'])[0],ag:String(r[3]||'').trim(),cuit:String(r[4]||'').trim(),cbte:String(r[5]||'').trim(),cert:String(r[6]||'').trim(),monto:toNum(r[7]),src:res.src};
+    const rr=retAdd(o);if(rr.err)err.push('Fila '+(i+1)+': '+rr.err[0]);else n++});
+   logA('Retenciones importadas ('+res.src+') en '+cl(cid).n+': '+n);
+   if(err.length)modal('Importación de retenciones',`<p>${badge(n+' cargadas','ok')} ${badge(err.length+' rechazadas','bad')} ${badge(res.src,'info')}</p><div class="list">${err.slice(0,15).map(e=>`<div><span>❌</span><div class="g">${esc(e)}</div></div>`).join('')}</div>`);
+   else toast(n+' certificados leídos de '+res.src+' ✔');render()});
+  try{t.value=''}catch(e){}}
+});
+Object.assign(FRM,{
+ retnew(f){
+  const cid=S.cidRet||CL[0].id,o={cid,tipo:f.get('tipo'),imp:f.get('imp'),jur:f.get('imp')==='IIBB'?(f.get('jur')||'Salta'):'',ag:f.get('ag'),cuit:f.get('cuit'),cbte:f.get('cbte'),cert:f.get('cert'),fecha:f.get('fecha'),monto:toNum(f.get('monto')),src:'Manual'};
+  const r=retAdd(o);if(r.err)return toast(r.err[0]);
+  logA('Retención cargada en '+cl(cid).n+': '+o.imp+' '+ars(o.monto));toast('Certificado cargado ✔');render();
+ }
+});
+const _pdfSim=pdfSim;
+pdfSim=function(kind){
+ if(kind!=='ret')return _pdfSim(kind);
+ const r=rng(hash('retpdf'+TODAYISO));
+ return[['fecha','tipo','impuesto','agente','cuit','comprobante','certificado','importe'],
+  ...Array.from({length:4},()=>{const ag=AGENTES[Math.floor(r()*AGENTES.length)],im=IMPS[Math.floor(r()*3)][0];
+   return[iso(addD(TODAY,-Math.floor(r()*TODAY.getDate()))),r()<.5?'Retención':'Percepción',im,ag[0],ag[1],'0001-'+String(Math.floor(1000+r()*90000)).padStart(8,'0'),String(500000+Math.floor(r()*99999)),Math.round((9000+r()*140000)/100)*100]})];
+};
+S.cidRet=1;S.retF='';
+NAV.splice(NAV.findIndex(n=>n[0]==='imp')+1,0,['ret','Retenciones y percepciones','🧮']);
+MODS.splice(MODS.findIndex(m=>m[0]==='imp')+1,0,['ret','Retenciones y percepciones']);
+SECDEF.push('ret');PERM.sec.ret=true;
+PLAN.splice(PLAN.findIndex(x=>x[0]==='1.1.06')+1,0,['1.1.07','Retenciones y percepciones a cuenta','A']);
 
 /* ============ Core ============ */
 function buildNav(){
