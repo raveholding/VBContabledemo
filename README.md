@@ -1,46 +1,30 @@
-# Sistema VB · Estudio Contable e Inversiones (demo)
+# Sistema VB · Estudio contable (demo)
 
-Demo HTML5 de un estudio contable con asesoramiento de inversiones en bolsa, con el nombre de ejemplo **Estudio contable VB**.
+Demo HTML5 de un sistema para estudios contables, organizado como una **cartera de clientes con la ficha de cada uno**. Funciona en un solo archivo, sin instalar nada, y guarda los datos en el navegador.
 
-**Panel interno:** clientes, vencimientos, impuestos (IVA, Monotributo, Ganancias, rentas financieras), contabilidad, sueldos, documentos, agenda y tareas, mercado en vivo (simulado), cartera y órdenes, perfil del inversor, honorarios, portal del cliente y reportes.
+## Cómo se usa
 
-**Digitalización:** carga de facturas con lector de IA (lectura simulada, revisión, detección de duplicados y asiento automático en el libro diario e IVA Compras) y conexión de Tiendanube, Mercado Libre, Mercado Pago y WooCommerce para facturar las ventas con impacto automático en contabilidad (conexiones, pedidos y CAE simulados).
+- **Entrar:** como Administrador (acceso completo) o Secretaria (carga de comprobantes, retenciones, datos de ARCA, agenda y cobranzas; sin liquidaciones, declaraciones juradas ni configuración).
+- **Datos:** arranca con datos de ejemplo. Con **"Empezar en limpio"** queda vacío para cargar la cartera real; lo que se carga queda guardado en el navegador. Hay copia de seguridad (descargar y restaurar) e importación de clientes desde Excel o CSV.
 
-**Sitio público:** menú de servicios con precios y packs mensuales, consulta directa por WhatsApp, gestión de consultas recibidas y venta cruzada a clientes actuales. Se abre desde el panel (Sitio público y servicios) o con `#publico` al final del enlace.
+## Cartera
 
-Todos los datos, precios y cotizaciones son ficticios.
+Inicio, bandeja de entrada (Domicilio Fiscal Electrónico, vencimientos, credenciales y alertas), agenda de vencimientos por terminación de CUIT con tareas del estudio, y listas separadas de **monotributistas, responsables inscriptos, sociedades y personas humanas**, con filtros (tope ≥ 75 %, categorías D–H, con deuda, DDJJ pendientes) y exportación a Excel. Además: IVA de la cartera, avance del mes, honorarios y cobranzas, reportes mensuales con la marca del estudio y API para empresas.
+
+## Ficha de cada cliente
+
+- **Resumen** con condición fiscal, deuda, CCMA, vencimientos, DDJJ pendientes, Domicilio Fiscal y ventas y compras de 12 meses.
+- **Comprobantes:** ventas (emitidos) y compras (recibidos) con el tipo de factura, número, contraparte e importes a la vista. Carga manual completa (tipo, punto de venta, número, fecha, contraparte, condición de IVA, actividad, tipo de IVA, imputación, tipo de gasto, CAE/CAI y todos los importes: neto, alícuota, no gravado, exento, percepciones de IVA, IIBB, actividades varias y Ganancias, impuestos internos, combustibles y otros). Valida CUIT, duplicados, CAE y reglas de facturación (monotributo solo C, consumidor final B). Cada comprobante genera su asiento; editar o eliminar deja asiento de anulación. Importación del archivo de "Mis Comprobantes" de ARCA (Excel o CSV) y exportación a Excel con hojas Emitidos y Recibidos. Carga con foto (IA).
+- **Impuestos:** liquidación de IVA con el detalle desplegable de cada renglón y traslado automático del saldo técnico y del saldo de libre disponibilidad, Ingresos Brutos (local o Convenio Multilateral), Ganancias, Monotributo (tope y recategorización), retenciones y percepciones, y declaraciones juradas simuladas con acuse y VEP.
+- **Datos de ARCA:** CCMA, Domicilio Fiscal Electrónico por tema, liquidaciones de hacienda, Mis Comprobantes, Portal IVA (Libro IVA Digital), Sistema de Cuentas Tributarias (vencimientos, DDJJ pendientes y deudas con intereses) y Sistema Registral.
+- **Herramientas:** contabilidad (libro diario, estados contables, ajuste por inflación), papeles de trabajo, documentos, reporte mensual y vista del cliente.
+
+## Módulos activables (Configuración → Módulos)
+
+Conciliación bancaria, sueldos, e-commerce, inversiones en bolsa y sitio público.
+
+## Qué es simulado
+
+La sincronización con ARCA, la lectura con IA, las presentaciones de declaraciones juradas, los VEP, Interbanking y las plataformas de e-commerce son simuladas. Las alícuotas, escalas de monotributo, tasa de interés y convenios son valores de ejemplo y se parametrizan en la versión real. La lectura y escritura de Excel y CSV es real.
 
 Desarrollado por **Vincular Business** · WhatsApp (387) 4484132 · vincularbusiness@gmail.com
-
-## Funciones del listado del estudio (cada una en su módulo)
-
-- **Ventas y compras:** importación y exportación de comprobantes (Mis Comprobantes simulado + CSV real), conciliación contra ARCA.
-- **Impuestos:** IVA, Monotributo, Ganancias, IIBB y Convenio Multilateral (CM03/CM05), tasas municipales, Libro IVA Digital.
-- **Papeles de trabajo:** IVA, IIBB, Ganancias y cargas sociales, con la marca del estudio.
-- **Contabilidad:** estados contables (ESP, ER, EEPN, EFE), ajuste por inflación simplificado, resúmenes bancarios con clasificación automática y asientos automáticos.
-- **Sueldos:** convenios precargados (de ejemplo), Libro de Sueldos Digital, F.931 e importación de legajos por CSV con validación de CUIL.
-- **Gestión del estudio:** avance mensual por cliente y vencimientos por terminación de CUIT.
-- **Datos de ARCA:** Domicilio Fiscal Electrónico, Cuentas Tributarias y CCMA (datos de ejemplo).
-- **Para tu estudio:** reportes con la marca del estudio y API para empresas (simulada).
-- **Carga de facturas con IA:** foto, archivo, WhatsApp o email; controles automáticos (CUIT, padrón, receptor, total, fecha, duplicados) que bajan el error humano.
-- **Usuarios y permisos:** Administrador y Secretaria, con matriz de permisos editable y registro de actividad.
-
-Las conexiones con ARCA, la lectura de la IA, las plataformas de e-commerce y la API son simuladas en esta demo.
-
-## Conciliación, sueldos y ajuste por inflación
-
-- **Conciliación bancaria:** extractos en PDF (lectura con IA simulada), Excel .xlsx (lectura real en el navegador) o CSV, más conexión simulada a Interbanking. Concilia automáticamente contra la contabilidad, muestra el cuadro de conciliación, clasifica por reglas los movimientos no contabilizados y genera los asientos. Incluye resúmenes de tarjeta de crédito con contabilización y pago.
-- **Liquidación de sueldos:** controles previos (CUIL válido, sin duplicados, convenio aplicado, netos positivos, contacto de cada empleado), cálculo, recibos, asiento contable automático, presentación del F.931 y envío de los recibos por WhatsApp o email.
-- **Ajuste por inflación en un clic:** índices precargados (de ejemplo), anticuación de partidas, cálculo del RECPAM, asiento contabilizado y papeles de trabajo listos para imprimir o exportar.
-
-## Retenciones, percepciones y detalle de comprobantes
-
-- **Retenciones y percepciones:** módulo propio para cargar los certificados sufridos de IVA, Ganancias, IIBB (con jurisdicción), seguridad social e impuesto al cheque. Carga manual con validación de CUIT del agente y de certificados duplicados, importación de ARCA (simulada), PDF con IA (simulado) y Excel o CSV (lectura real). Se descuentan automáticamente del IVA y del anticipo de IIBB, se contabilizan contra "Retenciones y percepciones a cuenta" y tienen su papel de trabajo.
-- **Detalle de comprobantes:** cualquier factura de ventas o compras se abre y muestra emisor, receptor, detalle de artículos, neto, IVA, retenciones asociadas, total, CAE y origen, con acceso al asiento que generó. Disponible desde Ventas y compras, desde la ficha del cliente y desde el portal del cliente. Las facturas de honorarios del estudio también se abren en detalle.
-
-## Declaraciones juradas y posición de IVA
-
-- **Débito y crédito por cliente:** primera pestaña de Impuestos. Muestra para el período, y para todos los clientes juntos, las ventas netas, el débito fiscal, las compras netas, el crédito fiscal, el saldo técnico, las retenciones y el saldo final a pagar o a favor, con totales, filtros, gráfico de mayores saldos y exportación. Cada fila abre la liquidación del cliente.
-- **Declaraciones juradas simuladas:** formularios F.2002 (IVA), CM03 (Convenio Multilateral), F.713 (Ganancias), F.931 (seguridad social) y F.184 (recategorización de Monotributo), con sus rubros, vista previa antes de presentar, número de transacción, acuse de recibo y volante electrónico de pago (VEP) que se puede enviar al cliente por WhatsApp. Al presentar se marca el vencimiento correspondiente. Incluye presentación masiva por cliente o de todo el estudio e historial de presentaciones.
-
-Las presentaciones son simuladas: no se envían a ARCA y los formularios tienen una estructura simplificada.
