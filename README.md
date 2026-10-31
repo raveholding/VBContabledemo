@@ -5,7 +5,7 @@ Demo HTML5 de un sistema para estudios contables, organizado como una **cartera 
 ## Cómo se usa
 
 - **Entrar:** como Administrador (acceso completo) o Secretaria (carga de comprobantes, retenciones, datos de ARCA, agenda y cobranzas; sin liquidaciones, declaraciones juradas ni configuración).
-- **Datos:** arranca con datos de ejemplo. Con **"Empezar en limpio"** queda vacío para cargar la cartera real; lo que se carga queda guardado en el navegador. Hay copia de seguridad (descargar y restaurar) e importación de clientes desde Excel o CSV.
+- **Datos:** arranca vacío, listo para cargar la cartera real (a mano, importando Excel o CSV, o con la clave fiscal de cada cliente). Con **"Cargar datos de ejemplo"** se ven 6 clientes completos de distintos tipos: dos monotributistas, un responsable inscripto, dos sociedades (una con empleados y otra agropecuaria con inversiones) y una persona humana con inversiones. Desde Configuración → Datos se puede volver a empezar en limpio. Lo que se carga queda guardado en el navegador; hay copia de seguridad (descargar y restaurar).
 
 ## Cartera
 

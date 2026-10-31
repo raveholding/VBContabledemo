@@ -2104,7 +2104,7 @@ const PAGOS=[];const HAC=[];let NOTIFREAD={};
 S.view='inicio';S.ctx=null;S.cv='resumen';S.rg={d:null,h:null};S.cbF={q:'',tc:'',src:''};S.lq={};S.cart2={q:'',f:{}};S.bdj={t:'',q:''};S.ag={mode:'mes',y:TODAY.getFullYear(),m:TODAY.getMonth(),d:TODAYISO,who:'',tag:'',show:''};S.rpt={tipo:'mensual',sel:{},gen:[]};S.cfgTab='estudio';S.sctTab='venc';S.dfeTema='';
 
 /* ---------- Guardado en el navegador ---------- */
-const LSKEY='svb_estudio_v2';
+const LSKEY='svb_estudio_v3';
 function snapshot(){
  const comp={};Object.keys(COMP).forEach(k=>{const o=COMP[k],cid=+k.split('|')[0];if(isReal(cid)||o._dirty||o.v.some(x=>!x.gen)||o.c.some(x=>!x.gen))comp[k]=o});
  return{ver:2,day:TODAYISO,ts:Date.now(),
@@ -2487,9 +2487,9 @@ goC=function(cid,cv){cid=+cid;$('#side').classList.remove('open');closeModal();i
  if(S.ctx!==cid){S.rg={d:null,h:null};S.cbF={q:'',tc:'',src:''};S.lq={}}
  S.ctx=cid;S.view='cliente';S.cv=cv||'resumen';setCtxAll(cid);setHash('#c/'+cid+'/'+S.cv);render();window.scrollTo(0,0)};
 const modeBar=()=>CFG.mode==='limpio'
- ?`<div class="modebar"><span>💾</span><div style="flex:1">Estás trabajando con <b>tus datos</b>. Se guardan solos en este navegador; descargá una copia de seguridad de vez en cuando.</div><button class="btn sm" data-act="bkup">⬇ Copia de seguridad</button></div>`
+ ?`<div class="modebar"><span>💾</span><div style="flex:1">Estás trabajando con <b>tus datos</b>. Se guardan solos en este navegador; descargá una copia de seguridad de vez en cuando.</div>${!CL.length&&S.role==='admin'?'<button class="btn pri sm" data-act="ejemplo">🧪 Cargar datos de ejemplo</button>':''}<button class="btn sm" data-act="bkup">⬇ Copia de seguridad</button></div>`
  :`<div class="modebar"><span>🧪</span><div style="flex:1">Estás viendo <b>datos de ejemplo</b>. Cuando quieras, empezá en limpio y cargá tus clientes reales: todo queda guardado en este navegador.</div>${S.role==='admin'?'<button class="btn pri sm" data-act="limpio">Empezar en limpio</button>':''}</div>`;
-const emptyCartera=()=>`<div class="card" style="text-align:center;padding:34px"><div style="font-size:44px">👋</div><h2>Empecemos con tu cartera</h2><p class="mut" style="max-width:520px;margin:6px auto 16px">Agregá tus clientes con su CUIT. El sistema arma solo el calendario de vencimientos por terminación de CUIT y su ficha con todos los datos.</p><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">${canA('clientes_edit')?`<button class="btn pri" data-act="clinew">+ Agregar mi primer cliente</button><button class="btn" data-act="cliimp">📄 Importar clientes (Excel o CSV)</button>`:'<span class="mut">Pedile al administrador que cargue los clientes.</span>'}</div></div>`;
+const emptyCartera=()=>`<div class="card" style="text-align:center;padding:34px"><div style="font-size:44px">👋</div><h2>Empecemos con tu cartera</h2><p class="mut" style="max-width:520px;margin:6px auto 16px">Agregá tus clientes con su CUIT. El sistema arma solo el calendario de vencimientos por terminación de CUIT y su ficha con todos los datos.</p><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">${canA('clientes_edit')?`<button class="btn pri" data-act="clinew">+ Agregar mi primer cliente</button><button class="btn" data-act="cliimp">📄 Importar clientes (Excel o CSV)</button>${S.role==='admin'?'<button class="btn" data-act="ejemplo">🧪 Ver con datos de ejemplo (6 clientes)</button>':''}`:'<span class="mut">Pedile al administrador que cargue los clientes.</span>'}</div></div>`;
 
 /* ---------- Inicio ---------- */
 V.inicio=()=>{
@@ -2645,7 +2645,7 @@ V.config=()=>{
   <div class="card" style="margin-top:14px"><h3>Desarrollador</h3><p><b>Vincular Business</b> — sistemas de gestión, digitalización y fidelización para comercios y servicios.<br>WhatsApp <a href="https://wa.me/5493874484132" target="_blank" rel="noopener">(387) 4484132</a> · <a href="mailto:vincularbusiness@gmail.com">vincularbusiness@gmail.com</a></p></div>`;
  if(t==='mods')b=`<div class="card"><h3>Módulos adicionales</h3><p class="mut">El sistema trabaja como la cartera de un estudio contable. Estos módulos se pueden sumar cuando el estudio los necesite.</p><div class="list">${Object.keys(MODAREA).map(k=>`<div><div class="g"><b>${MODAREA[k]}</b><span class="mut">${{banco:'Extractos en PDF, Excel o Interbanking conciliados contra la contabilidad.',sue:'Liquidación con controles, recibos por WhatsApp o email, F.931 y Libro de Sueldos Digital.',ecom:'Tiendanube, Mercado Libre, Mercado Pago y WooCommerce facturando con impacto contable.',inv:'Mercado en vivo, carteras de comitentes, órdenes y perfil del inversor.',sitio:'Menú público de servicios del estudio con consultas por WhatsApp.'}[k]}</span></div><label class="sw"><input type="checkbox" ${CFG.mods[k]?'checked':''} data-chg="modtog" data-k="${k}"><span></span></label></div>`).join('')}</div></div>`;
  if(t==='datos')b=`<div class="grid g2"><div class="card"><h3>Datos del sistema</h3><div class="stat"><span>Modo actual</span><b>${CFG.mode==='limpio'?'Mis datos':'Datos de ejemplo'}</b></div><div class="stat"><span>Clientes cargados</span><b>${CL.length}</b></div><div class="stat"><span>Comprobantes guardados</span><b>${sum(Object.keys(COMP).map(k=>COMP[k].v.length+COMP[k].c.length))}</b></div><div class="stat"><span>Dónde se guarda</span><b>En este navegador</b></div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">${CFG.mode==='ejemplo'?'<button class="btn pri" data-act="limpio">Empezar en limpio</button>':''}<button class="btn" data-act="ejemplo">Volver a los datos de ejemplo</button></div><p class="disc">"Empezar en limpio" borra los datos de ejemplo y deja el sistema listo para cargar tus clientes reales. Lo que cargues queda guardado en este navegador aunque lo cierres.</p></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">${CFG.mode==='ejemplo'?'<button class="btn pri" data-act="limpio">Empezar en limpio</button>':''}<button class="btn" data-act="ejemplo">🧪 Cargar datos de ejemplo</button></div><p class="disc">"Empezar en limpio" borra los datos de ejemplo y deja el sistema listo para cargar tus clientes reales. Lo que cargues queda guardado en este navegador aunque lo cierres.</p></div>
   <div class="card"><h3>Copias de seguridad</h3><p class="mut">Descargá un archivo con todos tus datos para guardarlo o pasarlo a otra computadora.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri" data-act="bkup">⬇ Descargar copia</button><label class="btn" style="margin:0;cursor:pointer">⬆ Restaurar copia<input type="file" accept=".json" hidden data-chg="bkrest"></label></div><h3 style="margin-top:14px">Importar clientes</h3><p class="mut">Desde un Excel o CSV con CUIT, nombre y condición.</p><button class="btn" data-act="cliimp">📄 Importar clientes</button></div></div>`;
  if(t==='usuarios')b=`<div class="grid g2"><div class="card"><h3>Usuarios</h3><div class="tw"><table><thead><tr><th>Nombre</th><th>Email</th><th>Rol</th></tr></thead><tbody>${USERS.map(u=>`<tr><td><b>${esc(u.n)}</b></td><td>${esc(u.mail)}</td><td>${badge(u.r==='admin'?'Administrador':'Secretaria',u.r==='admin'?'gold':'info')}</td></tr>`).join('')}</tbody></table></div>
   <form data-form="newuser" style="margin-top:12px"><div class="fr"><div><label>Nombre</label><input name="n" required></div><div><label>Email</label><input type="email" name="m" required></div><div><label>Rol</label><select name="r"><option value="sec">Secretaria</option><option value="admin">Administrador</option></select></div><div><button class="btn pri">Agregar</button></div></div></form></div>
@@ -2711,8 +2711,8 @@ Object.assign(ACT,{
  cliplant(){xlsxDownload('plantilla_clientes.xlsx',[{name:'Clientes',rows:[['cuit','nombre','condicion','categoria','actividad','provincia','email','whatsapp','honorario','empleados'],[mkCuit('20-30111222-0'),'Pérez, Juan','Monotributo','C','Servicios de reparación','Salta','jperez@correo.com','5493871234567',45000,0],[mkCuit('30-71555666-0'),'Ejemplo S.R.L.','Sociedad','','Comercio mayorista','Salta','admin@ejemplo.com','5493877654321',180000,4]]}])},
  limpio(){modal('Empezar en limpio',`<p>Se van a borrar <b>todos los datos de ejemplo</b> (clientes, comprobantes, vencimientos, declaraciones, notificaciones) y el sistema queda listo para cargar tu cartera real.</p><p class="mut">Lo que cargues se guarda en este navegador. Se mantienen tu marca, el equipo, los usuarios y los permisos. Podés volver a los datos de ejemplo cuando quieras desde Configuración.</p><p style="display:flex;gap:8px"><button class="btn pri" data-act="limpio2">Sí, empezar en limpio</button><button class="btn" data-act="close">Cancelar</button></p>`)},
  limpio2(){wipeAll();closeModal();toast('Listo: el sistema está vacío y listo para tus clientes');goView('inicio')},
- ejemplo(){modal('Volver a los datos de ejemplo',`<p>Se reemplaza todo lo cargado por los datos de ejemplo. ${CFG.mode==='limpio'?'<b>Si tenés datos propios, descargá antes una copia de seguridad.</b>':''}</p><p style="display:flex;gap:8px;flex-wrap:wrap">${CFG.mode==='limpio'?'<button class="btn" data-act="bkup">⬇ Descargar copia primero</button>':''}<button class="btn bad" data-act="ejemplo2">Sí, cargar los ejemplos</button><button class="btn" data-act="close">Cancelar</button></p>`)},
- ejemplo2(){try{localStorage.removeItem(LSKEY)}catch(e){}window.removeEventListener('beforeunload',()=>{});_noSave=true;location.hash='';location.reload()},
+ ejemplo(){if(!CL.length)return ACT.ejemplo2();modal('Cargar datos de ejemplo',`<p>Se reemplaza todo lo cargado por 6 clientes de ejemplo completos (monotributistas, responsable inscripto, sociedades y persona humana). ${CFG.mode==='limpio'?'<b>Si tenés datos propios, descargá antes una copia de seguridad.</b>':''}</p><p style="display:flex;gap:8px;flex-wrap:wrap">${CFG.mode==='limpio'?'<button class="btn" data-act="bkup">⬇ Descargar copia primero</button>':''}<button class="btn bad" data-act="ejemplo2">Sí, cargar los ejemplos</button><button class="btn" data-act="close">Cancelar</button></p>`)},
+ ejemplo2(){try{localStorage.removeItem(LSKEY);localStorage.setItem('svb_boot','ejemplo')}catch(e){}window.removeEventListener('beforeunload',()=>{});_noSave=true;location.hash='';location.reload()},
  bkup(){const b=new Blob([JSON.stringify(snapshot())],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='sistema-vb-copia-'+TODAYISO+'.json';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},600);logA('Copia de seguridad descargada');toast('Copia de seguridad descargada ✔')},
  syncnow(){CFG.lastSync=Date.now();CL.forEach(c=>{if(c.clave)c.sync=CFG.lastSync});logA('Sincronización con ARCA (simulada)');toast('Sincronización simulada: '+CL.filter(c=>c.clave).length+' clientes al día'+(CL.some(c=>!c.clave)?' · '+CL.filter(c=>!c.clave).length+' sin clave fiscal':''));render()},
  permreset2(){permDefaults();logA('Permisos de la secretaria restablecidos');render()},
@@ -3602,6 +3602,21 @@ Object.assign(ACT,{cfgdatos(){if(S.role!=='admin')return toast(CFG.mode==='limpi
 const _RESTORED=loadSaved();
 normalizeAll();
 if(!_RESTORED)seedExtras();
+/* Arranque: vacío por defecto; con "Cargar datos de ejemplo" quedan 6 clientes completos de distintos tipos */
+const EJ_KEEP=[1,2,3,5,7,10];
+function trimEjemplo(){
+ const ok=cid=>!cid||EJ_KEEP.includes(+cid);
+ for(let i=CL.length-1;i>=0;i--)if(!EJ_KEEP.includes(CL[i].id))CL.splice(i,1);
+ [VEN,FACT,DOCS,TASKS,APPT,DFE,RET,DDJJ,ORD,PAGOS,HAC].forEach(a=>{for(let i=a.length-1;i>=0;i--)if(!ok(a[i].cid))a.splice(i,1)});
+ IA.items=IA.items.filter(x=>ok(x.cid));
+ [AS,COMP,EMPL,IIBBD,ARCAX,ARCAIMP,PF,ECS,BANK,CARD,LIQ,AJ,INFPOST,SLD,CONVSEL,INTERB].forEach(o=>Object.keys(o).forEach(k=>{const n=+String(k).split(/[|_]/)[0];if(n&&!EJ_KEEP.includes(n))delete o[k]}));
+ Object.keys(S).forEach(k=>{if(/^cid|^perfSel$/.test(k)&&S[k]&&!EJ_KEEP.includes(+S[k]))S[k]=k==='cidPf'||k==='perfSel'?5:1});
+ if(!DFE.some(x=>x.cid===5))DFE.push({cid:5,tema:'Avisos',t:'Aviso: vencimiento de Ganancias y Bienes Personales personas humanas',f:iso(addD(TODAY,-2)),plazo:12,leida:false});
+ DFE.forEach((x,i)=>x.id=i+1);
+ CFG.mode='ejemplo';
+}
+if(!_RESTORED){let boot=null;try{boot=localStorage.getItem('svb_boot');localStorage.removeItem('svb_boot')}catch(e){}
+ if(boot==='ejemplo'){trimEjemplo();save(true)}else{wipeAll();LOGA.length=0}}
 syncDaily();
 
 /* ============ Core ============ */
@@ -3675,6 +3690,8 @@ ACT.sync1=d=>{const c=cl(+d.id);if(!c)return;
 {const _res=CV.resumen;CV.resumen=c=>{let h=_res(c);const btn=c.clave?`<button class="btn sm" data-act="sync1" data-id="${c.id}" style="margin-left:6px">⟳ Sincronizar con ARCA</button>`:(canA('clientes_edit')?`<button class="btn sm" data-act="cliedit" data-id="${c.id}" style="margin-left:6px">🔑 Cargar clave fiscal</button>`:'');return h.replace(/(Sincronizado [^<]*<\/span>)/,'$1'+btn)}}
 function tintBars(){$$('.bar i').forEach(i=>{if(i.style.background)return;const w=parseFloat(i.style.width)||0;i.style.background=w>=100?'var(--bad)':w>=75?'var(--warn)':'var(--ok)'})}
 {const _rb=render;render=function(){_rb.apply(this,arguments);tintBars()}}
+/* Cartera vacía: las pantallas que trabajan sobre un cliente muestran cómo empezar en lugar de fallar */
+Object.keys(V).forEach(k=>{const f=V[k];V[k]=function(){if(CL.length)return f.apply(this,arguments);try{return f.apply(this,arguments)}catch(e){return`<h1>${esc((NAVC.find(n=>n[0]===k)||MODS.find(n=>n[0]===k)||[k,'Sin clientes'])[1])}</h1><p class="mut" style="margin-top:2px">Esta sección trabaja sobre la ficha de cada cliente. Cargá tu primer cliente para usarla.</p>`+emptyCartera()}}});
 
 render();syncHash();
 </script>
