@@ -80,3 +80,14 @@ Herramientas:
 - Para publicarlo en internet hace falta ponerlo detrás de HTTPS (un proxy o un servicio de hosting).
 
 Desarrollado por **Vincular Business** · WhatsApp (387) 4484132 · vincularbusiness@gmail.com
+
+
+## Puente con Afip SDK (conexión real con ARCA)
+
+Si el navegador no puede llamar directo a Afip SDK, iniciá el servidor (no hace falta el archivo de datos):
+
+```bash
+node vb-api.mjs --puerto 8787
+```
+
+En Sistema VB: **Conexión con ARCA → Avanzado → URL de la API** = `http://localhost:8787/afipsdk`. El servidor reenvía cada consulta a `app.afipsdk.com` con la clave de acceso que manda el navegador (o la de la variable `AFIPSDK_TOKEN`).

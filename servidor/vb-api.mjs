@@ -122,7 +122,7 @@ function load() {
     const d = JSON.parse(fs.readFileSync(FILE, 'utf8'));
     if (!d || !Array.isArray(d.clientes)) throw new Error('el archivo no tiene el formato de Sistema VB');
     DB = d; log(`datos cargados: ${d.clientes.length} clientes · generado ${d.generado}`);
-  } catch (e) { log('no se pudieron leer los datos (' + FILE + '): ' + e.message); if (!DB) process.exit(1); }
+  } catch (e) { log('no se pudieron leer los datos (' + FILE + '): ' + e.message); if (!DB) { DB = { estudio: { nombre: 'Sistema VB' }, clientes: [], generado: null }; log('sin archivo de datos: funciona solo el puente con Afip SDK (/afipsdk/...)'); } }
 }
 load();
 fs.watchFile(FILE, { interval: 2000 }, () => load());
@@ -152,7 +152,7 @@ if (MCP_STDIO) {
     components: { securitySchemes: { bearer: { type: 'http', scheme: 'bearer' } } }, security: [{ bearer: [] }],
     paths: Object.fromEntries(API_EPS.map(e => [e[1], { get: { summary: e[2], description: e[3] ? 'Parámetros: ' + e[3] : '', parameters: (e[1].includes('{cuit}') ? [{ name: 'cuit', in: 'path', required: true, schema: { type: 'string' } }] : []), responses: { 200: { description: 'OK' }, 401: { description: 'Clave inválida' }, 404: { description: 'No encontrado' } } } }]))
   });
-  const send = (res, st, body, extra) => { const t = JSON.stringify(body, null, 1); res.writeHead(st, Object.assign({ 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Authorization, Content-Type, Mcp-Session-Id', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Cache-Control': 'no-store' }, extra || {})); res.end(t); };
+  const send = (res, st, body, extra) => { const t = JSON.stringify(body, null, 1); res.writeHead(st, Object.assign({ 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Authorization, Content-Type, Mcp-Session-Id', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Allow-Private-Network': 'true', 'Cache-Control': 'no-store' }, extra || {})); res.end(t); };
   http.createServer((req, res) => {
     const u = new URL(req.url, 'http://localhost');
     if (req.method === 'OPTIONS') return send(res, 204, {});
