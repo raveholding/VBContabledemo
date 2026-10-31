@@ -11210,7 +11210,7 @@ document.addEventListener('drop',e=>{if(e.target.closest&&e.target.closest('#iad
 const LOGA=[];
 const USERS=[{n:'Administrador',mail:'admin@estudiovb.demo',r:'admin',ini:'AD'},{n:'Marta Gómez',mail:'secretaria@estudiovb.demo',r:'sec',ini:'MG'}];
 function userN(){return S.role==='admin'?'Administrador':S.role==='sec'?'Marta Gómez (Secretaria)':'—'}
-function logA(m){LOGA.unshift({ts:Date.now(),u:userN(),m});if(LOGA.length>80)LOGA.pop()}
+function logA(m){let cid=0;try{if(S.view==='cliente'&&S.ctx)cid=S.ctx;else{const c=(typeof CL!=='undefined'?CL:[]).slice().sort((a,b)=>b.n.length-a.n.length).find(c=>String(m).includes(c.n));if(c)cid=c.id}}catch(e){}LOGA.unshift({ts:Date.now(),u:userN(),r:S.role||'',cid,m});if(LOGA.length>5000)LOGA.length=5000}
 const MODS=[['dash','Panel general'],['avance','Avance mensual'],['cli','Clientes'],['tareas','Agenda y tareas'],['venc','Vencimientos'],['ventas','Ventas y compras'],['imp','Impuestos'],['papeles','Papeles de trabajo'],['cont','Contabilidad'],['sue','Sueldos y RRHH'],['docs','Documentos'],['arca','Datos de ARCA'],['ia','Carga de facturas con IA'],['ecom','E-commerce y facturación'],['mkt','Mercado en vivo'],['cart','Cartera y órdenes'],['perf','Perfil del inversor'],['hon','Honorarios y cobranzas'],['portal','Portal del cliente'],['sitio','Sitio público y servicios'],['rep','Reportes con tu marca']];
 const SECDEF=['dash','avance','cli','tareas','venc','ventas','docs','ia','hon','sue'];
 const PERM={sec:{}};MODS.forEach(m=>PERM.sec[m[0]]=SECDEF.includes(m[0]));
@@ -12269,7 +12269,7 @@ function save(now){
 function loadSaved(){try{const t=localStorage.getItem(LSKEY);if(!t)return false;const sn=JSON.parse(t);if(!sn||sn.ver!==2)return false;restore(sn);return true}catch(e){return false}}
 window.addEventListener('beforeunload',()=>{try{save(true)}catch(e){}});
 function wipeAll(){
- [CL,VEN,FACT,DOCS,TASKS,APPT,DFE,RET,DDJJ,ORD,LEADS,PAGOS,HAC,LOGA].forEach(a=>a.length=0);
+ [CL,VEN,FACT,DOCS,TASKS,APPT,DFE,RET,DDJJ,ORD,LEADS,PAGOS,HAC].forEach(a=>a.length=0);
  IA.items=[];
  [AS,COMP,EMPL,IIBBD,ARCAX,ARCAIMP,PF,ECS,BANK,CARD,LIQ,AJ,INFPOST,SLD,CONVSEL,INTERB].forEach(o=>Object.keys(o).forEach(k=>delete o[k]));
  NOTIFREAD={};CFG.mode='limpio';CFG.lastSync=0;NEXTCL=1;
@@ -12369,7 +12369,7 @@ const NAVC=[['General'],['inicio','Inicio','🏠'],['bandeja','Bandeja de entrad
  ['Cartera'],['mono','Monotributistas','dot:#a77bff'],['ri','Responsables inscriptos','dot:#4f9dff'],['soc','Sociedades','dot:#d4af37'],['ph','Personas humanas','dot:#2fbf8a'],['todos','Todos los clientes','👥'],
  ['Para tu estudio'],['posiva','IVA de la cartera','🧾'],['avance','Avance del mes','🗂️'],['hon','Honorarios y cobranzas','💳'],['reportes','Reportes con tu marca','🎨'],['api','API para empresas','🔌'],
  ['Extras'],['mkt','Mercado en vivo','📈'],['sitio','Sitio público','🌐'],
- ['Sistema'],['config','Configuración','⚙️']];
+ ['Sistema'],['auditoria','Auditoría','🛡️'],['config','Configuración','⚙️']];
 function navCliente(c){
  const t=c.tipo,mono=t==='Monotributo',soc=t==='Sociedad',ri=t==='Responsable Inscripto',iva=ri||soc;
  return[['General'],['resumen','Resumen','📋'],
@@ -13422,7 +13422,7 @@ NAVC.length=0;
  ['Estudio contable'],['venc','Calendario de vencimientos','⏰'],['ventas','Ventas y compras','🛒'],['imp','Impuestos y DDJJ','🧾'],['ret','Retenciones y percepciones','🧮'],['posiva','IVA de la cartera','📋'],['papeles','Papeles de trabajo','📑'],['cont','Contabilidad','📒'],['sue','Sueldos y RRHH','💼'],['banco','Conciliación bancaria','🏦'],['docs','Documentos','📁'],['avance','Avance del mes','✅'],
  ['Digitalización'],['ia','Carga de facturas con IA','🤖'],['ecom','E-commerce y facturación','🛍️'],
  ['Inversiones en bolsa'],['mkt','Mercado en vivo','📈'],['cart','Cartera y órdenes','💹'],['perf','Perfil del inversor','🎯'],
- ['Administración'],['hon','Honorarios y cobranzas','💳'],['portal','Portal del cliente','🔐'],['sitio','Sitio público y servicios','🌐'],['reportes','Reportes con tu marca','🎨'],['rep','Exportaciones (CSV)','⬇️'],['api','API REST y MCP','🔌'],['config','Configuración y usuarios','⚙️']
+ ['Administración'],['hon','Honorarios y cobranzas','💳'],['portal','Portal del cliente','🔐'],['sitio','Sitio público y servicios','🌐'],['reportes','Reportes con tu marca','🎨'],['rep','Exportaciones (CSV)','⬇️'],['api','API REST y MCP','🔌'],['auditoria','Auditoría','🛡️'],['config','Configuración y usuarios','⚙️']
 ].forEach(x=>NAVC.push(x));
 {const _go2=go;
  go=function(v){
@@ -14067,6 +14067,24 @@ ACT.retcsv=function(){const cid=S.cidRet||CL[0].id,c=cl(cid),hd=['Fecha','Tipo',
  const res=IMPS.map(i=>[i[0],r2(sum(all.filter(x=>x.imp===i[0]).map(x=>+x.monto)))]);
  xlsxDownload('retenciones_'+c.cuit.replace(/\D/g,'')+'_'+S.ivaYM+'.xlsx',[{name:'Período '+S.ivaYM,rows:[hd,...per.map(row)]},{name:'Últimos 12 meses',rows:[hd,...all.map(row)]},{name:'Resumen por impuesto',rows:[['Impuesto','Total 12 meses'],...res]}]);
  logA('Retenciones exportadas a Excel · '+c.n);toast('Excel de retenciones descargado ✔')};
+
+/* ---------- Auditoría: registro de todo lo que hace cada usuario ---------- */
+S.aud=S.aud||{q:'',u:'',cid:'',d:'',h:''};
+function audRows(cidFix){const A=S.aud,q=A.q.toLowerCase();return LOGA.filter(x=>{const d=new Date(x.ts),di=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+ if(cidFix&&x.cid!==cidFix)return false;if(!cidFix&&A.cid&&String(x.cid||'')!==String(A.cid))return false;if(A.u&&x.u!==A.u)return false;if(A.d&&di<A.d)return false;if(A.h&&di>A.h)return false;if(q&&!(String(x.m)+' '+x.u).toLowerCase().includes(q))return false;return true})}
+const audCat=m=>{m=String(m);return /elimin|borr|anul/i.test(m)?['Eliminación','bad']:/edit|cambi|modific|actualiz/i.test(m)?['Modificación','warn']:/sesi[oó]n|usuario|permis/i.test(m)?['Acceso','info']:/sincroniz|arca|afip/i.test(m)?['ARCA','info']:/import|export|descarg|copia/i.test(m)?['Archivos','gold']:['Alta / operación','ok']};
+function audTable(rows){return`<div class="tw" style="max-height:620px"><table><thead><tr><th>Fecha y hora</th><th>Usuario</th><th>Cliente</th><th>Tipo</th><th>Acción</th></tr></thead><tbody>${rows.slice(0,800).map(x=>{const c=x.cid?CL.find(k=>k.id===x.cid):null,k=audCat(x.m);return`<tr><td style="white-space:nowrap">${new Date(x.ts).toLocaleString('es-AR')}</td><td>${esc(x.u||'—')}</td><td>${c?`<a data-act="cgo2" data-id="${c.id}" data-v="resumen">${esc(c.n)}</a>`:'<span class="mut">—</span>'}</td><td>${badge(k[0],k[1])}</td><td style="white-space:normal">${esc(x.m)}</td></tr>`}).join('')||'<tr><td colspan="5" class="mut" style="padding:20px;text-align:center">No hay movimientos con esos filtros</td></tr>'}</tbody></table></div>${rows.length>800?'<p class="disc">Se muestran los 800 más recientes. Descargá el Excel para ver todos.</p>':''}`}
+V.auditoria=()=>{const A=S.aud,rows=audRows(),us=[...new Set(LOGA.map(x=>x.u).filter(Boolean))],hoy=LOGA.filter(x=>new Date(x.ts).toDateString()===new Date().toDateString()).length;
+ return`<div class="ph"><div><h1>Auditoría</h1><p>Registro de todo lo que se hace en el sistema: quién, cuándo y sobre qué cliente. No se puede editar ni borrar desde el sistema, y se mantiene aunque se empiece en limpio.</p></div><button class="btn" data-act="audxls">⬇ Descargar Excel</button></div>
+ <div class="grid g4" style="margin-bottom:14px">${kpi('Movimientos registrados',LOGA.length)}${kpi('Hoy',hoy)}${kpi('Usuarios',us.length,us.join(' · '))}${kpi('Último movimiento',LOGA[0]?new Date(LOGA[0].ts).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}):'—',LOGA[0]?esc(LOGA[0].u):'')}</div>
+ <div class="card" style="margin-bottom:14px"><div class="fr"><div><label>Buscar</label><input value="${esc(A.q)}" placeholder="Texto, comprobante, CUIT…" data-chg="audq"></div><div><label>Usuario</label><select data-chg="audu"><option value="">Todos</option>${us.map(u=>`<option ${A.u===u?'selected':''}>${esc(u)}</option>`).join('')}</select></div><div><label>Cliente</label><select data-chg="audc"><option value="">Todos</option>${CL.map(c=>`<option value="${c.id}" ${String(A.cid)===String(c.id)?'selected':''}>${esc(c.n)}</option>`).join('')}</select></div><div><label>Desde</label><input type="date" value="${A.d}" data-chg="audd"></div><div><label>Hasta</label><input type="date" value="${A.h}" data-chg="audh"></div></div><p class="disc">${rows.length} movimientos con los filtros elegidos.</p></div>
+ <div class="card">${audTable(rows)}</div>`};
+CV.auditoria=c=>{const rows=audRows(c.id);return`<div class="ph"><div><h1>Auditoría del cliente</h1><p>Todo lo que se hizo sobre ${esc(c.n)}: cargas, ediciones, eliminaciones, importaciones y sincronizaciones con ARCA.</p></div><button class="btn" data-act="audxls" data-cid="${c.id}">⬇ Descargar Excel</button></div><div class="card">${audTable(rows)}</div>`};
+CVAREA.auditoria='cartera';
+{const _nc=navCliente;navCliente=function(c){const L=_nc(c),i=L.findIndex(n=>n[0]==='portal');L.splice(i>=0?i+1:L.length,0,['auditoria','Auditoría','🛡️']);return L}}
+Object.assign(CHG,{audq(v){S.aud.q=v;render()},audu(v){S.aud.u=v;render()},audc(v){S.aud.cid=v;render()},audd(v){S.aud.d=v;render()},audh(v){S.aud.h=v;render()}});
+ACT.audxls=d=>{const cid=+d.cid||0,rows=cid?audRows(cid):audRows(),c=cid?cl(cid):null;
+ xlsxDownload('auditoria_'+(c?c.cuit.replace(/\D/g,'')+'_':'')+TODAYISO+'.xlsx',[{name:'Auditoría',rows:[['Fecha y hora','Usuario','Cliente','CUIT','Tipo','Acción'],...rows.map(x=>{const k=x.cid?CL.find(q=>q.id===x.cid):null;return[new Date(x.ts).toLocaleString('es-AR'),x.u||'',k?k.n:'',k?k.cuit:'',audCat(x.m)[0],String(x.m)]})]}]);toast('Auditoría descargada ✔')};
 
 render();syncHash();
 </script>
