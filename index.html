@@ -3637,6 +3637,45 @@ setInterval(()=>{
  if((S.view==='cart'||(S.view==='cliente'&&S.cv==='inv'))&&S.tab.cart==='pos'&&!$('#modal.on')){const c=$('#cartLive');if(c){CH=[];c.innerHTML=cartLive(S.cidPf);runCharts()}}
 },3000);
 
+/* ---------- Primera sincronización con ARCA de un cliente nuevo (simulada) ---------- */
+const SYNC_PASOS=['Validando la clave fiscal delegada','Constancia de inscripción y Sistema Registral','Mis Comprobantes: emitidos y recibidos de 12 meses','Domicilio Fiscal Electrónico','Sistema de Cuentas Tributarias','CCMA y Libro IVA Digital'];
+function syncPrimera(c){
+ const r=rng(c.id*131+7);
+ c.real=false;c.sync=Date.now();
+ if(!c.act)c.act={Monotributo:'Servicios profesionales','Responsable Inscripto':'Comercio minorista',Sociedad:'Servicios empresariales','Persona humana':'Alquiler de inmuebles'}[c.tipo]||'Actividad principal';
+ if(!c.dom)c.dom=['Av. Belgrano','Caseros','España','Alvarado','Mitre','Zuviría'][c.id%6]+' '+(100+Math.floor(r()*1800));
+ if(!c.loc)c.loc='Salta Capital';
+ if(!c.alta)c.alta=iso(new Date(TODAY.getFullYear()-2-Math.floor(r()*8),Math.floor(r()*12),1+Math.floor(r()*27)));
+ if(c.tipo==='Sociedad'&&!c.cierre)c.cierre='12';
+ c.det=TIPOS[c.tipo].l+' · '+c.act;
+ if(c.tipo==='Monotributo'){const t=(MONO.find(m=>m[0]===c.cat)||MONO[0])[1];c.fac12=Math.round(t*(.62+r()*.3)/1000)*1000;c.fac0=0}
+ Object.keys(COMP).forEach(k=>{if(k.split('|')[0]===String(c.id))delete COMP[k]});
+ Object.keys(ARCAX).forEach(k=>{if(k.split('|')[0]===String(c.id))delete ARCAX[k]});
+ delete AS[c.id];delete EMPL[c.id];delete IIBBD[c.id];
+ for(let i=VEN.length-1;i>=0;i--)if(VEN[i].cid===c.id&&VEN[i].estado==='Pendiente'&&VEN[i].fecha>=TODAYISO)VEN.splice(i,1);
+ ensureVen(c,-2,3);
+ const tit=[['Avisos','Aviso: presentación de DDJJ próxima a vencer'],['Notificaciones','Comunicación: actualización de datos del domicilio fiscal'],['Requerimientos','Requerimiento de información']];
+ const nd=1+Math.floor(r()*2);for(let i=0;i<nd;i++){const t=tit[(c.id+i)%tit.length];DFE.push({id:DFE.length+1,cid:c.id,t:t[1],f:iso(addD(TODAY,-1-Math.floor(r()*6))),plazo:5+Math.floor(r()*10),leida:false,tema:t[0]})}
+ logA('Primera sincronización con ARCA (simulada) · '+c.n);
+}
+function syncModal(c,done){
+ modal('Sincronizando con ARCA',`<p class="mut" style="margin-top:0"><b>${esc(c.n)}</b> · CUIT ${c.cuit}</p><div id="syncSteps">${SYNC_PASOS.map((p,i)=>`<div class="stat" data-i="${i}" style="opacity:.45"><span>${p}</span><b class="mut">…</b></div>`).join('')}</div><p class="disc" style="margin-top:12px">Acceso de solo lectura: el sistema lee los datos de ARCA y no modifica nada. En la demo los datos son de ejemplo.</p>`);
+ let i=0;const tick=()=>{const rows=$$('#syncSteps [data-i]');if(!$('#modal.on')||!rows.length){done();return}
+  if(i>0){const p=rows[i-1];p.style.opacity=1;p.querySelector('b').textContent='✔';p.querySelector('b').className='up'}
+  if(i<rows.length){rows[i].style.opacity=1;rows[i].querySelector('b').textContent='leyendo…';i++;setTimeout(tick,420)}else setTimeout(()=>{closeModal();done()},450)};
+ tick();
+}
+ACT.sync1=d=>{const c=cl(+d.id);if(!c)return;
+ if(!c.clave)return toast('Este cliente no tiene la clave fiscal delegada: cargala en su ficha para poder sincronizar');
+ if(c.real&&CFG.mode!=='limpio'){syncModal(c,()=>{if(c.real)syncPrimera(c);render();toast('✔ '+c.n+' sincronizado con ARCA: comprobantes, notificaciones y cuentas al día (simulado)')});return}
+ c.sync=Date.now();logA('Sincronización con ARCA (simulada) · '+c.n);
+ toast(c.real?'Sincronización registrada. En el modo con tus datos, los comprobantes se cargan a mano, por foto o importando Mis Comprobantes; la conexión directa con ARCA llega en la versión final.':'Datos de '+c.n+' sincronizados (simulado)');render()};
+{const _fc=FRM.cliente;FRM.cliente=function(f,form){const n0=CL.length;_fc(f,form);if(CL.length>n0){const c=CL[CL.length-1];if(c.clave&&CFG.mode!=='limpio')setTimeout(()=>ACT.sync1({id:c.id}),350)}}}
+/* Botón de sincronizar en la ficha y barras de tope con color según el uso */
+{const _res=CV.resumen;CV.resumen=c=>{let h=_res(c);const btn=c.clave?`<button class="btn sm" data-act="sync1" data-id="${c.id}" style="margin-left:6px">⟳ Sincronizar con ARCA</button>`:(canA('clientes_edit')?`<button class="btn sm" data-act="cliedit" data-id="${c.id}" style="margin-left:6px">🔑 Cargar clave fiscal</button>`:'');return h.replace(/(Sincronizado [^<]*<\/span>)/,'$1'+btn)}}
+function tintBars(){$$('.bar i').forEach(i=>{if(i.style.background)return;const w=parseFloat(i.style.width)||0;i.style.background=w>=100?'var(--bad)':w>=75?'var(--warn)':'var(--ok)'})}
+{const _rb=render;render=function(){_rb.apply(this,arguments);tintBars()}}
+
 render();syncHash();
 </script>
 </body>

@@ -23,6 +23,8 @@ Inicio, bandeja de entrada (Domicilio Fiscal Electrónico, vencimientos, credenc
 
 Cada pantalla muestra cuándo se sincronizó con ARCA y tiene "Sincronizar ahora". Los clientes sin clave fiscal delegada aparecen marcados.
 
+- **Alta de cliente con clave fiscal:** con datos de ejemplo, al agregar un cliente con su clave fiscal se hace la primera sincronización con ARCA (simulada) y la ficha se completa con comprobantes de 12 meses, Domicilio Fiscal Electrónico, cuentas tributarias y CCMA. Desde la ficha se puede volver a sincronizar en cualquier momento. En el modo con tus datos no se inventa nada.
+
 - **Deudas y vencimientos:** Sistema de Cuentas Tributarias de cada cliente, con deuda e intereses, DDJJ pendientes y próximo vencimiento.
 - **Notificaciones:** alertas del Domicilio Fiscal Electrónico de toda la cartera en la bandeja de entrada.
 - **Mis Comprobantes:** emitidos y recibidos de toda la cartera, con filtros y exportación a Excel.
