@@ -11950,7 +11950,7 @@ Object.assign(ACT,{
   logA('Retenciones importadas de ARCA para '+cl(cid).n+': '+n);toast(n+' certificados importados de ARCA ✔');render()},
  retplant(){download('plantilla_retenciones.csv',csv([['fecha','tipo','impuesto','agente','cuit','comprobante','certificado','importe'],[TODAYISO,'Retención','IVA','Supermercados del Norte S.A.',mkCuit('30-61234567-0'),'0001-00001234','123456',45000],[TODAYISO,'Percepción','IIBB','YPF S.A.',mkCuit('30-54668997-0'),'0001-00009876','987654',12800]]))},
  retcsv(){const cid=S.cidRet||CL[0].id;download('retenciones_'+S.ivaYM+'.csv',csv([['fecha','tipo','impuesto','jurisdiccion','agente','cuit','comprobante','certificado','importe'],...retList(cid,S.ivaYM).map(x=>[x.fecha,x.tipo,x.imp,x.jur||'',x.ag,x.cuit,x.cbte||'',x.cert||'',x.monto])]))},
- retdel(d){const i=RET.findIndex(x=>x.id===+d.id);if(i>=0){RET.splice(i,1);toast('Certificado eliminado')}render()},
+ retdel(d){const i=RET.findIndex(x=>x.id===+d.id);if(i>=0){const x=RET[i],c=cl(x.cid);if(c){c.retBaja=c.retBaja||[];c.retBaja.push(x.ext||(x.imp+'|'+x.cuit+'|'+x.cert+'|'+x.monto))}RET.splice(i,1);logA('Retención eliminada: '+x.imp+' '+x.ag+' cert. '+(x.cert||'—')+' '+ars(x.monto)+(c?' · '+c.n:''));toast('Certificado eliminado')}render()},
  retpost(){const cid=S.cidRet||CL[0].id,l=retList(cid,S.ivaYM).filter(x=>x.est!=='Contabilizada');if(!l.length)return;
   const tot=Math.round(sum(l.map(x=>x.monto))),ret=Math.round(sum(l.filter(x=>x.tipo==='Retención').map(x=>x.monto))),per=tot-ret,li=[['1.1.07',tot,0]];
   if(ret)li.push(['1.1.03',0,ret]);if(per)li.push(['2.1.01',0,per]);
@@ -13057,7 +13057,7 @@ function cbSave(f){
  const x={tp,tc,pv:String(E.pv.value).replace(/\D/g,'').padStart(5,'0'),nro:String(E.nro.value).replace(/\D/g,'').padStart(8,'0'),fe:E.fe.value,cp:String(E.cp.value).trim(),cuitCp:fmtCuit(E.cuitCp.value),ciCp:E.ciCp.value,neto,al,iva:r2(neto*al/100),nng:P('nng'),ex:P('ex'),pIva:P('pIva'),pIibb:P('pIibb'),pIibbJur:E.pIibbJur.value,pAV:P('pAV'),pGan:P('pGan'),iInt:P('iInt'),iComb:P('iComb'),otros:P('otros'),aut:E.aut.value,cae:String(E.cae.value).replace(/\D/g,''),act:E.act.value,cta:E.cta.value,det:E.det.value,src:'Manual',_n:1};
  if(tp==='C'){x.tiva=E.tiva.value;x.imput=E.imput.value}
  x.f=x.pv+'-'+x.nro;
- if(id){const F=cbFind(c.id,id);if(F){if(F.x.asId)cbReverse(c.id,F.x);F.list.splice(F.i,1);COMP[F.key]._dirty=1;x.id=id;x.src=F.x.src==='Manual'?'Manual':F.x.src;if(x.src!=='Manual'){x.editado=1;logA('Comprobante de '+x.src+' editado a mano: '+cbNum(x)+' · '+c.n)}}}
+ if(id){const F=cbFind(c.id,id);if(F){x.arcaKey=F.x.arcaKey||cbKeyOf(F.x);if(F.x.per&&!E.per)x.per=F.x.per;if(F.x.asId)cbReverse(c.id,F.x);F.list.splice(F.i,1);COMP[F.key]._dirty=1;x.id=id;x.src=F.x.src==='Manual'?'Manual':F.x.src;if(x.src!=='Manual'){x.editado=1;logA('Comprobante de '+x.src+' editado a mano: '+cbNum(x)+' · '+c.n)}}}
  else x.id=CBID++;
  x.per=(E.per&&E.per.value)||x.fe.slice(0,7);const ym=x.per,o=comprobantes(c.id,ym);(tp==='V'?o.v:o.c).push(x);o._dirty=1;
  x.asId=cbAsiento(c.id,x);
@@ -13088,6 +13088,11 @@ function cbShow(cid,id){
 cbteDetalle=function(cid,tp,i){const o=comprobantes(cid,S.ivaYM),x=(tp==='v'?o.v:o.c)[i];if(x)cbShow(cid,x.id)};
 
 /* importación del archivo de "Mis Comprobantes" (CSV o Excel) */
+/* Identidad de cada comprobante de ARCA: sobrevive a ediciones, traslados y bajas, así una nueva sincronización no pisa ni duplica el trabajo del estudio */
+const cbKeyOf=x=>{const tp=x.tp||'C';return tp+'|'+String(x.tc||'')+'|'+String(x.pv||'')+'|'+String(x.nro||'')+'|'+(tp==='V'?'':String(x.cuitCp||''))};
+function cbKnown(cid,ak){for(const k of Object.keys(COMP)){if(k.split('|')[0]!==String(cid))continue;const o=COMP[k];for(const t of ['v','c'])if((o[t]||[]).some(x=>x.arcaKey===ak||cbKeyOf(x)===ak))return true}return false}
+function cbBajaHas(cid,ak){const c=cl(cid);return!!(c&&c.cbBaja&&c.cbBaja.includes(ak))}
+function cbBajaAdd(cid,ak){const c=cl(cid);if(!c||!ak)return;c.cbBaja=c.cbBaja||[];if(!c.cbBaja.includes(ak))c.cbBaja.push(ak)}
 function cbImportRows(cid,tp,rows,src){
  const c=cl(cid),res={n:0,dup:0,err:[]};
  let hi=rows.findIndex(r=>r.some(v=>/fecha/i.test(String(v)))&&r.some(v=>/tipo|comprobante/i.test(String(v))));if(hi<0){res.err.push('No se encontró la fila de encabezados (Fecha, Tipo, …).');return res}
@@ -13107,8 +13112,8 @@ function cbImportRows(cid,tp,rows,src){
   let al=ix.al>=0?pnum(r[ix.al]):(ng?ALS.reduce((b,a)=>Math.abs(iva/ng*100-a)<Math.abs(iva/ng*100-b)?a:b,0):0);if(tcLetra(tc)==='C'){al=0;iva=0}
   const pv=String(ix.pv>=0?r[ix.pv]:'1').replace(/\D/g,'').padStart(5,'0').slice(-5),nro=String(ix.nro>=0?r[ix.nro]:'0').replace(/\D/g,'').padStart(8,'0').slice(-8),doc=String(ix.doc>=0?r[ix.doc]:'').replace(/\D/g,''),cuit=doc.length===11?fmtCuit(doc):doc;
   const ym=fe.slice(0,7),o=o0[ym]||(o0[ym]=comprobantes(cid,ym)),list=tp==='V'?o.v:o.c;
-  if(list.some(x=>x.tc===tc&&x.pv===pv&&x.nro===nro&&(tp==='V'||(x.cuitCp||'')===cuit))){res.dup++;return}
-  const x={id:CBID++,tp,tc,pv,nro,f:pv+'-'+nro,fe,cp:String(ix.den>=0?r[ix.den]:'')||'Sin denominación',cuitCp:cuit,ciCp:tp==='V'?(doc.length===11?'RI':'CF'):(tcLetra(tc)==='C'?'MT':'RI'),neto:r2(sg*ng),al,iva:r2(sg*iva),nng:r2(sg*nng),ex:r2(sg*ex),pIva:0,pIibb:0,pGan:0,pAV:0,iInt:0,iComb:0,otros:r2(sg*otr),aut:'CAE',cae:String(ix.cae>=0?r[ix.cae]:'').replace(/\D/g,''),act:c.act||'',cta:tp==='V'?'4.1.01':'1.1.04',tiva:'Directo',imput:'Bienes en general',src:'ARCA (archivo)',_n:1};
+  const ak=tp+'|'+tc+'|'+pv+'|'+nro+'|'+(tp==='V'?'':cuit);if(cbKnown(cid,ak)||list.some(x=>x.tc===tc&&x.pv===pv&&x.nro===nro&&(tp==='V'||(x.cuitCp||'')===cuit))){res.dup++;return}if(cbBajaHas(cid,ak)){res.baja=(res.baja||0)+1;return}
+  const x={id:CBID++,arcaKey:ak,tp,tc,pv,nro,f:pv+'-'+nro,fe,cp:String(ix.den>=0?r[ix.den]:'')||'Sin denominación',cuitCp:cuit,ciCp:tp==='V'?(doc.length===11?'RI':'CF'):(tcLetra(tc)==='C'?'MT':'RI'),neto:r2(sg*ng),al,iva:r2(sg*iva),nng:r2(sg*nng),ex:r2(sg*ex),pIva:0,pIibb:0,pGan:0,pAV:0,iInt:0,iComb:0,otros:r2(sg*otr),aut:'CAE',cae:String(ix.cae>=0?r[ix.cae]:'').replace(/\D/g,''),act:c.act||'',cta:tp==='V'?'4.1.01':'1.1.04',tiva:'Directo',imput:'Bienes en general',src:'ARCA (archivo)',_n:1};
   list.push(x);o._dirty=1;res.n++;res.items=(res.items||[]).concat([x]);
  });
  if(res.n){const L={};res.items.forEach(x=>cbLines(x).forEach(l=>{L[l[0]]=L[l[0]]||[0,0];L[l[0]][0]+=l[1];L[l[0]][1]+=l[2]}));const lines=Object.keys(L).map(k=>{const v=r2(L[k][0]-L[k][1]);return v>0?[k,v,0]:[k,0,-v]}).filter(l=>l[1]||l[2]);const df=r2(sum(lines.map(l=>l[1]))-sum(lines.map(l=>l[2])));if(df&&lines.length){const l=lines[lines.length-1];if(l[2])l[2]=r2(l[2]+df);else l[1]=r2(l[1]-df)}
@@ -13253,7 +13258,7 @@ Object.assign(ACT,{
  cbnew(d){const c=cl(S.ctx);modal('Agregar '+(d.tp==='V'?'venta':'compra')+' · '+esc(c.n),cbForm(c,d.tp,null));cbRecalc()},
  cbedit(d){const F=cbFind(+d.cid,+d.id);if(!F)return;if(!cbEditable(F.x))return toast('Los comprobantes sincronizados con ARCA no se editan');modal('Editar '+tcInfo(F.x.tc)[1]+' '+cbNum(F.x),cbForm(cl(+d.cid),F.x.tp,F.x));cbRecalc()},
  cbdel(d){const F=cbFind(+d.cid,+d.id);if(!F)return;modal('Eliminar comprobante',`<p>¿Eliminar ${tcBadge(F.x)} <b>${cbNum(F.x)}</b> de ${esc(F.x.cp)} por ${ars2(cbTot(F.x))}?</p><p class="mut">Se genera un asiento de anulación para que la contabilidad quede en orden.</p><p style="display:flex;gap:8px"><button class="btn bad" data-act="cbdel2" data-cid="${d.cid}" data-id="${d.id}">Eliminar</button><button class="btn" data-act="close">Cancelar</button></p>`)},
- cbdel2(d){const F=cbFind(+d.cid,+d.id);if(!F)return;if(F.x.asId)cbReverse(+d.cid,F.x);F.list.splice(F.i,1);COMP[F.key]._dirty=1;logA('Comprobante eliminado: '+tcInfo(F.x.tc)[0]+' '+cbNum(F.x)+' · '+cl(+d.cid).n);closeModal();toast('Comprobante eliminado y anulado en la contabilidad');render()},
+ cbdel2(d){const F=cbFind(+d.cid,+d.id);if(!F)return;cbBajaAdd(+d.cid,F.x.arcaKey||cbKeyOf(F.x));if(F.x.asId)cbReverse(+d.cid,F.x);F.list.splice(F.i,1);COMP[F.key]._dirty=1;logA('Comprobante eliminado: '+tcInfo(F.x.tc)[0]+' '+cbNum(F.x)+' · '+cl(+d.cid).n);closeModal();toast('Comprobante eliminado y anulado en la contabilidad');render()},
  cbshow(d){cbShow(+d.cid||S.ctx,+d.id)},
  cbagain(){const f=$('#cbF');if(!f)return;f.elements.again.value='1';f.requestSubmit?f.requestSubmit():f.dispatchEvent(new Event('submit',{cancelable:true,bubbles:true}))},
  cbimp(d){const c=cl(S.ctx),tp=d.tp,sim=!c.real;
@@ -13294,7 +13299,7 @@ Object.assign(CHG,{
  lidno(v,t){const c=cl(S.ctx);c.lidNo=t.checked;render()},
  fac0(v){const c=cl(S.ctx);c.fac0=Math.max(0,+v||0);render()},
  cbimpf(v,t){const f=t.files[0],tp=t.dataset.tp;if(!f)return;const cid=S.ctx;fileRows(f,'cbtes',res=>{if(res.err)return toast('No se pudo leer: '+res.err);const r=cbImportRows(cid,tp,res.rows,res.src);
-  modal('Importación de Mis Comprobantes',`<p>${badge(r.n+' comprobantes nuevos','ok')} ${r.dup?badge(r.dup+' ya estaban cargados','info'):''} ${r.err.length?badge(r.err.length+' con error','bad'):''} ${badge(res.src,'info')}</p>${r.err.length?`<div class="list">${r.err.slice(0,15).map(e=>`<div><span>❌</span><div class="g">${esc(e)}</div></div>`).join('')}</div>`:''}<p class="mut">${r.n?'Se generó el asiento de la importación en el libro diario.':''}</p><p><button class="btn pri" data-act="close">Listo</button></p>`);
+  modal('Importación de Mis Comprobantes',`<p>${badge(r.n+' comprobantes nuevos','ok')} ${r.dup?badge(r.dup+' ya estaban cargados (se respetan las correcciones del estudio)','info'):''} ${r.baja?badge(r.baja+' eliminadas por el estudio: no se vuelven a cargar','warn'):''} ${r.err.length?badge(r.err.length+' con error','bad'):''} ${badge(res.src,'info')}</p>${r.err.length?`<div class="list">${r.err.slice(0,15).map(e=>`<div><span>❌</span><div class="g">${esc(e)}</div></div>`).join('')}</div>`:''}<p class="mut">${r.n?'Se generó el asiento de la importación en el libro diario.':''}</p><p><button class="btn pri" data-act="close">Listo</button></p>`);
   const ms=[];Object.keys(COMP).forEach(k=>{const [id,ym]=k.split('|');if(+id===cid&&COMP[k][tp==='V'?'v':'c'].some(x=>x.src==='ARCA (archivo)'))ms.push(ym)});if(ms.length){ms.sort();S.rg={d:ms[0],h:ms[ms.length-1]}}render()});try{t.value=''}catch(e){}},
  iibbf(v,t){const row=iibbData(S.ctx||cpId()).rows.find(x=>x.j===t.dataset.j);if(row){row[t.dataset.k]=+v||0;render()}}
 });
@@ -13928,7 +13933,7 @@ async function afsSync(c,only){
   try{
    if(kd==='E'||kd==='R'){const data=await afsRun('mis-comprobantes',Object.assign({},P,{filters:{t:kd,fechaEmision:fe}}),t=>setS(i,'esperando a ARCA… '+t*5+' s',''));
     const rows=afsRows(data);if(!rows.length){setS(i,'sin comprobantes en el período','mut');okAny=true;continue}
-    const r=cbImportRows(c.id,kd==='E'?'V':'C',rows,'ARCA (Afip SDK)');res.imp+=r.n;res.dup+=r.dup;res.err.push(...r.err);setS(i,r.n+' nuevos'+(r.dup?' · '+r.dup+' ya estaban':'')+(r.err.length?' · '+r.err.length+' con error':''),'up');okAny=true}
+    const r=cbImportRows(c.id,kd==='E'?'V':'C',rows,'ARCA (Afip SDK)');res.imp+=r.n;res.dup+=r.dup;res.err.push(...r.err);setS(i,r.n+' nuevos'+(r.dup?' · '+r.dup+' ya estaban (se respetan las correcciones)':'')+(r.baja?' · '+r.baja+' borradas por el estudio':'')+(r.err.length?' · '+r.err.length+' con error':''),'up');okAny=true}
    else if(kd==='DFE'){const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');const tk=t=>setS(i,'esperando a ARCA… '+t*5+' s','');let data;
     try{data=await afsRun('domicilio-fiscal-electronico',Object.assign({},P,{filters:{fechaPublicacionSince:dmy(desde),fechaPublicacionTo:dmy(hoy)}}),tk)}
     catch(e){if(!/fecha/i.test(String(e&&e.message)))throw e;data=await afsRun('domicilio-fiscal-electronico',Object.assign({},P,{filters:{fechaPublicacionSince:iso(desde),fechaPublicacionTo:iso(hoy)}}),tk)}res.dfe=afsDfe(c,data);setS(i,res.dfe.total+' comunicaciones'+(res.dfe.n?' · '+res.dfe.n+' nuevas':''),'up');okAny=true}
@@ -13971,7 +13976,7 @@ async function afsRet(c,P,tick){
     const tx=(String(g('descripcionoperacion','tipooperacion','operacion','tipo'))+' '+String(g('descripcionregimen','regimen'))).toLowerCase();
     const cbte=String(g('numerocomprobante','nrocomprobante','comprobante')),cert=String(g('numerocertificado','certificado'));
     const ext=imp+'|'+cu+'|'+fe+'|'+monto+'|'+cbte+'|'+cert;tot++;sm+=monto;
-    if(RET.some(x=>x.cid===c.id&&x.ext===ext))return;
+    if(RET.some(x=>x.cid===c.id&&x.ext===ext)||(c.retBaja||[]).includes(ext))return;
     RET.push({id:RTID++,cid:c.id,tipo:/percep/.test(tx)?'Percepción':'Retención',imp,jur:'',ag:String(g('denominacionagente','razonsocial','denominacion','agente','nombre'))||(cu?'CUIT '+fmtCuit(cu):'Agente'),cuit:cu.length===11?fmtCuit(cu):cu,cbte:cbte||'—',cert:cert||'—',fecha:fe,monto:r2(monto),est:'Computada',src:'ARCA (Mis Retenciones)',reg:String(g('descripcionregimen','regimen')||''),ext});n++});
    if(arr.length<100)break;
   }
@@ -14047,6 +14052,7 @@ function retRowsImport(cid,rows,src){
   let cu=g('cuit').replace(/\D/g,'');if(cu===own)cu='';
   const o={cid,fecha:fe,tipo:/percep/.test(tx)?'Percepción':'Retención',imp,jur:imp==='IIBB'?(g('jur')||cl(cid).prov||'Salta'):'',ag:g('den')||(cu?'CUIT '+fmtCuit(cu):''),cuit:cu.length===11?fmtCuit(cu):cu,cbte:g('cbte')||'—',cert:g('cert'),monto:r2(monto),src:src,reg:g('reg')};
   if(o.cert&&RET.some(x=>x.cid===cid&&x.cert===o.cert&&x.cuit===o.cuit&&Math.abs(x.monto-o.monto)<.01)){res.dup++;return}
+  if((cl(cid).retBaja||[]).includes(o.imp+'|'+o.cuit+'|'+o.cert+'|'+o.monto)){res.dup++;return}
   const rr=retAdd(o);if(rr.err)res.err.push('Fila '+(hi+i+2)+': '+rr.err[0]);else res.n++});
  return res;
 }
