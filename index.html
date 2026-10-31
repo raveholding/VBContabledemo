@@ -3724,7 +3724,7 @@ const AFS={get tok(){return LSG('svb_afipsdk_tok','')},set tok(v){LSS('svb_afips
 const afsOn=()=>!!AFS.tok;
 function clavesF(){try{return JSON.parse(LSG('svb_claves','{}'))||{}}catch(e){return{}}}
 function setClaveF(cid,u,pw){const k=clavesF();if(pw)k[cid]={u:String(u||'').replace(/\D/g,''),p:pw};else delete k[cid];LSS('svb_claves',JSON.stringify(k))}
-const afsErr=(j,st)=>{const m=(j&&j.data&&(j.data.message||j.data.error))||(j&&(j.message||j.error))||'';return m?String(m):'Error '+st+' de Afip SDK'};
+const afsErr=(j,st)=>{const fl=o=>!o||typeof o!=='object'?(o?[String(o)]:[]):Object.values(o).flatMap(fl);const det=fl(j&&j.data_errors).filter(Boolean);const m=(j&&j.data&&(j.data.message||j.data.error))||(j&&(j.message||j.error))||'';return (m?String(m):'Error '+st+' de Afip SDK')+(det.length?' '+det.join(' · '):'')};
 const sleep=ms=>new Promise(z=>setTimeout(z,ms));
 async function afsFetch(path,opt){
  let r;try{r=await fetch(AFS.url.replace(/\/$/,'')+path,Object.assign({headers:{'Content-Type':'application/json','Authorization':'Bearer '+AFS.tok}},opt||{}))}
@@ -3809,7 +3809,9 @@ async function afsSync(c){
    if(kd==='E'||kd==='R'){const data=await afsRun('mis-comprobantes',Object.assign({},P,{filters:{t:kd,fechaEmision:fe}}),t=>setS(i,'esperando a ARCA… '+t*5+' s',''));
     const rows=afsRows(data);if(!rows.length){setS(i,'sin comprobantes en el período','mut');okAny=true;continue}
     const r=cbImportRows(c.id,kd==='E'?'V':'C',rows,'ARCA (Afip SDK)');res.imp+=r.n;res.dup+=r.dup;res.err.push(...r.err);setS(i,r.n+' nuevos'+(r.dup?' · '+r.dup+' ya estaban':'')+(r.err.length?' · '+r.err.length+' con error':''),'up');okAny=true}
-   else if(kd==='DFE'){const data=await afsRun('domicilio-fiscal-electronico',P,t=>setS(i,'esperando a ARCA… '+t*5+' s',''));res.dfe=afsDfe(c,data);setS(i,res.dfe.total+' comunicaciones'+(res.dfe.n?' · '+res.dfe.n+' nuevas':''),'up');okAny=true}
+   else if(kd==='DFE'){const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');const tk=t=>setS(i,'esperando a ARCA… '+t*5+' s','');let data;
+    try{data=await afsRun('domicilio-fiscal-electronico',Object.assign({},P,{filters:{fechaPublicacionSince:dmy(desde),fechaPublicacionTo:dmy(hoy)}}),tk)}
+    catch(e){if(!/fecha/i.test(String(e&&e.message)))throw e;data=await afsRun('domicilio-fiscal-electronico',Object.assign({},P,{filters:{fechaPublicacionSince:iso(desde),fechaPublicacionTo:iso(hoy)}}),tk)}res.dfe=afsDfe(c,data);setS(i,res.dfe.total+' comunicaciones'+(res.dfe.n?' · '+res.dfe.n+' nuevas':''),'up');okAny=true}
    else if(kd==='MONO'){const data=await afsRun('monotributo-info',P,t=>setS(i,'esperando a ARCA… '+t*5+' s',''));c.arcaMono={ts:Date.now(),data};const cat=JSON.stringify(data||{}).match(/"categor[ií]a"\s*:\s*"?([A-K])\b/i);if(cat)c.cat=cat[1].toUpperCase();setS(i,cat?'categoría '+cat[1].toUpperCase()+' según ARCA':'datos recibidos','up');okAny=true}
   }catch(e){setS(i,'error','dn');res.err.push(steps[i][1]+': '+(e&&e.message||e));if(/access token|no se pudo llegar/i.test(String(e&&e.message)))break}
  }
