@@ -158,6 +158,19 @@ if (MCP_STDIO) {
     if (req.method === 'OPTIONS') return send(res, 204, {});
     if (u.pathname === '/' || u.pathname === '/v1') return send(res, 200, { servicio: 'Sistema VB · API REST + MCP', estudio: DB.estudio.nombre, version: API_VER, documentacion: '/v1/openapi.json', mcp: '/mcp', solo_lectura: true });
     if (u.pathname === '/v1/openapi.json') return send(res, 200, openapi());
+    /* Puente hacia Afip SDK: el navegador llama a /afipsdk/... y el servidor reenvía a app.afipsdk.com (evita el bloqueo CORS) */
+    if (u.pathname.startsWith('/afipsdk/')) {
+      let b = ''; req.on('data', c => { b += c; if (b.length > 1e6) req.destroy(); });
+      req.on('end', async () => {
+        try {
+          const tok = req.headers.authorization || (process.env.AFIPSDK_TOKEN ? 'Bearer ' + process.env.AFIPSDK_TOKEN : '');
+          const r = await fetch('https://app.afipsdk.com/api/v1/' + u.pathname.slice(9) + u.search, { method: req.method, headers: { 'Content-Type': 'application/json', Authorization: tok }, body: req.method === 'POST' ? b : undefined });
+          const t = await r.text(); let j; try { j = JSON.parse(t); } catch { j = { status: 'error', data: { message: t.slice(0, 500) } }; }
+          log(req.method, u.pathname, r.status); send(res, r.status, j);
+        } catch (e) { send(res, 502, { status: 'error', data: { message: 'No se pudo conectar con Afip SDK: ' + e.message } }); }
+      });
+      return;
+    }
     if (!authorized(req)) return send(res, 401, { error: 'Falta la clave o no es válida. Enviala como Authorization: Bearer <clave>.' }, { 'WWW-Authenticate': 'Bearer' });
     if (u.pathname === '/mcp') {
       if (req.method !== 'POST') return send(res, 405, { error: 'El MCP remoto acepta POST con JSON-RPC.' });

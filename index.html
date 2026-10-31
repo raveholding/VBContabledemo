@@ -261,7 +261,7 @@ a.clk{cursor:pointer;color:var(--txt);text-decoration:none;display:inline-flex;g
   </header>
   <div id="view"></div>
   <footer class="ft">
-   <div><b>Sistema VB</b> · Las alícuotas, escalas, tasas de interés y la conexión con ARCA son de demostración y se parametrizan en la versión real.</div>
+   <div><b>Sistema VB</b> · Escalas de monotributo y vencimientos oficiales de ARCA 2026. Conexión real con ARCA vía Afip SDK (Configuración → Conexión con ARCA); los datos de ejemplo son ficticios.</div>
    <div>Desarrollado por <b>Vincular Business</b> · WhatsApp <a href="https://wa.me/5493874484132" target="_blank" rel="noopener">(387) 4484132</a> · <a href="mailto:vincularbusiness@gmail.com">vincularbusiness@gmail.com</a></div>
   </footer>
  </main>
@@ -2506,7 +2506,7 @@ goView=function(v){$('#side').classList.remove('open');closeModal();S.view=V[v]?
 goC=function(cid,cv){cid=+cid;$('#side').classList.remove('open');closeModal();if(!cid||!CL.some(c=>c.id===cid))return goView('todos');
  if(S.ctx!==cid){S.rg={d:null,h:null};S.cbF={q:'',tc:'',src:''};S.lq={}}
  S.ctx=cid;S.view='cliente';S.cv=cv||'resumen';setCtxAll(cid);setHash('#c/'+cid+'/'+S.cv);render();window.scrollTo(0,0)};
-const modeBar=()=>CFG.mode==='limpio'
+let modeBar=()=>CFG.mode==='limpio'
  ?`<div class="modebar"><span>💾</span><div style="flex:1">Estás trabajando con <b>tus datos</b>. Se guardan solos en este navegador; descargá una copia de seguridad de vez en cuando.</div>${!CL.length&&S.role==='admin'?'<button class="btn pri sm" data-act="ejemplo">🧪 Cargar datos de ejemplo</button>':''}<button class="btn sm" data-act="bkup">⬇ Copia de seguridad</button></div>`
  :`<div class="modebar"><span>🧪</span><div style="flex:1">Estás viendo <b>datos de ejemplo</b>. Cuando quieras, empezá en limpio y cargá tus clientes reales: todo queda guardado en este navegador.</div>${S.role==='admin'?'<button class="btn pri sm" data-act="limpio">Empezar en limpio</button>':''}</div>`;
 const emptyCartera=()=>`<div class="card" style="text-align:center;padding:34px"><div style="font-size:44px">👋</div><h2>Empecemos con tu cartera</h2><p class="mut" style="max-width:520px;margin:6px auto 16px">Agregá tus clientes con su CUIT. El sistema arma solo el calendario de vencimientos por terminación de CUIT y su ficha con todos los datos.</p><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">${canA('clientes_edit')?`<button class="btn pri" data-act="clinew">+ Agregar mi primer cliente</button><button class="btn" data-act="cliimp">📄 Importar clientes (Excel o CSV)</button>${S.role==='admin'?'<button class="btn" data-act="ejemplo">🧪 Ver con datos de ejemplo (6 clientes)</button>':''}`:'<span class="mut">Pedile al administrador que cargue los clientes.</span>'}</div></div>`;
@@ -3713,6 +3713,132 @@ function tintBars(){$$('.bar i').forEach(i=>{if(i.style.background)return;const 
 {const _rb=render;render=function(){_rb.apply(this,arguments);tintBars()}}
 /* Cartera vacía: las pantallas que trabajan sobre un cliente muestran cómo empezar en lugar de fallar */
 Object.keys(V).forEach(k=>{const f=V[k];V[k]=function(){if(CL.length)return f.apply(this,arguments);try{return f.apply(this,arguments)}catch(e){return`<h1>${esc((NAVC.find(n=>n[0]===k)||MODS.find(n=>n[0]===k)||[k,'Sin clientes'])[1])}</h1><p class="mut" style="margin-top:2px">Esta sección trabaja sobre la ficha de cada cliente. Cargá tu primer cliente para usarla.</p>`+emptyCartera()}}});
+
+/* =====================================================================
+   CONEXIÓN REAL CON ARCA vía Afip SDK (automatizaciones con clave fiscal)
+   El token y las claves fiscales quedan solo en este navegador: no van a
+   las copias de seguridad, ni a la API, ni al repositorio.
+   ===================================================================== */
+const LSG=(k,d)=>{try{const v=localStorage.getItem(k);return v==null?d:v}catch(e){return d}},LSS=(k,v)=>{try{v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch(e){}};
+const AFS={get tok(){return LSG('svb_afipsdk_tok','')},set tok(v){LSS('svb_afipsdk_tok',v)},get url(){return LSG('svb_afipsdk_url','')||'https://app.afipsdk.com/api/v1'},set url(v){LSS('svb_afipsdk_url',v)}};
+const afsOn=()=>!!AFS.tok;
+function clavesF(){try{return JSON.parse(LSG('svb_claves','{}'))||{}}catch(e){return{}}}
+function setClaveF(cid,u,pw){const k=clavesF();if(pw)k[cid]={u:String(u||'').replace(/\D/g,''),p:pw};else delete k[cid];LSS('svb_claves',JSON.stringify(k))}
+const afsErr=(j,st)=>{const m=(j&&j.data&&(j.data.message||j.data.error))||(j&&(j.message||j.error))||'';return m?String(m):'Error '+st+' de Afip SDK'};
+const sleep=ms=>new Promise(z=>setTimeout(z,ms));
+async function afsFetch(path,opt){
+ let r;try{r=await fetch(AFS.url.replace(/\/$/,'')+path,Object.assign({headers:{'Content-Type':'application/json','Authorization':'Bearer '+AFS.tok}},opt||{}))}
+ catch(e){throw new Error('No se pudo llegar a Afip SDK desde el navegador ('+(e&&e.message||e)+'). Revisá la conexión a internet. Si sigue, el servicio no acepta llamadas directas desde una página: usá el servidor del sistema (Configuración → Conexión con ARCA → URL del servidor).')}
+ const t=await r.text();let j;try{j=JSON.parse(t)}catch(e){j={status:'error',data:{message:t.slice(0,300)}}}
+ if(r.status===401||r.status===403)throw new Error('Afip SDK rechazó la clave de acceso (access token). Revisala en Configuración → Conexión con ARCA.');
+ return{st:r.status,j};
+}
+async function afsRun(automation,params,onTick){
+ let {st,j}=await afsFetch('/automations',{method:'POST',body:JSON.stringify({automation,params,wait:false})});
+ if(j&&j.status==='error')throw new Error(afsErr(j,st));
+ if(st>=400&&!(j&&j.id))throw new Error(afsErr(j,st));
+ let t=0;
+ while(j&&j.id&&(j.status==='in_process'||j.status==='pending'||j.status==='queued'||!j.status)){
+  if(++t>48)throw new Error('ARCA tardó más de 4 minutos en responder. Probá de nuevo en un rato.');
+  onTick&&onTick(t);await sleep(5000);
+  const id=j.id;({st,j}=await afsFetch('/automations/'+encodeURIComponent(id)));if(j&&!j.id)j.id=id;
+ }
+ if(!j||j.status==='error')throw new Error(afsErr(j,st));
+ return j.data!==undefined?j.data:j;
+}
+/* Convierte la respuesta de Mis Comprobantes en filas con los encabezados de ARCA */
+function afsHdr(k){const n=String(k).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+ if(n.includes('fecha')&&(n.includes('emision')||n==='fecha'))return'Fecha de Emisión';
+ if(n.includes('tipo')&&(n.includes('comprobante')||n.includes('cbte')))return'Tipo de Comprobante';
+ if(n.includes('puntodeventa')||n.includes('puntoventa')||n==='ptovta'||n==='pv')return'Punto de Venta';
+ if(n.includes('desde'))return'Número Desde';if(n.includes('hasta'))return'Número Hasta';
+ if(n.includes('autoriz')||n==='cae')return'Cód. Autorización';
+ if(n.includes('tipo')&&n.includes('doc'))return'Tipo Doc.';
+ if((n.includes('nro')||n.includes('numero')||n.includes('num'))&&n.includes('doc'))return'Nro. Doc.';
+ if(n.includes('denominacion')||n.includes('razonsocial'))return'Denominación';
+ if(n.includes('tipocambio')||n.includes('tipodecambio'))return'Tipo Cambio';
+ if(n.includes('moneda'))return'Moneda';
+ if(n.includes('nogravado'))return'Imp. Neto No Gravado';
+ if(n.includes('netogravado'))return /iva\d/.test(n)?k:(n.includes('total')?'Imp. Neto Gravado Total':'Imp. Neto Gravado');
+ if(n.includes('exent'))return'Imp. Op. Exentas';
+ if(n.includes('otrostributos'))return'Otros Tributos';
+ if(['iva','totaliva','impiva','importeiva','imptotaliva'].includes(n))return'Total IVA';
+ if(['imptotal','importetotal','total'].includes(n))return'Imp. Total';
+ return k}
+function afsRows(data){
+ let arr=Array.isArray(data)?data:data&&(data.comprobantes||data.items||data.results||data.data||data.rows)||[];
+ if(!Array.isArray(arr)||!arr.length)return[];
+ const fx=v=>{if(v==null)return'';if(typeof v==='string'&&/^\d{4}-\d{2}-\d{2}T/.test(v))return v.slice(0,10);return typeof v==='object'?JSON.stringify(v):v};
+ if(Array.isArray(arr[0]))return arr.map(r=>r.map(fx));
+ const keys=[];arr.forEach(o=>Object.keys(o||{}).forEach(k=>{if(!keys.includes(k))keys.push(k)}));
+ return[keys.map(afsHdr),...arr.map(o=>keys.map(k=>fx(o[k])))];
+}
+const dmy=d=>String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+/* Notificaciones del Domicilio Fiscal Electrónico */
+function afsDfe(c,data){
+ const arr=Array.isArray(data)?data:data&&(data.comunicaciones||data.items||data.data||data.results)||[];let n=0;
+ arr.forEach(o=>{const g=(...ks)=>{for(const k of Object.keys(o||{})){const nk=k.toLowerCase();if(ks.some(x=>nk.includes(x)))return o[k]}return''};
+  const t=String(g('asunto','titulo','subject','descripcion','detalle')||'Comunicación de ARCA'),fr=String(g('fechapublicacion','fecha','date','publicacion')||''),f=normFecha(fr.slice(0,10))||(/^\d{4}-\d{2}-\d{2}/.test(fr)?fr.slice(0,10):TODAYISO);
+  const idx=String(g('id','idcomunicacion','numero')||t+f),leida=/le[ií]d|read|true/i.test(String(g('estado','leida','read')))&&!/no/i.test(String(g('estado')));
+  if(DFE.some(x=>x.cid===c.id&&x.ext===idx))return;
+  const tema=/intimac/i.test(t)?'Intimaciones':/requerim/i.test(t)?'Requerimientos':/fiscaliz/i.test(t)?'Fiscalizaciones':/embargo|ejecuci/i.test(t)?'Intimaciones':'Notificaciones';
+  DFE.push({id:DFE.length+1,cid:c.id,t,f,plazo:10,leida,tema,ext:idx,src:'ARCA'});n++});
+ return{n,total:arr.length};
+}
+function afsCredModal(c,then){
+ const k=clavesF()[c.id]||{};S._afsThen=then;
+ modal('Clave fiscal de '+esc(c.n),`<form data-form="afscred"><input type="hidden" name="cid" value="${c.id}"><p class="mut" style="margin-top:0">Se usa para entrar a ARCA en modo solo lectura. Queda guardada únicamente en este navegador; no va a las copias de seguridad ni a ningún otro lado.</p>
+ <label>Usuario de ARCA (CUIT o CUIL con el que se ingresa)</label><input name="u" value="${esc(k.u||c.cuit.replace(/\D/g,''))}" inputmode="numeric" required>
+ <p class="disc" style="margin:2px 0 8px">En una sociedad es el CUIT de quien administra la clave fiscal.</p>
+ <label>Clave fiscal</label><input name="p" type="password" autocomplete="off" required>
+ <p style="display:flex;gap:8px;margin-top:12px"><button class="btn pri">Guardar y sincronizar</button>${k.p?`<button class="btn" type="button" data-act="afscreddel" data-id="${c.id}">Borrar la clave guardada</button>`:''}</p></form>`)}
+FRM.afscred=f=>{const cid=+f.get('cid'),c=cl(cid);setClaveF(cid,f.get('u'),f.get('p'));c.clave=true;closeModal();save();const t=S._afsThen;S._afsThen=null;t?t():render()};
+ACT.afscreddel=d=>{setClaveF(+d.id,'','');closeModal();toast('Clave fiscal borrada de este navegador');render()};
+async function afsSync(c){
+ if(!afsOn())return afsCfg();
+ const k=clavesF()[c.id];if(!k||!k.p)return afsCredModal(c,()=>afsSync(c));
+ const P={cuit:c.cuit.replace(/\D/g,''),username:k.u||c.cuit.replace(/\D/g,''),password:k.p};
+ const hoy=new Date(TODAY),desde=new Date(hoy.getFullYear(),hoy.getMonth()-11,1),fe=dmy(desde)+' - '+dmy(hoy);
+ const steps=[['E','Mis Comprobantes · emitidos (12 meses)'],['R','Mis Comprobantes · recibidos (12 meses)'],['DFE','Domicilio Fiscal Electrónico']];
+ if(c.tipo==='Monotributo')steps.push(['MONO','Información de Monotributo']);
+ modal('Sincronizando con ARCA',`<p class="mut" style="margin-top:0"><b>${esc(c.n)}</b> · CUIT ${c.cuit} · conexión real con ARCA vía Afip SDK</p><div id="afsSteps">${steps.map((x,i)=>`<div class="stat" data-i="${i}" style="opacity:.5"><span>${x[1]}</span><b class="mut">en espera</b></div>`).join('')}</div><p class="disc" id="afsMsg" style="margin-top:10px">ARCA puede tardar entre 10 segundos y un par de minutos por consulta. No cierres esta ventana.</p>`);
+ const row=i=>$('#afsSteps [data-i="'+i+'"]'),setS=(i,txt,cls)=>{const r=row(i);if(!r)return;r.style.opacity=1;const b=r.querySelector('b');b.textContent=txt;b.className=cls||''};
+ const res={imp:0,dup:0,err:[],dfe:null,mono:null};let okAny=false;
+ for(let i=0;i<steps.length;i++){const [kd]=steps[i];setS(i,'consultando…','');
+  try{
+   if(kd==='E'||kd==='R'){const data=await afsRun('mis-comprobantes',Object.assign({},P,{filters:{t:kd,fechaEmision:fe}}),t=>setS(i,'esperando a ARCA… '+t*5+' s',''));
+    const rows=afsRows(data);if(!rows.length){setS(i,'sin comprobantes en el período','mut');okAny=true;continue}
+    const r=cbImportRows(c.id,kd==='E'?'V':'C',rows,'ARCA (Afip SDK)');res.imp+=r.n;res.dup+=r.dup;res.err.push(...r.err);setS(i,r.n+' nuevos'+(r.dup?' · '+r.dup+' ya estaban':'')+(r.err.length?' · '+r.err.length+' con error':''),'up');okAny=true}
+   else if(kd==='DFE'){const data=await afsRun('domicilio-fiscal-electronico',P,t=>setS(i,'esperando a ARCA… '+t*5+' s',''));res.dfe=afsDfe(c,data);setS(i,res.dfe.total+' comunicaciones'+(res.dfe.n?' · '+res.dfe.n+' nuevas':''),'up');okAny=true}
+   else if(kd==='MONO'){const data=await afsRun('monotributo-info',P,t=>setS(i,'esperando a ARCA… '+t*5+' s',''));c.arcaMono={ts:Date.now(),data};const cat=JSON.stringify(data||{}).match(/"categor[ií]a"\s*:\s*"?([A-K])\b/i);if(cat)c.cat=cat[1].toUpperCase();setS(i,cat?'categoría '+cat[1].toUpperCase()+' según ARCA':'datos recibidos','up');okAny=true}
+  }catch(e){setS(i,'error','dn');res.err.push(steps[i][1]+': '+(e&&e.message||e));if(/access token|no se pudo llegar/i.test(String(e&&e.message)))break}
+ }
+ if(okAny){c.sync=Date.now();c.syncReal=true;c.clave=true;logA('Sincronización real con ARCA (Afip SDK) · '+c.n+' · '+res.imp+' comprobantes nuevos')}
+ const m=$('#afsMsg');if(m)m.innerHTML=(okAny?'<b class="up">Sincronización terminada.</b> ':'<b class="dn">No se pudo sincronizar.</b> ')+(res.err.length?'<br>'+res.err.slice(0,6).map(x=>'• '+esc(x)).join('<br>'):'')+'<br><button class="btn pri sm" style="margin-top:8px" data-act="close">Ver la ficha</button>';
+ save();render();
+}
+function afsCfg(){
+ modal('Conexión con ARCA (Afip SDK)',`<form data-form="afscfg"><p class="mut" style="margin-top:0">Con una cuenta de <b>Afip SDK</b> el sistema entra a ARCA con la clave fiscal de cada cliente (solo lectura) y trae Mis Comprobantes, el Domicilio Fiscal Electrónico y la información de monotributo.</p>
+ <label>Clave de acceso de Afip SDK (access token)</label><input name="tok" type="password" autocomplete="off" value="${esc(AFS.tok)}" placeholder="Pegala desde app.afipsdk.com">
+ <p class="disc" style="margin:2px 0 8px">Se guarda solo en este navegador.</p>
+ <details style="margin:6px 0"><summary class="mut" style="cursor:pointer">Avanzado: usar el servidor del sistema</summary><label style="margin-top:6px">URL de la API</label><input name="url" value="${esc(LSG('svb_afipsdk_url',''))}" placeholder="https://app.afipsdk.com/api/v1  ·  o  http://localhost:8787/afipsdk"><p class="disc">Dejalo vacío para conectar directo. Si el navegador no puede llegar a Afip SDK, iniciá el servidor de la carpeta <code>servidor/</code> y poné acá <code>http://localhost:8787/afipsdk</code>.</p></details>
+ <p style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="btn pri">Guardar</button><button class="btn" type="button" data-act="afstest">Probar conexión</button>${AFS.tok?'<button class="btn" type="button" data-act="afsoff">Desconectar</button>':''}</p><div id="afsTest" class="disc"></div></form>`)}
+FRM.afscfg=f=>{AFS.tok=String(f.get('tok')||'').trim();AFS.url=String(f.get('url')||'').trim();closeModal();toast(AFS.tok?'Conexión con ARCA guardada ✔ Ahora podés sincronizar cada cliente con su clave fiscal':'Conexión con ARCA desactivada');logA('Conexión con Afip SDK '+(AFS.tok?'configurada':'desactivada'));render()};
+ACT.afscfg=()=>afsCfg();
+ACT.afsoff=()=>{AFS.tok='';closeModal();toast('Conexión con ARCA desactivada');render()};
+ACT.afstest=async()=>{const f=$('#mbox form'),el=$('#afsTest');const tok=String(f.elements.tok.value||'').trim(),url=String(f.elements.url.value||'').trim();if(!tok){el.innerHTML='<span class="dn">Pegá primero la clave de acceso.</span>';return}
+ const t0=AFS.tok,u0=LSG('svb_afipsdk_url','');AFS.tok=tok;AFS.url=url;el.textContent='Probando…';
+ try{const {st}=await afsFetch('/automations/prueba-de-conexion');el.innerHTML=st===404||st===400||st<300?'<span class="up">✔ Afip SDK respondió y aceptó la clave de acceso.</span>':'<span class="dn">Afip SDK respondió con el código '+st+'.</span>'}
+ catch(e){el.innerHTML='<span class="dn">✘ '+esc(e.message)+'</span>'}finally{AFS.tok=t0;AFS.url=u0}};
+/* Engancha la sincronización real en los botones existentes */
+{const _s1=ACT.sync1;ACT.sync1=d=>{const c=cl(+d.id);if(c&&c.real&&afsOn())return afsSync(c);return _s1(d)}}
+{const _fc2=FRM.cliente;FRM.cliente=function(f,form){const pw=String(f.get('clave')||''),n0=CL.length,id0=+(f.get('id')||0);_fc2(f,form);const c=id0?cl(id0):(CL.length>n0?CL[CL.length-1]:null);if(c&&pw){setClaveF(c.id,c.cuit,pw);if(c.real&&afsOn()&&CFG.mode==='limpio'&&!id0)setTimeout(()=>afsSync(c),350)}}}
+/* Barra de estado de los clientes reales */
+{const _sb=syncBar;syncBar=function(c,fuente){if(c.real&&c.syncReal)return`<div class="syncb"><span class="sdot"></span><div style="flex:1;min-width:0"><b>${esc(fuente)}</b> sincronizado con ARCA ${fsync(c.sync)} · conexión real vía Afip SDK</div><button class="btn sm" data-act="sync1" data-id="${c.id}">⟳ Sincronizar ahora</button></div>`;
+ if(c.real&&afsOn())return`<div class="syncb"><span class="sdot"></span><div style="flex:1;min-width:0"><b>${esc(fuente)}</b>: todavía no se sincronizó con ARCA. ${clavesF()[c.id]?'':'Cargá la clave fiscal para traer los datos.'}</div><button class="btn sm pri" data-act="sync1" data-id="${c.id}">⟳ Sincronizar con ARCA</button></div>`;return _sb(c,fuente)}}
+/* Botón de conexión visible en Inicio (modo con tus datos) y en Configuración */
+{const _mb=modeBar;modeBar=function(){const h=_mb();if(CFG.mode!=='limpio'||S.role!=='admin')return h;return h+`<div class="modebar" style="${afsOn()?'border-color:var(--ok)':''}"><span>🔌</span><div style="flex:1">${afsOn()?'<b>Conectado a ARCA</b> vía Afip SDK. En la ficha de cada cliente tocá <b>Sincronizar con ARCA</b> para traer sus comprobantes y notificaciones.':'<b>Conectá ARCA</b> para traer automáticamente los comprobantes y notificaciones de cada cliente con su clave fiscal.'}</div><button class="btn ${afsOn()?'':'pri '}sm" data-act="afscfg">${afsOn()?'Configurar':'Conectar con ARCA'}</button></div>`}}
+{const _vc=V.config;V.config=function(){return String(_vc.apply(this,arguments)).replace('<h3>Sincronización con ARCA</h3>',`<h3>Sincronización con ARCA</h3><div class="stat"><span>Conexión real (Afip SDK)</span><b class="${afsOn()?'up':'mut'}">${afsOn()?'Conectada':'Sin configurar'}</b></div><p><button class="btn pri sm" data-act="afscfg">🔌 Conexión con ARCA</button></p>`)}}
 
 render();syncHash();
 </script>

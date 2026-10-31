@@ -62,8 +62,18 @@ Siguen en el menú: panel general, fichas de clientes, calendario de vencimiento
 - **Vencimientos:** cronograma de ARCA 2026 por terminación de CUIT (IVA, autónomos, F.931, anticipos de Ganancias y Bienes Personales, monotributo) con los feriados nacionales.
 - **Validaciones:** dígito verificador del CUIT y reglas de facturación.
 
+## Conexión real con ARCA (Afip SDK)
+
+En **Configuración → Conexión con ARCA** (o en el aviso de Inicio) se pega la clave de acceso de Afip SDK. Después, en la ficha de cada cliente, **Sincronizar con ARCA** pide la clave fiscal (la guarda solo en ese navegador) y trae de verdad, en modo solo lectura:
+
+- **Mis Comprobantes** emitidos y recibidos de los últimos 12 meses, que alimentan IVA, Libro IVA Digital, tope de monotributo, contabilidad y reportes;
+- **Domicilio Fiscal Electrónico**, con las comunicaciones en la bandeja de entrada;
+- **Información de Monotributo**, con la categoría vigente.
+
+La clave de acceso y las claves fiscales no se guardan en las copias de seguridad, ni en la API, ni en el repositorio. Si el navegador no puede llegar a Afip SDK, se usa el servidor de `servidor/` (`node vb-api.mjs …`) y en *URL de la API* se pone `http://localhost:8787/afipsdk`.
+
 ## Qué es simulado
 
-La conexión automática con ARCA (sincronización diaria con la clave fiscal, Domicilio Fiscal Electrónico, Sistema de Cuentas Tributarias y CCMA), la lectura con IA, las presentaciones de declaraciones juradas, los VEP, Interbanking y las plataformas de e-commerce. Para conectarse de verdad con ARCA hace falta un servidor (no puede hacerse desde una página web): con Afip SDK o con un certificado digital de ARCA. La tasa de interés resarcitorio y las alícuotas de Ingresos Brutos y tasas municipales son valores editables.
+Con los datos de ejemplo, la sincronización con ARCA es simulada. También lo son el Sistema de Cuentas Tributarias y la CCMA (Afip SDK tiene automatizaciones para ambos que se pueden sumar), la lectura con IA, las presentaciones de declaraciones juradas, los VEP, Interbanking y las plataformas de e-commerce. La tasa de interés resarcitorio y las alícuotas de Ingresos Brutos y tasas municipales son valores editables.
 
 Desarrollado por **Vincular Business** · WhatsApp (387) 4484132 · vincularbusiness@gmail.com
