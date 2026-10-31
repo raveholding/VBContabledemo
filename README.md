@@ -53,8 +53,17 @@ Responde en castellano preguntas sobre deudas, vencimientos, facturación, Libro
 
 Siguen en el menú: panel general, fichas de clientes, calendario de vencimientos, turnos y tablero, ventas y compras, impuestos, papeles de trabajo, contabilidad, sueldos, conciliación bancaria, documentos, carga de facturas con IA, e-commerce, inversiones en bolsa (mercado en vivo, cartera y órdenes, perfil del inversor), honorarios, portal del cliente, sitio público y exportaciones. Vienen activadas; cada módulo se puede apagar en Configuración → Módulos.
 
+## Qué funciona con datos reales
+
+- **Importación de "Mis Comprobantes" de ARCA** (CSV o Excel tal como se descargan, incluido el formato con columnas por alícuota): reconoce las columnas, convierte moneda, valida, saltea repetidos y genera el asiento.
+- **Cálculos sobre esos datos:** liquidación de IVA, Libro IVA, Ingresos Brutos, Ganancias, tope y recategorización de monotributo, contabilidad y reportes.
+- **Libro IVA Digital:** genera los 4 archivos con el diseño de registro oficial de ARCA (ventas 266, alícuotas de ventas 62, compras 325 y alícuotas de compras 84 caracteres por renglón).
+- **Monotributo:** escalas y cuotas oficiales de ARCA vigentes desde agosto de 2026, con cuota distinta para servicios y para venta de bienes.
+- **Vencimientos:** cronograma de ARCA 2026 por terminación de CUIT (IVA, autónomos, F.931, anticipos de Ganancias y Bienes Personales, monotributo) con los feriados nacionales.
+- **Validaciones:** dígito verificador del CUIT y reglas de facturación.
+
 ## Qué es simulado
 
-La sincronización con ARCA, la lectura con IA, las presentaciones de declaraciones juradas, los VEP, Interbanking y las plataformas de e-commerce son simuladas. Las alícuotas, escalas de monotributo, tasa de interés y convenios son valores de ejemplo y se parametrizan en la versión real. La lectura y escritura de Excel y CSV es real, y el servidor de API y MCP también: sirve los datos que exporta el sistema, pero no se conecta con ARCA.
+La conexión automática con ARCA (sincronización diaria con la clave fiscal, Domicilio Fiscal Electrónico, Sistema de Cuentas Tributarias y CCMA), la lectura con IA, las presentaciones de declaraciones juradas, los VEP, Interbanking y las plataformas de e-commerce. Para conectarse de verdad con ARCA hace falta un servidor (no puede hacerse desde una página web): con Afip SDK o con un certificado digital de ARCA. La tasa de interés resarcitorio y las alícuotas de Ingresos Brutos y tasas municipales son valores editables.
 
 Desarrollado por **Vincular Business** · WhatsApp (387) 4484132 · vincularbusiness@gmail.com

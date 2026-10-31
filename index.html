@@ -288,7 +288,10 @@ const addD=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
 const iso=d=>{const x=new Date(d);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')};
 const pd=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
 const fd=s=>{const d=pd(s);return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear()};
-const bizDay=d=>{const x=new Date(d);while(x.getDay()===0||x.getDay()===6)x.setDate(x.getDate()+1);return x};
+/* Feriados nacionales y días no laborables (2026 y comienzo de 2027): los vencimientos pasan al día hábil siguiente */
+const FERIADOS=new Set(['2026-01-01','2026-02-16','2026-02-17','2026-03-23','2026-03-24','2026-04-02','2026-04-03','2026-05-01','2026-05-25','2026-06-15','2026-06-20','2026-07-09','2026-07-10','2026-08-17','2026-10-12','2026-11-23','2026-12-07','2026-12-08','2026-12-25','2027-01-01','2027-02-08','2027-02-09','2027-03-24','2027-03-26','2027-04-02']);
+const _isoL=x=>x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');
+const bizDay=d=>{const x=new Date(d);while(x.getDay()===0||x.getDay()===6||FERIADOS.has(_isoL(x)))x.setDate(x.getDate()+1);return x};
 function hash(str){let h=2166136261;str=String(str);for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
 function rng(seed){let s=(seed>>>0)||1;return()=>{s=(Math.imul(s,1664525)+1013904223)>>>0;return s/4294967296}}
 const TODAYISO=iso(TODAY);
@@ -309,15 +312,15 @@ const STAFF=[
 ];
 const CL=[
  {id:1,n:'Panadería La Espiga S.R.L.',cuit:'30-71452318-4',tipo:'Sociedad',det:'Responsable Inscripto · Elaboración de pan y pastelería',resp:0,hon:210000,emp:6,serv:['Contabilidad','IVA','Sueldos','Balance'],tel:'5493870000001',mail:'admin@laespiga.demo'},
- {id:2,n:'Carlos Benítez',cuit:'20-27845612-3',tipo:'Monotributo',cat:'H',det:'Monotributo · Transporte de cargas',resp:1,hon:48000,emp:0,fac12:52400000,serv:['Monotributo','Facturación'],tel:'5493870000002',mail:'cbenitez@correo.demo'},
+ {id:2,n:'Carlos Benítez',cuit:'20-27845612-3',tipo:'Monotributo',cat:'H',det:'Monotributo · Transporte de cargas',resp:1,hon:48000,emp:0,fac12:70000000,serv:['Monotributo','Facturación'],tel:'5493870000002',mail:'cbenitez@correo.demo'},
  {id:3,n:'Dra. Lucía Fernández',cuit:'27-30211458-6',tipo:'Responsable Inscripto',det:'Responsable Inscripto · Servicios odontológicos',resp:1,hon:95000,emp:1,serv:['IVA','Ganancias','Sueldos','Autónomos'],tel:'5493870000003',mail:'lfernandez@correo.demo'},
  {id:4,n:'Constructora Norte S.A.',cuit:'30-70988214-7',tipo:'Sociedad',det:'Responsable Inscripto · Obras civiles',resp:0,hon:480000,emp:8,serv:['Contabilidad','IVA','Sueldos','Balance','Inversiones'],inv:true,perfil:'Moderado',tel:'5493870000004',mail:'finanzas@norte.demo'},
  {id:5,n:'Martín Quiroga',cuit:'20-25633109-5',tipo:'Persona humana',det:'Persona humana · Ganancias, Bienes Personales e inversiones',resp:3,hon:75000,emp:0,serv:['Ganancias','Bienes Personales','Inversiones'],inv:true,perfil:'Agresivo',tel:'5493870000005',mail:'mquiroga@correo.demo'},
- {id:6,n:'Almacén Don Ramón',cuit:'20-18433920-8',tipo:'Monotributo',cat:'D',det:'Monotributo · Venta de comestibles',resp:4,hon:42000,emp:0,fac12:19800000,serv:['Monotributo','Facturación'],tel:'5493870000006',mail:'donramon@correo.demo'},
+ {id:6,n:'Almacén Don Ramón',cuit:'20-18433920-8',tipo:'Monotributo',cat:'D',bienes:true,det:'Monotributo · Venta de comestibles',resp:4,hon:42000,emp:0,fac12:26450000,serv:['Monotributo','Facturación'],tel:'5493870000006',mail:'donramon@correo.demo'},
  {id:7,n:'Agro Salta S.A.',cuit:'30-71120456-2',tipo:'Sociedad',det:'Responsable Inscripto · Producción agropecuaria',resp:0,hon:390000,emp:8,serv:['Contabilidad','IVA','Sueldos','Balance','Inversiones'],inv:true,perfil:'Moderado',tel:'5493870000007',mail:'tesoreria@agrosalta.demo'},
  {id:8,n:'Familia Rojas',cuit:'27-14920877-1',tipo:'Persona humana',det:'Persona humana · Bienes Personales e inversiones',resp:3,hon:65000,emp:0,serv:['Bienes Personales','Inversiones'],inv:true,perfil:'Conservador',tel:'5493870000008',mail:'rojas.familia@correo.demo'},
  {id:9,n:'Estudio Jurídico Paz & Asoc.',cuit:'30-69874512-9',tipo:'Sociedad',det:'Responsable Inscripto · Servicios jurídicos',resp:1,hon:160000,emp:4,serv:['Contabilidad','IVA','Sueldos'],tel:'5493870000009',mail:'info@pazyasoc.demo'},
- {id:10,n:'Verónica Salinas',cuit:'27-33105987-0',tipo:'Monotributo',cat:'B',det:'Monotributo · Diseño gráfico',resp:4,hon:38000,emp:0,fac12:11900000,serv:['Monotributo','Facturación'],tel:'5493870000010',mail:'vsalinas@correo.demo'},
+ {id:10,n:'Verónica Salinas',cuit:'27-33105987-0',tipo:'Monotributo',cat:'B',det:'Monotributo · Diseño gráfico',resp:4,hon:38000,emp:0,fac12:15900000,serv:['Monotributo','Facturación'],tel:'5493870000010',mail:'vsalinas@correo.demo'},
  {id:11,n:'Ferretería El Tornillo S.R.L.',cuit:'30-71667893-5',tipo:'Sociedad',det:'Responsable Inscripto · Comercio minorista',resp:1,hon:175000,emp:5,serv:['Contabilidad','IVA','Sueldos','Balance'],tel:'5493870000011',mail:'ventas@eltornillo.demo'},
  {id:12,n:'Dr. Gabriel Ortiz',cuit:'20-22874630-9',tipo:'Responsable Inscripto',det:'Responsable Inscripto · Médico cirujano + inversiones',resp:3,hon:110000,emp:2,serv:['IVA','Ganancias','Inversiones','Sueldos'],inv:true,perfil:'Moderado',tel:'5493870000012',mail:'gortiz@correo.demo'},
  {id:13,n:'Hotel Los Cardones S.A.',cuit:'30-70455218-3',tipo:'Sociedad',det:'Responsable Inscripto · Hotelería y turismo',resp:0,hon:420000,emp:8,serv:['Contabilidad','IVA','Sueldos','Balance'],tel:'5493870000013',mail:'gerencia@loscardones.demo'},
@@ -522,7 +525,9 @@ function alerts(){
  if(can('cart'))a.push({i:'📈',t:'Rebalanceo sugerido: cartera de <b>Martín Quiroga</b> supera el 40% en renta variable'});
  return a;
 }
-const MONO=[['A',8992598],['B',13175202],['C',18473166],['D',22934610],['E',26977794],['F',33809380],['G',40431835],['H',61344854],['I',68664410],['J',78632949],['K',94805683]];
+/* Escalas oficiales de ARCA vigentes desde el 1/8/2026 (hasta enero 2027) */
+const MONO_VIG='agosto 2026';
+const MONO=[['A',12009410.45],['B',17595182.74],['C',24670494.31],['D',30628651.43],['E',36028231.33],['F',45151659.41],['G',53995798.87],['H',81924660.37],['I',91699761.90],['J',105012519.20],['K',126610838.75]];
 
 V.cli=()=>{
  const q=S.cf.toLowerCase(),list=CL.filter(c=>!q||(c.n+c.cuit+c.tipo).toLowerCase().includes(q));
@@ -561,7 +566,7 @@ V.venc=()=>{
  for(let d=1;d<=ndays;d++){const di=iso(new Date(y,m,d)),vs=mon.filter(v=>v.fecha===di);cells+=`<div class="d ${di===TODAYISO?'t':''} ${S.vday===di?'sel':''}" data-act="vday" data-d="${di}"><b>${d}</b><br>${vs.slice(0,6).map(v=>`<i style="background:${v.estado==='Presentado'?'var(--ok)':v.estado==='Vencido'?'var(--bad)':'var(--warn)'}"></i>`).join('')}</div>`}
  let list=VEN.filter(v=>(!f.cid||v.cid===+f.cid)&&(!f.est||v.estado===f.est)&&(!f.tipo||v.tipo.startsWith(f.tipo)));
  list=S.vday?list.filter(v=>v.fecha===S.vday):list.filter(v=>pd(v.fecha).getMonth()===m&&pd(v.fecha).getFullYear()===y);
- return`<div class="ph"><div><h1>Vencimientos impositivos</h1><p>Calendario automático por terminación de CUIT. Fechas de ejemplo: en la versión real se actualizan con el calendario oficial de ARCA y rentas provinciales.</p></div><button class="btn" data-act="csvven">⬇ Exportar</button></div>
+ return`<div class="ph"><div><h1>Vencimientos impositivos</h1><p>Calendario automático por terminación de CUIT con el cronograma de ARCA 2026 (IVA, autónomos, F.931, anticipos y monotributo) y los feriados nacionales. Si ARCA dispone una prórroga, prevalece la agenda oficial.</p></div><button class="btn" data-act="csvven">⬇ Exportar</button></div>
  <div class="grid g12"><div class="card"><h3><button class="btn sm" data-act="vmonth" data-d="-1">◀</button>${MESES[m]} ${y}<button class="btn sm" data-act="vmonth" data-d="1">▶</button></h3><div class="cal">${cells}</div><p class="disc">● Presentado &nbsp; ● Pendiente &nbsp; ● Vencido. Tocá un día para filtrar${S.vday?' · <a href="#" data-act="vday" data-d="">quitar filtro</a>':''}.</p></div>
  <div class="card"><div class="fr" style="margin-bottom:10px"><div><label>Cliente</label><select data-chg="vfc"><option value="">Todos</option>${clOpts(f.cid)}</select></div><div><label>Estado</label><select data-chg="vfe"><option value="">Todos</option>${['Pendiente','Presentado','Vencido'].map(e=>`<option ${f.est===e?'selected':''}>${e}</option>`).join('')}</select></div><div><label>Impuesto</label><select data-chg="vft"><option value="">Todos</option>${['IVA','IIBB','F.931','Cuota Monotributo','Aportes'].map(e=>`<option ${f.tipo===e?'selected':''}>${e}</option>`).join('')}</select></div></div>
  <div class="tw" style="max-height:460px"><table><thead><tr><th>Fecha</th><th>Obligación</th><th>Cliente</th><th>Estado</th><th></th></tr></thead><tbody>${list.map(v=>`<tr><td>${fd(v.fecha)}</td><td>${v.tipo}</td><td>${esc(cl(v.cid).n)}</td><td>${badge(v.estado,stBadge(v.estado))}</td><td>${v.estado!=='Presentado'?`<button class="btn sm ok" data-act="vpres" data-id="${v.id}">Marcar presentado</button> <a class="btn sm wa" target="_blank" rel="noopener" href="${waLink(cl(v.cid).tel,'Hola, le recordamos que el '+fd(v.fecha)+' vence: '+v.tipo+'. Si falta documentación por favor envíela a la brevedad. Estudio contable VB')}">Avisar</a>`:''}</td></tr>`).join('')||'<tr><td colspan="5" class="mut">Sin resultados</td></tr>'}</tbody></table></div></div></div>`;
@@ -584,7 +589,7 @@ V.imp=()=>{
  }
  if(t==='mono'){
   const ms=CL.filter(c=>c.tipo==='Monotributo'),sim=+S.monoSim.fac||0,catSim=sim?(MONO.find(m=>sim<=m[1])||['Excluido',0]):null;
-  body=`<div class="card"><h3>Control de topes por cliente (escalas de ejemplo)</h3><div class="tw"><table><thead><tr><th>Cliente</th><th>Cat.</th><th class="r">Facturación 12 meses</th><th class="r">Tope</th><th style="min-width:160px">Uso del tope</th><th>Sugerencia</th></tr></thead><tbody>${ms.map(c=>{const l=MONO.find(m=>m[0]===c.cat)[1],u=c.fac12/l*100,sg=MONO.find(m=>c.fac12<=m[1])[0];return`<tr><td>${esc(c.n)}</td><td>${c.cat}</td><td class="r">${ars(c.fac12)}</td><td class="r">${ars(l)}</td><td><div class="bar"><i style="width:${Math.min(u,100)}%"></i></div><small class="mut">${num(u,0)}%</small></td><td>${sg!==c.cat?badge('Pasar a '+sg,'warn'):badge('Sin cambios','ok')}</td></tr>`}).join('')}</tbody></table></div></div>
+  body=`<div class="card"><h3>Control de topes por cliente (escalas oficiales desde ${MONO_VIG})</h3><div class="tw"><table><thead><tr><th>Cliente</th><th>Cat.</th><th class="r">Facturación 12 meses</th><th class="r">Tope</th><th style="min-width:160px">Uso del tope</th><th>Sugerencia</th></tr></thead><tbody>${ms.map(c=>{const l=MONO.find(m=>m[0]===c.cat)[1],u=c.fac12/l*100,sg=MONO.find(m=>c.fac12<=m[1])[0];return`<tr><td>${esc(c.n)}</td><td>${c.cat}</td><td class="r">${ars(c.fac12)}</td><td class="r">${ars(l)}</td><td><div class="bar"><i style="width:${Math.min(u,100)}%"></i></div><small class="mut">${num(u,0)}%</small></td><td>${sg!==c.cat?badge('Pasar a '+sg,'warn'):badge('Sin cambios','ok')}</td></tr>`}).join('')}</tbody></table></div></div>
   <div class="card" style="margin-top:14px"><h3>Simulador de categoría</h3><div class="fr"><div><label>Ingresos brutos últimos 12 meses</label><input type="number" data-inp="monosim" value="${sim||''}" placeholder="Ej: 30000000"></div><div><label>Categoría resultante</label><div style="font-size:22px;font-weight:700;color:var(--gold2)" id="monoRes">${catSim?(catSim[0]==='Excluido'?'Excede el tope → Régimen General':'Categoría '+catSim[0]):'—'}</div></div></div><p class="disc">Las escalas se actualizan en cada recategorización semestral (enero y julio). Valores de ejemplo.</p></div>`;
  }
  if(t==='gan'){
@@ -1147,16 +1152,28 @@ function impMuni(){
  return cpHead()+`<div class="card"><h3>Impuestos y tasas municipales</h3><div class="fr">${inp('mun','Municipio')}${inp('ali','Alícuota Comercio e Industria (‰)')}${inp('min','Mínimo mensual')}${inp('pub','Publicidad y propaganda')}${inp('insp','Inspección e higiene')}</div>
  <div class="grid g4" style="margin-top:14px">${kpi('Base imponible',ars(base),'ventas netas del período')}${kpi('Tasa Comercio e Industria',ars(tce))}${kpi('Otras tasas',ars(m.pub+m.insp))}${kpi('Total a pagar',ars(tot),m.mun,'dn')}</div><p class="disc">Cada municipio define alícuotas, mínimos y vencimientos propios. Valores de ejemplo editables.</p></div>`;
 }
+/* Libro IVA Digital: diseño de registro oficial de ARCA (RG 4597), archivos de ancho fijo */
+const LID_AL={0:'0003',10.5:'0004',21:'0005',27:'0006',5:'0008',2.5:'0009'};
+const lidN=(v,w)=>String(Math.round(Math.abs(+v||0)*100)).padStart(w,'0').slice(-w);
+const lidT=(t,w)=>String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^\x20-\x7E]/g,' ').toUpperCase().padEnd(w,' ').slice(0,w);
+const lidD=(t,w)=>String(t||'').replace(/\D/g,'').padStart(w,'0').slice(-w);
+function lidDoc(x){const d=String(x.cuitCp||'').replace(/\D/g,'');return d.length===11?['80',d]:d.length>=7?['96',d]:['99','0']}
 function lidFiles(cid,ym){
- const cp=comprobantes(cid,ym),c=cl(cid),L=(arr,tp)=>arr.map(x=>{const iva=Math.round(x.neto*x.al*1)/100;return[ym.replace('-','')+'01',tp==='V'?'FC A':'FC A',x.f.slice(0,4),x.f.slice(5),(tp==='V'?'0':'30-0000000-0'),x.cp,Math.round(x.neto*100),x.al,Math.round(iva*100),Math.round((x.neto+iva)*100)].join(';')});
- const al=(arr)=>arr.map(x=>[x.f,Math.round(x.neto*100),x.al,Math.round(x.neto*x.al)].join(';'));
- return{'ventas_comprobantes.txt':L(cp.v,'V'),'ventas_alicuotas.txt':al(cp.v),'compras_comprobantes.txt':L(cp.c,'C'),'compras_alicuotas.txt':al(cp.c)};
+ const cp=comprobantes(cid,ym),c=cl(cid),V=[],VA=[],C=[],CA=[];
+ const ord=a=>a.slice().sort((p,q)=>(p.fe||'')<(q.fe||'')?-1:(p.fe||'')>(q.fe||'')?1:(p.pv+p.nro)<(q.pv+q.nro)?-1:1);
+ ord(cp.v).forEach(x=>{const tc=String(x.tc||'001').padStart(3,'0'),L=tcLetra(tc),[cd,nd]=lidDoc(x),gr=L!=='C'&&(+x.neto||0)!==0,iva=Math.abs(cbIva(x)),tot=Math.abs(cbTot(x));
+  V.push([lidD((x.fe||ym+'-01').replace(/-/g,''),8),tc,lidD(x.pv,5),lidD(x.nro,20),lidD(x.nro,20),cd,lidD(nd,20),lidT(x.cp,30),lidN(tot,15),lidN(x.nng,15),lidN(0,15),lidN(x.ex,15),lidN(+x.pGan||0,15),lidN(x.pIibb,15),lidN(x.pAV,15),lidN(x.iInt,15),'PES','0001000000',gr?'1':'0',gr?' ':(+x.ex?'E':'N'),lidN(x.otros,15),'00000000'].join(''));
+  if(gr)VA.push([tc,lidD(x.pv,5),lidD(x.nro,20),lidN(x.neto,15),LID_AL[+x.al]||'0005',lidN(iva,15)].join(''))});
+ ord(cp.c).forEach(x=>{const tc=String(x.tc||'001').padStart(3,'0'),L=tcLetra(tc),[cd,nd]=lidDoc(x),gr=L!=='C'&&L!=='B'&&(+x.neto||0)!==0,iva=Math.abs(cbIva(x)),tot=Math.abs(cbTot(x));
+  C.push([lidD((x.fe||ym+'-01').replace(/-/g,''),8),tc,lidD(x.pv,5),lidD(x.nro,20),''.padEnd(16,' '),cd,lidD(nd,20),lidT(x.cp,30),lidN(tot,15),lidN((+x.nng||0)+(L==='C'||L==='B'?Math.abs(+x.neto||0)+(L==='B'?iva:0):0),15),lidN(x.ex,15),lidN(x.pIva,15),lidN(x.pGan,15),lidN(x.pIibb,15),lidN(x.pAV,15),lidN(x.iInt,15),'PES','0001000000',gr?'1':'0',gr?' ':'0',lidN(gr&&cbComputa(x)?iva:0,15),lidN((+x.otros||0)+(+x.iComb||0),15),'00000000000',''.padEnd(30,' '),lidN(0,15)].join(''));
+  if(gr)CA.push([tc,lidD(x.pv,5),lidD(x.nro,20),cd,lidD(nd,20),lidN(x.neto,15),LID_AL[+x.al]||'0005',lidN(iva,15)].join(''))});
+ return{'LIBRO_IVA_DIGITAL_VENTAS_CBTE.txt':V,'LIBRO_IVA_DIGITAL_VENTAS_ALICUOTAS.txt':VA,'LIBRO_IVA_DIGITAL_COMPRAS_CBTE.txt':C,'LIBRO_IVA_DIGITAL_COMPRAS_ALICUOTAS.txt':CA};
 }
 function impLID(){
  const cid=cpId(),f=lidFiles(cid,S.ivaYM);
  return cpHead()+`<div class="card"><h3>Libro IVA Digital · archivos de importación</h3><p class="mut">Se generan a partir de los libros de IVA Ventas y Compras del período, listos para presentar. Incluye comprobantes importados de ARCA, cargados con IA y facturados desde e-commerce.</p>
  <div class="grid g2">${Object.keys(f).map(n=>`<div><b>${n}</b> <span class="mut">· ${f[n].length} registros</span><div class="pre">${esc(f[n].slice(0,4).join('\n')||'(sin registros)')}</div><button class="btn sm" data-act="lidget" data-n="${n}">⬇ Descargar</button></div>`).join('')}</div>
- <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="btn pri" data-act="lidpres">Presentar Libro IVA Digital (simulado)</button><button class="btn" data-act="go" data-v="ventas">Importar de ARCA</button></div><p class="disc">Estructura simplificada de demostración. En la versión real los archivos respetan el diseño de registro oficial de ARCA.</p></div>`;
+ <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="btn pri" data-act="lidpres">Presentar Libro IVA Digital (simulado)</button><button class="btn" data-act="go" data-v="ventas">Importar de ARCA</button></div><p class="disc">Archivos con el diseño de registro oficial del Libro IVA Digital (ventas 266, alícuotas de ventas 62, compras 325 y alícuotas de compras 84 caracteres por renglón), listos para importar en el Portal IVA de ARCA. Revisá el período antes de presentarlo.</p></div>`;
 }
 
 /* ============ Papeles de trabajo ============ */
@@ -1277,8 +1294,10 @@ const DFE=[];(function(){const tit=['Aviso: presentación de DDJJ próxima a ven
 function sctData(cid){const c=cl(cid),r=rng(cid*77+5),out=[],add=(imp,conc)=>out.push({imp,conc,per:MESES[(TODAY.getMonth()+11)%12].slice(0,3)+'/'+TODAY.getFullYear(),saldo:Math.round((r()-.3)*400000/100)*100,ven:iso(addD(TODAY,Math.floor(r()*20)-6))});
  if(c.tipo==='Monotributo')add('Monotributo','Cuota mensual');else{add('IVA','DDJJ mensual');if(c.tipo==='Persona humana'){add('Ganancias','Anticipo');add('Autónomos','Aporte mensual')}else{add('Ganancias','Anticipo sociedades')}if(c.emp)add('Seguridad social','F.931')}
  return out}
-const CCMA_CUOTA={A:37085,B:42216,C:49435,D:62998,E:85000,F:108000,G:178000,H:331000,I:410000,J:480000,K:560000};
-function ccmaData(cid){const c=cl(cid),r=rng(cid*91),imp=c.tipo==='Monotributo'?(CCMA_CUOTA[c.cat]||50000):62000;return Array.from({length:6},(_,i)=>{const k=5-i,m=new Date(TODAY.getFullYear(),TODAY.getMonth()-k,1),paga=k>1?r()>.12:r()>.55;return{per:MESES[m.getMonth()]+' '+m.getFullYear(),imp,paga,meses:paga?0:k+1}})}
+const CCMA_CUOTA={A:49527.18,B:56379.08,C:66020.12,D:84612.93,E:119811.45,F:150784.21,G:230312.94,H:522706.68,I:963747.86,J:1167299.76,K:1614446.04};
+const CCMA_CUOTA_B={A:49527.18,B:56379.08,C:64530.58,D:82564.81,E:108267.51,F:129930.65,G:158815.05,H:317895.01,I:474992.78,J:580793.69,K:702103.24};
+const cuotaMono=(c,cat)=>((c&&c.bienes)?CCMA_CUOTA_B:CCMA_CUOTA)[cat||(c&&c.cat)]||0;
+function ccmaData(cid){const c=cl(cid),r=rng(cid*91),imp=c.tipo==='Monotributo'?(cuotaMono(c)||50000):62000;return Array.from({length:6},(_,i)=>{const k=5-i,m=new Date(TODAY.getFullYear(),TODAY.getMonth()-k,1),paga=k>1?r()>.12:r()>.55;return{per:MESES[m.getMonth()]+' '+m.getFullYear(),imp,paga,meses:paga?0:k+1}})}
 V.arca=()=>{
  const t=S.tab.arca,tabs=subTabs('arca',[['dfe','Domicilio Fiscal Electrónico'],['sct','Cuentas Tributarias'],['ccma','CCMA']]);
  const cards=`<div class="grid g4" style="margin-bottom:14px">${[['📥','Mis Comprobantes','Importar y exportar','ventas'],['📗','Libro IVA Digital','Generar archivos','lid'],['✉️','Domicilio Fiscal Electrónico','Notificaciones',''],['🏦','Cuentas Tributarias y CCMA','Saldos y deuda','']].map(x=>`<div class="card" style="${x[3]?'cursor:pointer':''}" ${x[3]?`data-act="arcago" data-v="${x[3]}"`:''}><div style="font-size:24px">${x[0]}</div><b>${x[1]}</b><br><small class="mut">${x[2]}</small></div>`).join('')}</div>`;
@@ -1407,7 +1426,7 @@ Object.assign(FRM,{
 
 /* ============ Lectura de archivos: CSV, Excel (.xlsx) y PDF con IA ============ */
 const colNum=r=>{let n=0;for(const ch of String(r).replace(/[^A-Z]/g,''))n=n*26+(ch.charCodeAt(0)-64);return n-1};
-const unXml=t=>String(t).replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&amp;/g,'&');
+const unXml=t=>String(t).replace(/&#x([0-9a-f]+);/gi,(_,h)=>String.fromCodePoint(parseInt(h,16))).replace(/&#(\d+);/g,(_,d)=>String.fromCodePoint(+d)).replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&amp;/g,'&');
 const serialDate=n=>{const d=new Date(Date.UTC(1899,11,30)+Math.round(n)*864e5);return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0')};
 function zipEntries(buf){
  const dv=new DataView(buf),u8=new Uint8Array(buf);let eo=-1;
@@ -2144,15 +2163,16 @@ function wipeAll(){
 
 /* ---------- Vencimientos por terminación de CUIT ---------- */
 function vencRules(c,y,m){
- const ti=termIdx(c),L=[];
- if(c.tipo==='Monotributo'){L.push(['Cuota Monotributo',20]);if(m===0||m===6)L.push(['Recategorización Monotributo',20])}
+ const ti=termIdx(c),dg=+String(c.cuit).slice(-1),g3=dg<=3?0:dg<=6?1:2,L=[];
+ if(c.tipo==='Monotributo'){L.push(['Cuota Monotributo',20]);if(m===1||m===7)L.push(['Recategorización Monotributo',5])}
  else{
   if(c.tipo!=='Persona humana'){L.push(['IVA – DDJJ y pago',TERM_DAY.IVA[ti]]);L.push(['IIBB – anticipo',TERM_DAY.IIBB[ti]])}
-  if(c.tipo==='Persona humana'||c.tipo==='Responsable Inscripto')L.push(['Aportes autónomos / anticipos',TERM_DAY.AUT[ti]]);
+  if(c.tipo==='Persona humana'||c.tipo==='Responsable Inscripto')L.push(['Aportes autónomos / anticipos',[5,6,7][g3]]);
+  if((c.tipo==='Persona humana'||c.tipo==='Responsable Inscripto')&&[1,3,7,9,11].includes(m))L.push(['Anticipo Ganancias / BP personas humanas',[13,14,15][g3]]);
   if((c.tipo==='Persona humana'||c.tipo==='Responsable Inscripto')&&m===5)L.push(['DDJJ Ganancias y Bienes Personales',11+ti]);
   if(c.tipo==='Sociedad'){const cm=(+(c.cierre||12)-1+5)%12;if(m===cm)L.push(['DDJJ Ganancias sociedades',13+ti])}
  }
- if(c.emp>0)L.push(['F.931 – Cargas sociales',TERM_DAY.F931[ti]]);
+ if(c.emp>0)L.push(['F.931 – Cargas sociales',[9,10,11][g3]]);
  return L.map(([tipo,day])=>({tipo,fecha:iso(bizDay(new Date(y,m,day)))}));
 }
 function ensureVen(c,from,to){
@@ -2312,7 +2332,7 @@ function bandejaItems(){
  const out=[];
  DFE.forEach(x=>{if(!CL.some(c=>c.id===x.cid))return;out.push({k:'dfe'+x.id,tipo:'dfe',ic:'✉️',t:'Nueva notificación en DFE · '+x.tema,sub:x.t,cid:x.cid,f:x.f,read:!!x.leida,urg:TEMA_URG[x.tema]||'info',ref:x.id})});
  CL.forEach(c=>{
-  if(!c.clave)out.push({k:'cred'+c.id,tipo:'alerta',ic:'🔑',t:'Credenciales inválidas',sub:'No se pudo sincronizar con ARCA: falta o venció la clave fiscal',cid:c.id,f:TODAYISO,urg:'bad'});
+  if(!c.clave&&!c.real)out.push({k:'cred'+c.id,tipo:'alerta',ic:'🔑',t:'Credenciales inválidas',sub:'No se pudo sincronizar con ARCA: falta o venció la clave fiscal',cid:c.id,f:TODAYISO,urg:'bad'});
   if(c.tipo==='Monotributo'){const m=monoCalc(c);if(m.pct>=85)out.push({k:'tope'+c.id+m.pct.toFixed(0),tipo:'alerta',ic:'📈',t:m.excl?'Supera la última categoría: posible exclusión':'Cerca del tope de la categoría '+c.cat,sub:'Facturó '+ars(m.fac)+' en 12 meses ('+num(m.pct,0)+'% del tope)',cid:c.id,f:TODAYISO,urg:m.pct>=100?'bad':'warn'})}
   const sc=sctCalc(c);if(sc.vencida>0)out.push({k:'deuda'+c.id+Math.round(sc.vencida),tipo:'alerta',ic:'🏛️',t:'Deuda vencida en el SCT',sub:ars(sc.vencida)+' entre capital e intereses',cid:c.id,f:TODAYISO,urg:'bad'});
  });
@@ -2330,7 +2350,7 @@ function monoCalc(c){
 }
 function ccmaCalc(c){
  if(c.tipo==='Sociedad')return null;
- const mono=c.tipo==='Monotributo',cuota=mono?(CCMA_CUOTA[c.cat]||50000):62000;
+ const mono=c.tipo==='Monotributo',cuota=mono?(cuotaMono(c)||50000):62000;
  const comp=mono?[['Impositivo',.3],['Previsional (SIPA)',.4],['Obra social',.3]]:[['Aportes autónomos',1]];
  const ms=lastMonths(7,TODAYISO.slice(0,7));
  const rows=ms.map((ym,i)=>{const venc=iso(bizDay(new Date(+ym.slice(0,4),+ym.slice(5,7)-1,20)));
@@ -2653,7 +2673,7 @@ V.config=()=>{
   <div class="card" style="margin-top:14px"><h3>Registro de actividad</h3><div class="tw" style="max-height:300px"><table><thead><tr><th>Fecha y hora</th><th>Usuario</th><th>Acción</th></tr></thead><tbody>${LOGA.map(x=>`<tr><td>${new Date(x.ts).toLocaleString('es-AR')}</td><td>${esc(x.u)}</td><td style="white-space:normal">${esc(x.m)}</td></tr>`).join('')||'<tr><td colspan="3" class="mut">Sin actividad</td></tr>'}</tbody></table></div></div>`;
  if(t==='sync')b=`<div class="grid g2"><div class="card"><h3>Sincronización con ARCA</h3><div class="stat"><span>Frecuencia</span><b>Todos los días a las ${CFG.hora}</b></div><div class="stat"><span>Última sincronización</span><b>${CFG.lastSync?new Date(CFG.lastSync).toLocaleString('es-AR'):'Nunca'}</b></div><div class="stat"><span>Clientes con clave fiscal</span><b>${CL.filter(c=>c.clave).length} de ${CL.length}</b></div><div class="stat"><span>Acceso</span><b>Solo lectura</b></div><p><button class="btn pri" data-act="syncnow">🔄 Sincronizar ahora (simulado)</button></p><p class="disc">En la versión real se leen Mis Comprobantes, el Sistema de Cuentas Tributarias, la CCMA, el Domicilio Fiscal Electrónico, el Portal IVA y el Sistema Registral de cada CUIT, en modo lectura y con la clave fiscal cifrada. En esta demo la sincronización es simulada.</p></div>
   <div class="card"><h3>Parámetros</h3><form data-form="params"><label>Tasa de interés resarcitorio mensual (%)</label><input type="number" step="0.01" name="tasa" value="${CFG.tasaRes}"><p class="disc">Valor de ejemplo, se usa para estimar intereses de deudas vencidas. Verificá la tasa vigente.</p><label style="margin-top:8px">Hora de sincronización diaria</label><input type="time" name="hora" value="${CFG.hora}"><p><button class="btn pri">Guardar</button></p></form>
-  <h3 style="margin-top:12px">Escala de Monotributo (ejemplo)</h3><div class="tw" style="max-height:220px"><table><thead><tr><th>Cat.</th><th class="r">Ingresos anuales hasta</th><th class="r">Cuota mensual</th></tr></thead><tbody>${MONO.map(m=>`<tr><td><b>${m[0]}</b></td><td class="r">${ars(m[1])}</td><td class="r">${ars(CCMA_CUOTA[m[0]]||0)}</td></tr>`).join('')}</tbody></table></div><p class="disc">Valores ilustrativos. Se actualizan en cada recategorización (enero y julio).</p></div></div>`;
+  <h3 style="margin-top:12px">Escala de Monotributo · oficial ARCA desde ${MONO_VIG}</h3><div class="tw" style="max-height:220px"><table><thead><tr><th>Cat.</th><th class="r">Ingresos anuales hasta</th><th class="r">Cuota servicios</th><th class="r">Cuota bienes</th></tr></thead><tbody>${MONO.map(m=>`<tr><td><b>${m[0]}</b></td><td class="r">${ars(m[1])}</td><td class="r">${ars(CCMA_CUOTA[m[0]])}</td><td class="r">${ars(CCMA_CUOTA_B[m[0]])}</td></tr>`).join('')}</tbody></table></div><p class="disc">Valores oficiales de ARCA. Se actualizan dos veces por año (febrero y agosto) según el IPC.</p></div></div>`;
  if(t==='alertas')b=`<div class="card" style="max-width:720px"><h3>Alertas automáticas</h3>${['Aviso de vencimientos a clientes por WhatsApp (3 días antes)','Reclamo automático de documentación faltante','Recordatorio de honorarios vencidos','Alerta de tope de Monotributo (85%)','Aviso de nueva notificación en el Domicilio Fiscal Electrónico','Aviso de deuda vencida en el Sistema de Cuentas Tributarias','Aviso de rebalanceo de cartera por desvío de perfil'].map(a=>`<p style="margin:6px 0"><label style="color:var(--txt);font-size:13px"><input type="checkbox" checked> ${a}</label></p>`).join('')}<p class="disc">En la demo los avisos se muestran en la bandeja de entrada; el envío por WhatsApp o email se activa en la versión real.</p></div>`;
  return`<div class="ph"><div><h1>Configuración</h1><p>Datos del estudio, módulos, copias de seguridad, usuarios y parámetros.</p></div></div>${tabs}${b}`;
 };
@@ -2662,7 +2682,7 @@ V.config=()=>{
 function cliForm(c){c=c||{};const nuevo=!c.id,t=c.tipo||(S.view==='soc'?'Sociedad':S.view==='ri'?'Responsable Inscripto':S.view==='ph'?'Persona humana':'Monotributo');
  return`<form data-form="cliente" id="cliF" data-t="${TIPOS[t].k}"><input type="hidden" name="id" value="${c.id||''}">
  <div class="fr"><div><label>CUIT *</label><input name="cuit" value="${esc(c.cuit||'')}" placeholder="20-12345678-9" required data-inp="cuitchk" inputmode="numeric"><small id="cuitMsg" class="mut"></small></div><div style="grid-column:span 2"><label>Apellido y nombre / Razón social *</label><input name="n" value="${esc(c.n||'')}" required></div></div>
- <div class="fr"><div><label>Condición fiscal *</label><select name="tipo" data-chg="clitipo">${Object.keys(TIPOS).map(k=>`<option value="${k}" ${t===k?'selected':''}>${TIPOS[k].l}</option>`).join('')}</select></div><div class="f-mono"><label>Categoría</label><select name="cat">${MONO.map(m=>`<option ${(c.cat||'A')===m[0]?'selected':''}>${m[0]}</option>`).join('')}</select></div><div class="f-soc"><label>Cierre de ejercicio</label><select name="cierre">${MESES.map((m,i)=>{const v=String(i+1).padStart(2,'0');return`<option value="${v}" ${(c.cierre||'12')===v?'selected':''}>${m}</option>`}).join('')}</select></div><div><label>Inicio de actividades</label><input type="date" name="alta" value="${c.alta||''}"></div></div>
+ <div class="fr"><div><label>Condición fiscal *</label><select name="tipo" data-chg="clitipo">${Object.keys(TIPOS).map(k=>`<option value="${k}" ${t===k?'selected':''}>${TIPOS[k].l}</option>`).join('')}</select></div><div class="f-mono"><label>Categoría</label><select name="cat">${MONO.map(m=>`<option ${(c.cat||'A')===m[0]?'selected':''}>${m[0]}</option>`).join('')}</select></div><div class="f-mono"><label>Tipo de actividad (monotributo)</label><select name="bienes"><option value="">Locaciones y prestaciones de servicios</option><option value="1" ${c.bienes?'selected':''}>Venta de cosas muebles</option></select></div><div class="f-soc"><label>Cierre de ejercicio</label><select name="cierre">${MESES.map((m,i)=>{const v=String(i+1).padStart(2,'0');return`<option value="${v}" ${(c.cierre||'12')===v?'selected':''}>${m}</option>`}).join('')}</select></div><div><label>Inicio de actividades</label><input type="date" name="alta" value="${c.alta||''}"></div></div>
  <div class="fr"><div style="grid-column:span 2"><label>Actividad principal</label><input name="act" value="${esc(c.act||'')}" placeholder="Ej: Venta al por menor de artículos de ferretería"></div><div><label>Código de actividad (opcional)</label><input name="clae" value="${esc(c.clae||'')}"></div></div>
  <div class="fr"><div style="grid-column:span 2"><label>Domicilio fiscal</label><input name="dom" value="${esc(c.dom||'')}"></div><div><label>Localidad</label><input name="loc" value="${esc(c.loc||'')}"></div><div><label>Provincia</label><select name="prov">${PROVS.map(p=>`<option ${(c.prov||'Salta')===p?'selected':''}>${p}</option>`).join('')}</select></div></div>
  <div class="fr"><div><label>Email</label><input type="email" name="mail" value="${esc(c.mail&&c.mail!=='—'?c.mail:'')}"></div><div><label>WhatsApp (con 549…)</label><input name="tel" value="${esc(c.tel||'549387')}" inputmode="numeric"></div><div><label>Responsable en el estudio</label><select name="resp">${STAFF.map((s,i)=>`<option value="${i}" ${+(c.resp||0)===i?'selected':''}>${esc(s.n)}</option>`).join('')}</select></div><div><label>Honorario mensual</label><input type="number" name="hon" min="0" value="${c.hon||0}"></div></div>
@@ -2765,7 +2785,7 @@ Object.assign(FRM,{
   if(!n)err.push('Falta el nombre o la razón social.');
   if(err.length){$('#cliErr').innerHTML=err.map(e=>'• '+esc(e)).join('<br>');return}
   const data={n,cuit,tipo,alta:f.get('alta')||'',act:String(f.get('act')||'').trim(),clae:String(f.get('clae')||'').trim(),dom:String(f.get('dom')||'').trim(),loc:String(f.get('loc')||'').trim(),prov:f.get('prov'),mail:String(f.get('mail')||'').trim(),tel:String(f.get('tel')||'').replace(/\D/g,''),resp:+f.get('resp')||0,hon:+f.get('hon')||0,emp:Math.max(0,+f.get('emp')||0),inv:!!f.get('inv')};
-  if(tipo==='Monotributo')data.cat=f.get('cat');if(tipo==='Sociedad')data.cierre=f.get('cierre');
+  if(tipo==='Monotributo'){data.cat=f.get('cat');data.bienes=!!f.get('bienes')}if(tipo==='Sociedad')data.cierre=f.get('cierre');
   if(f.get('clave'))data.clave=true;
   data.det=TIPOS[tipo].l+(data.act?' · '+data.act:'');
   if(id){const c=cl(id),prev=c.tipo,prevEmp=c.emp;Object.assign(c,data);if(tipo!=='Monotributo')delete c.cat;if(prev!==tipo||(prevEmp>0)!==(c.emp>0))regenVen(c);if(c.inv&&!PF[c.id])PF[c.id]={ars:0,usd:0,pos:[],real:0};logA('Cliente editado: '+c.n);closeModal();toast('Cambios guardados ✔');render()}
@@ -2954,7 +2974,7 @@ function cbImportRows(cid,tp,rows,src){
  const c=cl(cid),res={n:0,dup:0,err:[]};
  let hi=rows.findIndex(r=>r.some(v=>/fecha/i.test(String(v)))&&r.some(v=>/tipo|comprobante/i.test(String(v))));if(hi<0){res.err.push('No se encontró la fila de encabezados (Fecha, Tipo, …).');return res}
  const hd=rows[hi].map(h=>String(h).toLowerCase().trim()),find=(...res2)=>{for(const re of res2){const i=hd.findIndex(h=>re.test(h));if(i>=0)return i}return-1};
- const ix={fe:find(/^fecha/),tc:find(/^tipo( de comprobante)?$/,/tipo de comp/,/^tipo$/),pv:find(/punto de venta/,/pto/),nro:find(/n[uú]mero desde/,/^n[uú]mero/,/^numero/),cae:find(/autoriz/,/c[oó]d\.? ?aut/,/cae/),doc:find(/nro\.? doc/,/n[uú]mero de doc/,/^cuit/,/doc\. (emisor|receptor)/),den:find(/denominaci/,/raz[oó]n/,/contraparte/,/proveedor|cliente/),mon:find(/^moneda/),tcam:find(/tipo (de )?cambio/),ng:find(/neto gravado/,/^neto$/,/^neto/),nng:find(/no gravado/),ex:find(/exent/),iva:find(/^iva$/,/total iva/,/imp\.? ?iva/,/^iva /),otr:find(/otros tributos/,/otros/),tot:find(/imp\.? ?total/,/^total/),al:find(/al[ií]cuota/)};
+ const ix={fe:find(/^fecha/),tc:find(/^tipo( de comprobante)?$/,/tipo de comp/,/^tipo$/),pv:find(/punto de venta/,/pto/),nro:find(/n[uú]mero desde/,/^n[uú]mero/,/^numero/),cae:find(/autoriz/,/c[oó]d\.? ?aut/,/cae/),doc:find(/nro\.? doc/,/n[uú]mero de doc/,/^cuit/,/doc\. (emisor|receptor)/),den:find(/denominaci/,/raz[oó]n/,/contraparte/,/proveedor|cliente/),mon:find(/^moneda/),tcam:find(/tipo (de )?cambio/),ng:find(/total neto gravado/,/neto gravado total/,/^imp\.? ?neto gravado$/,/neto gravado$/,/neto gravado/,/^neto$/,/^neto/),nng:find(/no gravado/),ex:find(/exent/),iva:find(/^iva$/,/total iva/,/imp\.? ?iva/,/^iva /),otr:find(/otros tributos/,/otros/),tot:find(/imp\.? ?total/,/^total/),al:find(/al[ií]cuota/)};
  if(ix.fe<0||(ix.tot<0&&ix.ng<0)){res.err.push('El archivo no tiene las columnas de fecha e importes.');return res}
  const ALS=[0,2.5,5,10.5,21,27],o0={};
  rows.slice(hi+1).forEach((r,ri)=>{if(!r||!r.some(v=>String(v).trim()))return;
@@ -3030,14 +3050,14 @@ CV.gan=c=>{
 
 /* ---------- Monotributo ---------- */
 CV.mono=c=>{
- const m=monoCalc(c),mx=Math.max(1,...m.rows.map(r=>r.v)),cuota=CCMA_CUOTA[c.cat]||0,nm=TODAY.getMonth()<6?'julio':'enero',cc=ccmaCalc(c);
+ const m=monoCalc(c),mx=Math.max(1,...m.rows.map(r=>r.v)),cuota=cuotaMono(c),nm=(TODAY.getMonth()>=1&&TODAY.getMonth()<=6?'agosto ':'febrero ')+(TODAY.getMonth()>6?TODAY.getFullYear()+1:TODAY.getFullYear()),cc=ccmaCalc(c);
  let ac=0;
  return`<div class="ph"><div><h1>Monotributo</h1><p>Facturación de los últimos 12 meses contra el tope de la categoría, con la categoría que corresponde para la próxima recategorización.</p></div>${canA('ddjj')?'<button class="btn pri" data-act="djdo" data-imp="Monotributo">📝 Recategorización</button>':''}</div>
  <div class="grid g4" style="margin-bottom:14px">${kpi('Categoría actual',c.cat,'cuota mensual '+ars(cuota))}${kpi('Facturado en 12 meses',ars(m.fac),'tope '+ars(m.tope))}<div class="card kpi"><small>Uso del tope</small><b class="${m.pct>=100?'dn':m.pct>=75?'dn':'up'}">${num(m.pct,0)}%</b><div class="bar" style="margin-top:6px"><i style="width:${Math.min(100,m.pct)}%"></i></div></div>${kpi('Categoría que corresponde',m.excl?'Excluido':m.sug,m.excl?'supera la última categoría':'próxima recategorización: '+nm,m.excl||m.sug>c.cat?'dn':'up')}</div>
  <div class="grid g21"><div class="card"><h3>Facturación mes a mes</h3><div class="tw"><table><thead><tr><th>Mes</th><th class="r">Facturado</th><th class="r">Acumulado</th><th style="min-width:140px"></th></tr></thead><tbody>${m.rows.map(r=>{ac+=r.v;return`<tr><td>${ymLbl(r.ym)}</td><td class="r">${ars(r.v)}</td><td class="r">${ars(ac)}</td><td><div class="bar"><i style="width:${Math.round(r.v/mx*100)}%;background:var(--gold)"></i></div></td></tr>`}).join('')}${+c.fac0?`<tr><td>Facturación previa (no cargada)</td><td class="r">${ars(c.fac0)}</td><td class="r">${ars(m.fac)}</td><td></td></tr>`:''}</tbody></table></div>
   ${c.real?`<div class="fr" style="margin-top:10px"><div><label>Facturación de meses no cargados en el sistema</label><input type="number" value="${+c.fac0||0}" data-chg="fac0"></div></div><p class="disc">Para completar los 12 meses mientras cargás el historial.</p>`:''}</div>
- <div class="card"><h3>Escala (ejemplo)</h3><div class="tw" style="max-height:360px"><table class="mini"><thead><tr><th>Cat.</th><th class="r">Tope anual</th><th class="r">Cuota</th></tr></thead><tbody>${MONO.map(x=>`<tr style="${x[0]===c.cat?'background:rgba(167,123,255,.15)':x[0]===m.sug?'background:rgba(212,175,55,.15)':''}"><td><b>${x[0]}</b>${x[0]===c.cat?' · actual':x[0]===m.sug?' · corresponde':''}</td><td class="r">${ars(x[1])}</td><td class="r">${ars(CCMA_CUOTA[x[0]]||0)}</td></tr>`).join('')}</tbody></table></div>
- ${cc?`<div class="stat" style="margin-top:10px"><span>Saldo CCMA</span><b class="${cc.neto>0?'dn':'up'}">${cc.sinDato?'Sin dato':ars(cc.neto)}</b></div>`:''}<p class="disc">Escalas y cuotas ilustrativas. La recategorización real también considera superficie, energía y alquileres.</p></div></div>`;
+ <div class="card"><h3>Escala oficial ARCA · desde ${MONO_VIG}</h3><div class="tw" style="max-height:360px"><table class="mini"><thead><tr><th>Cat.</th><th class="r">Tope anual</th><th class="r">Cuota</th></tr></thead><tbody>${MONO.map(x=>`<tr style="${x[0]===c.cat?'background:rgba(167,123,255,.15)':x[0]===m.sug?'background:rgba(212,175,55,.15)':''}"><td><b>${x[0]}</b>${x[0]===c.cat?' · actual':x[0]===m.sug?' · corresponde':''}</td><td class="r">${ars(x[1])}</td><td class="r">${ars(cuotaMono(c,x[0]))}</td></tr>`).join('')}</tbody></table></div>
+ ${cc?`<div class="stat" style="margin-top:10px"><span>Saldo CCMA</span><b class="${cc.neto>0?'dn':'up'}">${cc.sinDato?'Sin dato':ars(cc.neto)}</b></div>`:''}<p class="disc">Escalas y cuotas oficiales de ARCA vigentes desde ${MONO_VIG}. La recategorización también considera superficie afectada, energía eléctrica y alquileres.</p></div></div>`;
 };
 
 /* ---------- CCMA ---------- */
@@ -3094,7 +3114,7 @@ CV.sct=c=>{
 CV.registral=c=>{
  const imps=impuestosDe(c),fis=/^2[0347]/.test(c.cuit),fj=fis?'—':/S\.?A\.?S\.?/i.test(c.n)?'Sociedad por acciones simplificada':/S\.?R\.?L\.?/i.test(c.n)?'Sociedad de responsabilidad limitada':/S\.?A\.?/i.test(c.n)?'Sociedad anónima':'—';
  return`<div class="ph"><div><h1>Sistema Registral</h1><p>Datos de inscripción de ${esc(c.n)}: impuestos, actividad y domicilio fiscal.</p></div><div style="display:flex;gap:8px">${canA('clientes_edit')?`<button class="btn" data-act="cliedit" data-id="${c.id}">✏️ Editar datos</button>`:''}<button class="btn" data-act="regsync">🔄 Sincronizar (simulado)</button></div></div>
- ${!c.clave?`<div class="modebar" style="border-color:var(--bad);background:rgba(239,91,107,.08)"><span>🔑</span><div style="flex:1"><b>Credenciales inválidas:</b> falta la clave fiscal o venció. Sin ella no se sincronizan los datos de ARCA.</div>${canA('clientes_edit')?`<button class="btn sm" data-act="cliedit" data-id="${c.id}">Cargar clave</button>`:''}</div>`:''}
+ ${!c.clave&&!c.real?`<div class="modebar" style="border-color:var(--bad);background:rgba(239,91,107,.08)"><span>🔑</span><div style="flex:1"><b>Credenciales inválidas:</b> falta la clave fiscal o venció. Sin ella no se sincronizan los datos de ARCA.</div>${canA('clientes_edit')?`<button class="btn sm" data-act="cliedit" data-id="${c.id}">Cargar clave</button>`:''}</div>`:''}
  <div class="grid g2"><div class="card"><h3>Datos del contribuyente</h3><div class="stat"><span>CUIT</span><b>${c.cuit}</b></div><div class="stat"><span>Denominación</span><b>${esc(c.n)}</b></div><div class="stat"><span>Tipo de persona</span><b>${fis?'Persona humana':'Persona jurídica'}</b></div><div class="stat"><span>Forma jurídica</span><b>${fj}</b></div><div class="stat"><span>Condición</span><b>${tBadge(c)}</b></div><div class="stat"><span>Inicio de actividades</span><b>${c.alta?fd(c.alta):'—'}</b></div>${c.tipo==='Sociedad'?`<div class="stat"><span>Cierre de ejercicio</span><b>${MESES[(+(c.cierre||12))-1]}</b></div>`:''}<div class="stat"><span>Empleador</span><b>${c.emp>0?'Sí · '+c.emp+' empleado(s)':'No'}</b></div></div>
  <div class="card"><h3>Domicilio fiscal y actividad</h3><div class="stat"><span>Domicilio</span><b>${esc(c.dom||'—')}</b></div><div class="stat"><span>Localidad</span><b>${esc(c.loc||'—')}</b></div><div class="stat"><span>Provincia</span><b>${esc(c.prov||'—')}</b></div><div class="stat"><span>Actividad principal</span><b>${esc(c.act||'—')}</b></div><div class="stat"><span>Código de actividad</span><b>${esc(c.clae||'—')}</b></div><div class="stat"><span>Última sincronización</span><b>${c.sync?new Date(c.sync).toLocaleString('es-AR'):'Nunca'}</b></div></div></div>
  <div class="card" style="margin-top:14px"><h3>Impuestos y regímenes</h3><div class="tw"><table><thead><tr><th>Código</th><th>Impuesto</th><th>Detalle</th><th>Desde</th><th>Estado</th></tr></thead><tbody>${imps.map(i=>`<tr><td class="mono"><b>${i.cod}</b></td><td>${i.n}</td><td>${esc(i.obs)}</td><td>${i.desde?fd(i.desde):'—'}</td><td>${badge(i.est,'ok')}</td></tr>`).join('')}</tbody></table></div><p class="disc">Los vencimientos de la agenda se calculan con estos impuestos y la terminación del CUIT.</p></div>`;
@@ -3306,6 +3326,7 @@ function syncDaily(){
 }
 const fsync=ts=>{if(!ts)return'nunca';const d=new Date(ts),h=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'),dd=Math.round((new Date(TODAY)-new Date(d.getFullYear(),d.getMonth(),d.getDate()))/864e5);return(dd<=0?'hoy':dd===1?'ayer':fd(iso(d)))+' a las '+h};
 function syncBar(c,fuente){
+ if(c.real)return`<div class="syncb"><span class="sdot"></span><div style="flex:1;min-width:0"><b>${esc(fuente)}</b>: datos cargados por el estudio (archivo de Mis Comprobantes de ARCA, carga manual o foto) · todos los cálculos se hacen con esos datos.${c.clave?'':' La sincronización automática se activa al cargar la clave fiscal.'}</div>${canA('comprobantes')?'<button class="btn sm" data-act="cgo" data-v="ventas">📄 Importar de ARCA</button>':''}</div>`;
  const ok=!!c.clave;
  return`<div class="syncb ${ok?'':'bad'}"><span class="sdot"></span><div style="flex:1;min-width:0">${ok?`<b>${esc(fuente)}</b> sincronizado con ARCA ${fsync(c.sync||CFG.lastSync)} · se actualiza todos los días a las ${esc(CFG.hora)}`:`<b>${esc(fuente)}</b>: no se pudo sincronizar — falta o venció la clave fiscal delegada. Se muestran los últimos datos guardados.`}</div><button class="btn sm" data-act="sync1" data-id="${c.id}">⟳ Sincronizar ahora</button></div>`;
 }
