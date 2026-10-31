@@ -11871,7 +11871,7 @@ V.ret=()=>{
  const tot=i=>retSum(cid,ym,i),sinC=retList(cid,ym).filter(x=>x.est!=='Contabilizada').length;
  return`<div class="ph"><div><h1>Retenciones y percepciones</h1><p>Cargá las retenciones y percepciones sufridas de cada impuesto. Se descuentan solas del IVA y de Ingresos Brutos, y se contabilizan como saldo a favor.</p></div><div style="display:flex;gap:10px;flex-wrap:wrap"><div><label>Cliente</label><select data-chg="retcid">${clOpts(cid)}</select></div><div><label>Período</label><input type="month" value="${ym}" data-chg="ivaym"></div></div></div>
  <div class="grid g6" style="margin-bottom:14px">${IMPS.map(i=>kpi(i[0],ars(tot(i[0])),retCount(cid,ym,i[0])+' comprobantes')).join('')}${kpi('Total del período',ars(retSum(cid,ym)),'a cuenta de impuestos','up')}</div>
- <div class="card" style="margin-bottom:14px"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="btn pri" data-act="retarca">⬇ Importar de ARCA (Mis Retenciones)</button><label class="btn" style="margin:0;cursor:pointer">📄 Subir certificados PDF (IA)<input type="file" accept=".pdf" hidden data-chg="retfile"></label><label class="btn" style="margin:0;cursor:pointer">📊 Subir Excel o CSV<input type="file" accept=".xlsx,.csv,.txt" hidden data-chg="retfile"></label><button class="btn" data-act="retplant">Plantilla</button><div style="flex:1"></div>${sinC?`<button class="btn ok" data-act="retpost">Contabilizar ${sinC} sin registrar</button>`:badge('Todas contabilizadas','ok')}<button class="btn" data-act="retcsv">⬆ Exportar</button></div><p class="disc">Columnas del archivo: fecha, tipo (Retención/Percepción), impuesto, agente, CUIT, comprobante, certificado, importe.</p></div>
+ <div class="card" style="margin-bottom:14px"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="btn pri" data-act="retarca">⬇ Traer de ARCA (Mis Retenciones)</button><label class="btn" style="margin:0;cursor:pointer">📄 Subir certificados PDF (IA)<input type="file" accept=".pdf" hidden data-chg="retfile"></label><label class="btn" style="margin:0;cursor:pointer">📊 Subir Excel o CSV<input type="file" accept=".xlsx,.csv,.txt" hidden data-chg="retfile"></label><button class="btn" data-act="retplant">Plantilla</button><div style="flex:1"></div>${sinC?`<button class="btn ok" data-act="retpost">Contabilizar ${sinC} sin registrar</button>`:badge('Todas contabilizadas','ok')}<button class="btn" data-act="retcsv">⬆ Exportar Excel</button></div><p class="disc">Acepta el archivo exportado de <b>Mis Retenciones</b> de ARCA (Excel o CSV) o la plantilla del sistema (fecha, tipo, impuesto, agente, CUIT, comprobante, certificado, importe). Valida el CUIT del agente y saltea los certificados repetidos.</p></div>
  <div class="card" style="margin-bottom:14px"><h3>Carga manual</h3><form data-form="retnew"><div class="fr"><div><label>Tipo</label><select name="tipo"><option>Retención</option><option>Percepción</option></select></div><div><label>Impuesto</label><select name="imp">${IMPS.map(i=>`<option value="${i[0]}">${i[0]} — ${i[1]}</option>`).join('')}</select></div><div><label>Jurisdicción (solo IIBB)</label><input name="jur" list="jur" placeholder="Salta"><datalist id="jur">${JURIS.map(j=>`<option>${j[0]}</option>`).join('')}</datalist></div><div><label>Fecha</label><input type="date" name="fecha" value="${TODAYISO}" required></div></div>
  <div class="fr"><div><label>Agente de retención</label><input name="ag" list="ags" required><datalist id="ags">${AGENTES.map(a=>`<option>${a[0]}</option>`).join('')}</datalist></div><div><label>CUIT del agente</label><input name="cuit" placeholder="30-12345678-9" required></div><div><label>Comprobante origen</label><input name="cbte" placeholder="0001-00001234"></div><div><label>N° de certificado</label><input name="cert"></div><div><label>Importe</label><input type="number" name="monto" min="1" step="any" required></div><div><button class="btn pri">Agregar</button></div></div></form><p class="disc">Valida el CUIT del agente con su dígito verificador y avisa si el certificado ya fue cargado.</p></div>
  <div class="card"><h3>Detalle del período <span><select data-chg="retf" style="max-width:220px"><option value="">Todos los impuestos</option>${IMPS.map(i=>`<option ${S.retF===i[0]?'selected':''}>${i[0]}</option>`).join('')}</select></span></h3><div class="tw"><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Impuesto</th><th>Agente</th><th>Comprobante</th><th>Certificado</th><th class="r">Importe</th><th>Estado</th><th></th></tr></thead><tbody>${list.map(x=>`<tr><td>${fd(x.fecha)}</td><td>${badge(x.tipo,x.tipo==='Retención'?'info':'gold')}</td><td><b>${x.imp}</b>${x.jur?'<br><small class="mut">'+esc(x.jur)+'</small>':''}</td><td>${esc(x.ag)}<br><small class="mut">${x.cuit}</small></td><td>${esc(x.cbte||'—')}</td><td>${esc(x.cert||'—')}</td><td class="r"><b>${ars(x.monto)}</b></td><td>${badge(x.est,x.est==='Contabilizada'?'ok':'warn')}${x.src?' '+badge(x.src,'info'):''}</td><td>${x.der?`<button class="btn sm" data-act="cbshow" data-cid="${x.cid}" data-id="${x.cbid}">Ver factura</button>`:`<button class="btn sm bad" data-act="retdel" data-id="${x.id}">✕</button>`}</td></tr>`).join('')||'<tr><td colspan="9" class="mut">No hay retenciones cargadas en este período</td></tr>'}</tbody></table></div>
@@ -12997,7 +12997,7 @@ function cbForm(c,tp,x){
   <fieldset class="fs"><legend>Datos del ${venta?'cliente':'proveedor'}</legend><div class="fr"><div style="grid-column:span 2"><label>${venta?'Cliente':'Proveedor'} (buscá o escribí uno nuevo)</label><input name="cp" list="cpList" value="${esc(e.cp||'')}" required data-inp="cbcp" autocomplete="off"><datalist id="cpList">${Object.keys(cps).map(n=>`<option value="${esc(n)}">${esc(cps[n].cuit)}</option>`).join('')}</datalist></div><div><label>CUIT${venta?' / DNI':''}</label><input name="cuitCp" value="${esc(e.cuitCp||'')}" data-inp="cbcuit" inputmode="numeric" placeholder="${venta?'Opcional para consumidor final':'30-12345678-9'}"><small id="cbCuitMsg" class="mut"></small></div><div><label>Cond. IVA</label><select name="ciCp" data-chg="cbcisel">${Object.keys(CONDIVA).map(k=>`<option value="${k}" ${ci===k?'selected':''}>${CONDIVA[k]}</option>`).join('')}</select></div></div></fieldset>
   <fieldset class="fs"><legend>Datos IVA</legend><div class="fr"><div style="grid-column:span 2"><label>Actividad</label><input name="act" value="${esc(e.act||c.act||'')}"></div>${venta?'':`<div><label>Tipo (IVA)</label><select name="tiva">${TIVA.map(k=>`<option ${(e.tiva||'Directo')===k?'selected':''}>${k}</option>`).join('')}</select></div><div><label>Imputación</label><select name="imput">${IMPUT.map(k=>`<option ${(e.imput||'Bienes en general')===k?'selected':''}>${k}</option>`).join('')}</select></div>`}</div></fieldset>
   <fieldset class="fs"><legend>Datos contables</legend><div class="fr"><div style="grid-column:span 2"><label>${venta?'Tipo de ingreso':'Tipo de gasto'}</label><select name="cta">${cbCuentas(tp).map(p=>`<option value="${p[0]}" ${(e.cta||(venta?'4.1.01':'1.1.04'))===p[0]?'selected':''}>${p[0]} · ${p[1]}</option>`).join('')}</select></div><div style="grid-column:span 2"><label>Concepto / detalle (opcional)</label><input name="det" value="${esc(e.det||'')}" placeholder="Ej: Mercadería según remito 0001-0456"></div></div></fieldset>
-  <div class="fr"><div><label>Tipo autorización</label><select name="aut" data-chg="cbautsel">${['CAE','CAEA','CAI','Controlador fiscal','Sin autorización'].map(k=>`<option ${(e.aut||'CAE')===k?'selected':''}>${k}</option>`).join('')}</select></div><div style="grid-column:span 2"><label>Autorización (N°)</label><input name="cae" value="${esc(e.cae||'')}" inputmode="numeric" maxlength="14" placeholder="14 dígitos"></div></div>
+  <div class="fr"><div><label>Tipo autorización</label><select name="aut" data-chg="cbautsel">${['CAE','CAEA','CAI','Controlador fiscal','Sin autorización'].map(k=>`<option ${(e.aut||'CAE')===k?'selected':''}>${k}</option>`).join('')}</select></div><div style="grid-column:span 2"><label>Autorización (N°)</label><input name="cae" value="${esc(e.cae||'')}" inputmode="numeric" maxlength="14" placeholder="Opcional · 14 dígitos"></div></div>
  </div>
  <div><fieldset class="fs"><legend>Importes</legend><div class="amt">
   ${amt('neto','Neto gravado',e.neto)}
@@ -13043,8 +13043,8 @@ function cbValidate(f,c,tp,id){
  if(!amts.some(v=>v>0))err.push('Cargá al menos un importe.');
  if(L!=='C'&&neto>0&&!(+E.al.value>0)&&!pnum(E.ex.value)&&!pnum(E.nng.value))err.push('Elegí la alícuota de IVA del neto gravado.');
  const aut=E.aut.value,cae=String(E.cae.value).replace(/\D/g,'');
- if((aut==='CAE'||aut==='CAEA')&&cae.length!==14)err.push('El '+aut+' tiene que tener 14 dígitos.');
- if(aut==='CAI'&&cae.length<8)err.push('Cargá el número de CAI.');
+ if((aut==='CAE'||aut==='CAEA')&&cae.length&&cae.length!==14)err.push('El '+aut+' tiene que tener 14 dígitos (o dejalo vacío).');
+ if(aut==='CAI'&&cae.length&&cae.length<8)err.push('El número de CAI es muy corto (o dejalo vacío).');
  const pv5=pv.padStart(5,'0'),nr8=nro.padStart(8,'0');
  Object.keys(COMP).forEach(k=>{if(k.split('|')[0]!==String(c.id))return;(tp==='V'?COMP[k].v:COMP[k].c).forEach(x=>{if(x.id!==id&&x.tc===tc&&x.pv===pv5&&x.nro===nr8&&(tp==='V'||(x.cuitCp||'')===cuit))err.push('Ese comprobante ya está cargado ('+tcInfo(tc)[0]+' '+pv5+'-'+nr8+' del '+fd(x.fe)+').')})});
  return err;
@@ -13911,13 +13911,15 @@ function afsCredModal(c,then){
  <p style="display:flex;gap:8px;margin-top:12px"><button class="btn pri">Guardar y sincronizar</button>${k.p?`<button class="btn" type="button" data-act="afscreddel" data-id="${c.id}">Borrar la clave guardada</button>`:''}</p></form>`)}
 FRM.afscred=f=>{const cid=+f.get('cid'),c=cl(cid);setClaveF(cid,f.get('u'),f.get('p'));c.clave=true;closeModal();save();const t=S._afsThen;S._afsThen=null;t?t():render()};
 ACT.afscreddel=d=>{setClaveF(+d.id,'','');closeModal();toast('Clave fiscal borrada de este navegador');render()};
-async function afsSync(c){
+async function afsSync(c,only){
  if(!afsOn())return afsCfg();
- const k=clavesF()[c.id];if(!k||!k.p)return afsCredModal(c,()=>afsSync(c));
+ const k=clavesF()[c.id];if(!k||!k.p)return afsCredModal(c,()=>afsSync(c,only));
  const P={cuit:c.cuit.replace(/\D/g,''),username:k.u||c.cuit.replace(/\D/g,''),password:k.p};
  const hoy=new Date(TODAY),desde=new Date(hoy.getFullYear(),hoy.getMonth()-11,1),fe=dmy(desde)+' - '+dmy(hoy);
  const steps=[['E','Mis Comprobantes · emitidos (12 meses)'],['R','Mis Comprobantes · recibidos (12 meses)'],['DFE','Domicilio Fiscal Electrónico']];
+ steps.push(['RET','Mis Retenciones · IVA y Ganancias (12 meses)']);
  if(c.tipo==='Monotributo')steps.push(['MONO','Información de Monotributo']);
+ if(only)for(let q=steps.length-1;q>=0;q--)if(!only.includes(steps[q][0]))steps.splice(q,1);
  modal('Sincronizando con ARCA',`<p class="mut" style="margin-top:0"><b>${esc(c.n)}</b> · CUIT ${c.cuit} · conexión real con ARCA vía Afip SDK</p><div id="afsSteps">${steps.map((x,i)=>`<div class="stat" data-i="${i}" style="opacity:.5"><span>${x[1]}</span><b class="mut">en espera</b></div>`).join('')}</div><p class="disc" id="afsMsg" style="margin-top:10px">ARCA puede tardar entre 10 segundos y un par de minutos por consulta. No cierres esta ventana.</p>`);
  const row=i=>$('#afsSteps [data-i="'+i+'"]'),setS=(i,txt,cls)=>{const r=row(i);if(!r)return;r.style.opacity=1;const b=r.querySelector('b');b.textContent=txt;b.className=cls||''};
  const res={imp:0,dup:0,err:[],dfe:null,mono:null};let okAny=false;
@@ -13929,6 +13931,7 @@ async function afsSync(c){
    else if(kd==='DFE'){const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');const tk=t=>setS(i,'esperando a ARCA… '+t*5+' s','');let data;
     try{data=await afsRun('domicilio-fiscal-electronico',Object.assign({},P,{filters:{fechaPublicacionSince:dmy(desde),fechaPublicacionTo:dmy(hoy)}}),tk)}
     catch(e){if(!/fecha/i.test(String(e&&e.message)))throw e;data=await afsRun('domicilio-fiscal-electronico',Object.assign({},P,{filters:{fechaPublicacionSince:iso(desde),fechaPublicacionTo:iso(hoy)}}),tk)}res.dfe=afsDfe(c,data);setS(i,res.dfe.total+' comunicaciones'+(res.dfe.n?' · '+res.dfe.n+' nuevas':''),'up');okAny=true}
+   else if(kd==='RET'){const r=await afsRet(c,P,(t,imp)=>setS(i,imp+': esperando a ARCA… '+t*5+' s',''));res.ret=r;setS(i,r.tot+' registros'+(r.n?' · '+r.n+' nuevos':'')+(r.sum?' · '+ars(r.sum):''),'up');okAny=true}
    else if(kd==='MONO'){const data=await afsRun('monotributo-info',P,t=>setS(i,'esperando a ARCA… '+t*5+' s',''));c.arcaMono={ts:Date.now(),data};const cat=JSON.stringify(data||{}).match(/"categor[ií]a"\s*:\s*"?([A-K])\b/i);if(cat)c.cat=cat[1].toUpperCase();setS(i,cat?'categoría '+cat[1].toUpperCase()+' según ARCA':'datos recibidos','up');okAny=true}
   }catch(e){setS(i,'error','dn');res.err.push(steps[i][1]+': '+(e&&e.message||e));if(/access token|no se pudo llegar/i.test(String(e&&e.message)))break}
  }
@@ -13949,6 +13952,34 @@ ACT.afstest=async()=>{const f=$('#mbox form'),el=$('#afsTest');const tok=String(
  const t0=AFS.tok,u0=LSG('svb_afipsdk_url','');AFS.tok=tok;AFS.url=url;el.textContent='Probando…';
  try{const {st}=await afsFetch('/automations/prueba-de-conexion');el.innerHTML=st===404||st===400||st<300?'<span class="up">✔ Afip SDK respondió y aceptó la clave de acceso.</span>':'<span class="dn">Afip SDK respondió con el código '+st+'.</span>'}
  catch(e){el.innerHTML='<span class="dn">✘ '+esc(e.message)+'</span>'}finally{AFS.tok=t0;AFS.url=u0}};
+/* Mis Retenciones de ARCA: retenciones y percepciones sufridas de IVA (767) y Ganancias (217) */
+const RET_IMPS=[[767,'IVA','SICORE - IMPTO. AL VALOR AGREGADO'],[217,'Ganancias','SICORE - IMPTO. A LAS GANANCIAS']];
+async function afsRet(c,P,tick){
+ const hoy=new Date(TODAY),desde=new Date(hoy.getFullYear(),hoy.getMonth()-11,1),iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+ const own=c.cuit.replace(/\D/g,'');let n=0,tot=0,sm=0;
+ for(const [cod,imp,desc] of RET_IMPS){
+  for(let page=1;page<=5;page++){
+   const data=await afsRun('mis-retenciones',Object.assign({},P,{mode:'filter',page,size:100,filters:{descripcionImpuesto:desc,fechaRetencionDesde:iso(desde),fechaRetencionHasta:iso(hoy),impuestoRetenido:cod,tipoImpuesto:'IMP',percepciones:true,retenciones:true}}),t=>tick(t,imp));
+   const arr=Array.isArray(data)?data:data&&(data.items||data.data||data.results||data.retenciones||data.rows||data.content)||[];
+   arr.forEach(o=>{
+    const K={};Object.keys(o||{}).forEach(k=>K[k.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'')]=o[k]);
+    const g=(...ks)=>{for(const x of ks){if(K[x]!=null&&K[x]!=='')return K[x]}for(const x of ks){const k=Object.keys(K).find(k=>k.includes(x));if(k&&K[k]!=null&&K[k]!=='')return K[k]}return''};
+    let cu=String(g('cuitagente','cuitretenedor','cuitagenteretencion')).replace(/\D/g,'');if(!cu){const x=String(g('cuit')).replace(/\D/g,'');if(x&&x!==own)cu=x}
+    const fr=String(g('fecharetencion','fechaoperacion','fecha')),fe=normFecha(fr.slice(0,10))||(/^\d{4}-\d{2}-\d{2}/.test(fr)?fr.slice(0,10):null)||TODAYISO;
+    const monto=Math.abs(pnum(g('importeretenido','importeretencion','importe','monto')));if(!monto)return;
+    const tx=(String(g('descripcionoperacion','tipooperacion','operacion','tipo'))+' '+String(g('descripcionregimen','regimen'))).toLowerCase();
+    const cbte=String(g('numerocomprobante','nrocomprobante','comprobante')),cert=String(g('numerocertificado','certificado'));
+    const ext=imp+'|'+cu+'|'+fe+'|'+monto+'|'+cbte+'|'+cert;tot++;sm+=monto;
+    if(RET.some(x=>x.cid===c.id&&x.ext===ext))return;
+    RET.push({id:RTID++,cid:c.id,tipo:/percep/.test(tx)?'Percepción':'Retención',imp,jur:'',ag:String(g('denominacionagente','razonsocial','denominacion','agente','nombre'))||(cu?'CUIT '+fmtCuit(cu):'Agente'),cuit:cu.length===11?fmtCuit(cu):cu,cbte:cbte||'—',cert:cert||'—',fecha:fe,monto:r2(monto),est:'Computada',src:'ARCA (Mis Retenciones)',reg:String(g('descripcionregimen','regimen')||''),ext});n++});
+   if(arr.length<100)break;
+  }
+ }
+ if(n)logA('Mis Retenciones de ARCA · '+c.n+': '+n+' nuevas');
+ return{n,tot,sum:r2(sm)};
+}
+ACT.afsret=d=>{const c=cl(+d.id);if(!c)return;if(!afsOn())return afsCfg();afsSync(c,['RET'])};
+
 /* Engancha la sincronización real en los botones existentes */
 {const _s1=ACT.sync1;ACT.sync1=d=>{const c=cl(+d.id);if(c&&c.real&&afsOn())return afsSync(c);return _s1(d)}}
 {const _fc2=FRM.cliente;FRM.cliente=function(f,form){const pw=String(f.get('clave')||''),n0=CL.length,id0=+(f.get('id')||0);_fc2(f,form);const c=id0?cl(id0):(CL.length>n0?CL[CL.length-1]:null);if(c&&pw){setClaveF(c.id,c.cuit,pw);if(c.real&&afsOn()&&CFG.mode==='limpio'&&!id0)setTimeout(()=>afsSync(c),350)}}}
@@ -13988,6 +14019,54 @@ function iaFromQr(d,cid){
   logA('Comprobante subido ('+(d?'QR de ARCA leído':'sin lectura')+'): '+it.file);rr();save()})();
  setTimeout(rr,0);
 }}
+
+/* ---------- Retenciones y percepciones: ARCA real, importación de archivos y exportación por cliente ---------- */
+const retImpOf=v=>{const t=String(v||'').toLowerCase();if(/767|valor agregado|\biva\b/.test(t))return'IVA';if(/217|ganancia/.test(t))return'Ganancias';if(/ingresos brutos|iibb|\b9\d{2}\b/.test(t))return'IIBB';if(/353|301|351|seguridad social|suss/.test(t))return'SUSS';if(/cheque|25\.?413|debitos y creditos/.test(t))return'Cheque';return null};
+function retRowsImport(cid,rows,src){
+ const nk=k=>String(k).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+ let hi=rows.findIndex(r=>r&&r.some(v=>/fecha/i.test(String(v)))&&r.some(v=>/importe|monto/i.test(String(v))));
+ const res={n:0,err:[],dup:0};
+ if(hi<0)return null;
+ const H=rows[hi].map(nk),f=(...ts)=>{for(const t of ts){const i=H.findIndex(h=>t(h));if(i>=0)return i}return-1};
+ const ix={cuit:f(h=>h.includes('cuit')&&(h.includes('agente')||h.includes('ret')||h.includes('perc')),h=>h.includes('cuit')),
+  den:f(h=>h.includes('denominacion')||h.includes('razonsocial'),h=>h.includes('agente')&&!h.includes('cuit')),
+  imp:f(h=>h==='impuesto'||h==='codigoimpuesto'||h==='impuestoretenido',h=>h.includes('descripcionimpuesto'),h=>h.includes('impuesto')),
+  reg:f(h=>h.includes('descripcionregimen'),h=>h.includes('regimen')),
+  op:f(h=>h.includes('descripcionoperacion'),h=>h.includes('operacion'),h=>h==='tipo'),
+  fe:f(h=>h.includes('fecha')&&(h.includes('ret')||h.includes('perc')),h=>h==='fecha',h=>h.includes('fecha')&&!h.includes('comprobante')&&!h.includes('registr')),
+  cert:f(h=>h.includes('certificado')),cbte:f(h=>(h.includes('numero')||h.includes('nro'))&&h.includes('comprobante'),h=>h==='comprobante'),
+  monto:f(h=>h.includes('importe')&&(h.includes('ret')||h.includes('perc')),h=>h.includes('importe'),h=>h.includes('monto')),
+  jur:f(h=>h.includes('jurisdiccion')||h.includes('provincia'))};
+ if(ix.fe<0||ix.monto<0)return null;
+ const own=cl(cid).cuit.replace(/\D/g,'');
+ rows.slice(hi+1).forEach((r,i)=>{if(!r||!r.some(v=>String(v).trim()))return;const g=k=>ix[k]>=0?String(r[ix[k]]==null?'':r[ix[k]]).trim():'';
+  let fe=normFecha(g('fe').slice(0,10))||(/^\d{4}-\d{2}-\d{2}/.test(g('fe'))?g('fe').slice(0,10):(/^\d{5}$/.test(g('fe'))?serialDate(+g('fe')):null));
+  const monto=Math.abs(pnum(g('monto')));if(!monto)return;
+  const imp=retImpOf(g('imp'))||retImpOf(g('reg'))||'IVA',tx=(g('op')+' '+g('reg')).toLowerCase();
+  let cu=g('cuit').replace(/\D/g,'');if(cu===own)cu='';
+  const o={cid,fecha:fe,tipo:/percep/.test(tx)?'Percepción':'Retención',imp,jur:imp==='IIBB'?(g('jur')||cl(cid).prov||'Salta'):'',ag:g('den')||(cu?'CUIT '+fmtCuit(cu):''),cuit:cu.length===11?fmtCuit(cu):cu,cbte:g('cbte')||'—',cert:g('cert'),monto:r2(monto),src:src,reg:g('reg')};
+  if(o.cert&&RET.some(x=>x.cid===cid&&x.cert===o.cert&&x.cuit===o.cuit&&Math.abs(x.monto-o.monto)<.01)){res.dup++;return}
+  const rr=retAdd(o);if(rr.err)res.err.push('Fila '+(hi+i+2)+': '+rr.err[0]);else res.n++});
+ return res;
+}
+{const _rf=CHG.retfile;CHG.retfile=function(v,t){const f=t.files&&t.files[0];if(!f)return;const cid=S.cidRet||CL[0].id,c=cl(cid);
+ if(/\.pdf$/i.test(f.name)&&c.real){toast('Los certificados en PDF todavía no se leen solos: subí el Excel o CSV de Mis Retenciones de ARCA, o cargalos a mano');try{t.value=''}catch(e){}return}
+ if(/\.pdf$/i.test(f.name))return _rf(v,t);
+ fileRows(f,'ret',res=>{if(res.err)return toast('No se pudo leer: '+res.err);
+  const r=retRowsImport(cid,res.rows,'ARCA (archivo)');
+  if(!r){try{t.value=''}catch(e){}return _rf(v,{files:[f],value:''})}
+  logA('Retenciones importadas ('+res.src+') en '+c.n+': '+r.n+' nuevas, '+r.dup+' repetidas, '+r.err.length+' con error');
+  modal('Importación de retenciones',`<p>${badge(r.n+' cargadas','ok')} ${r.dup?badge(r.dup+' ya estaban','info'):''} ${r.err.length?badge(r.err.length+' rechazadas','bad'):''} ${badge(res.src,'info')}</p>${r.err.length?`<div class="list">${r.err.slice(0,15).map(e=>`<div><span>❌</span><div class="g">${esc(e)}</div></div>`).join('')}</div>`:''}<p class="mut">Se descuentan solas del IVA, de Ganancias y de Ingresos Brutos del período que corresponde.</p><p><button class="btn pri" data-act="close">Listo</button></p>`);render()});
+ try{t.value=''}catch(e){}}}
+{const _ra=ACT.retarca;ACT.retarca=function(){const cid=S.cidRet||CL[0].id,c=cl(cid);if(!c)return;if(!c.real)return _ra();
+ if(afsOn())return afsSync(c,['RET']);
+ modal('Traer retenciones de ARCA',`<p>Para traerlas solas, conectá ARCA con Afip SDK. También podés descargar el archivo desde ARCA y subirlo:</p><ol class="mut" style="margin:0 0 12px 18px;padding:0"><li>Entrá a ARCA con la clave fiscal de <b>${esc(c.n)}</b> → <b>Mis Retenciones</b>.</li><li>Elegí impuesto y fechas, consultá y exportá a Excel o CSV.</li><li>Subilo con <b>📊 Subir Excel o CSV</b>.</li></ol><p style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri" data-act="afscfg">🔌 Conectar con ARCA</button><button class="btn" data-act="close">Cerrar</button></p>`)}}
+ACT.retcsv=function(){const cid=S.cidRet||CL[0].id,c=cl(cid),hd=['Fecha','Tipo','Impuesto','Jurisdicción','Agente','CUIT agente','Comprobante','Certificado','Importe','Estado','Origen'];
+ const row=x=>[x.fecha,x.tipo,x.imp,x.jur||'',x.ag,x.cuit,x.cbte||'',x.cert||'',+x.monto,x.est||'',x.src||''];
+ const per=retList(cid,S.ivaYM).slice().sort((a,b)=>a.fecha<b.fecha?-1:1),ms=lastMonths(12),all=[];ms.forEach(m=>retList(cid,m).forEach(x=>all.push(x)));all.sort((a,b)=>a.fecha<b.fecha?-1:1);
+ const res=IMPS.map(i=>[i[0],r2(sum(all.filter(x=>x.imp===i[0]).map(x=>+x.monto)))]);
+ xlsxDownload('retenciones_'+c.cuit.replace(/\D/g,'')+'_'+S.ivaYM+'.xlsx',[{name:'Período '+S.ivaYM,rows:[hd,...per.map(row)]},{name:'Últimos 12 meses',rows:[hd,...all.map(row)]},{name:'Resumen por impuesto',rows:[['Impuesto','Total 12 meses'],...res]}]);
+ logA('Retenciones exportadas a Excel · '+c.n);toast('Excel de retenciones descargado ✔')};
 
 render();syncHash();
 </script>
