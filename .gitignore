@@ -1,0 +1,11 @@
+# Facturación propia (sv.arca.sdk): nunca versionar certificados, claves ni el journal
+.env
+.env.*
+*.pem
+*.key
+*.pfx
+*.p12
+*.crt
+*.csr
+.arca-journal/
+servidor/.arca-journal/

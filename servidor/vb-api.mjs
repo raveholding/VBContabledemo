@@ -100,6 +100,7 @@ function mcpHandle(db,msg){
    Uso:
      node vb-api.mjs --datos datos-estudio.json [--puerto 8787]
      node vb-api.mjs --mcp --datos datos-estudio.json        (Claude Desktop)
+     node --env-file=/ruta/.env vb-api.mjs …                 (con facturación propia /arca/*, ver vb-arca.mjs)
    Claves: las creadas en Sistema VB (API REST y MCP → Claves) viajan en
    datos-estudio.json como huella SHA-256. También se puede fijar una con
    la variable de entorno VB_API_KEY.
@@ -108,6 +109,7 @@ import fs from 'node:fs';
 import http from 'node:http';
 import crypto from 'node:crypto';
 import readline from 'node:readline';
+import { crearPuenteArca } from './vb-arca.mjs';
 
 const argv = process.argv.slice(2);
 const opt = (k, d) => { const i = argv.indexOf(k); return i >= 0 && argv[i + 1] && !argv[i + 1].startsWith('--') ? argv[i + 1] : d; };
@@ -135,6 +137,8 @@ function authorized(req) {
   return (DB.claves || []).includes(sha(k));
 }
 
+const puenteArca = crearPuenteArca({ log, authorized });
+
 if (MCP_STDIO) {
   // MCP por stdio: un mensaje JSON-RPC por línea
   const rl = readline.createInterface({ input: process.stdin });
@@ -155,7 +159,7 @@ if (MCP_STDIO) {
   const send = (res, st, body, extra) => { const t = JSON.stringify(body, null, 1); res.writeHead(st, Object.assign({ 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Authorization, Content-Type, Mcp-Session-Id', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Allow-Private-Network': 'true', 'Cache-Control': 'no-store' }, extra || {})); res.end(t); };
   http.createServer((req, res) => {
     const u = new URL(req.url, 'http://localhost');
-    if (req.method === 'OPTIONS') return send(res, 204, {});
+    if (req.method === 'OPTIONS') return send(res, 204, {}, { 'Access-Control-Allow-Private-Network': 'true' });
     if (u.pathname === '/' || u.pathname === '/v1') return send(res, 200, { servicio: 'Sistema VB · API REST + MCP', estudio: DB.estudio.nombre, version: API_VER, documentacion: '/v1/openapi.json', mcp: '/mcp', solo_lectura: true });
     if (u.pathname === '/v1/openapi.json') return send(res, 200, openapi());
     /* Puente hacia Afip SDK: el navegador llama a /afipsdk/... y el servidor reenvía a app.afipsdk.com (evita el bloqueo CORS) */
@@ -171,6 +175,8 @@ if (MCP_STDIO) {
       });
       return;
     }
+    /* Facturación electrónica propia (sv.arca.sdk): autentica adentro */
+    if (puenteArca(req, res, u, send)) return;
     if (!authorized(req)) return send(res, 401, { error: 'Falta la clave o no es válida. Enviala como Authorization: Bearer <clave>.' }, { 'WWW-Authenticate': 'Bearer' });
     if (u.pathname === '/mcp') {
       if (req.method !== 'POST') return send(res, 405, { error: 'El MCP remoto acepta POST con JSON-RPC.' });

@@ -72,8 +72,35 @@ En **Configuración → Conexión con ARCA** (o en el aviso de Inicio) se pega l
 
 La clave de acceso y las claves fiscales no se guardan en las copias de seguridad, ni en la API, ni en el repositorio. Si el navegador no puede llegar a Afip SDK, se usa el servidor de `servidor/` (`node vb-api.mjs …`) y en *URL de la API* se pone `http://localhost:8787/afipsdk`.
 
+## Facturación electrónica propia (sv.arca.sdk, sin Afip SDK)
+
+El módulo **E-commerce y facturación** puede emitir las facturas con **CAE real** usando tu propio certificado de ARCA, sin pasar por Afip SDK. Lo hace [`sv.arca.sdk`](https://github.com/raveholding/SVBARCA) (WSAA + WSFEv1) a través del servidor de `servidor/`, que expone `GET /arca/estado` y `POST /arca/emitir` con clave `Bearer`.
+
+**Qué cubre y qué no.** Con un certificado propio se accede a los web services oficiales: emitir facturas A, B y C con CAE. **No** trae Mis Comprobantes, el Domicilio Fiscal Electrónico ni la información de Monotributo: eso sigue haciéndose con Afip SDK y la clave fiscal de cada cliente (sección anterior).
+
+**Cómo probarlo (siempre primero en homologación):**
+
+1. En el repo de sv.arca.sdk: `npm install && npm run build`. Generar el certificado de homologación (`examples/generar-csr.ts`) y asociar el servicio `wsfe` en ARCA (WSASS).
+2. Crear un `.env` **fuera del repositorio** con `ARCA_AMBIENTE=homologacion`, `ARCA_CUIT`, `ARCA_CERT_PEM_B64`, `ARCA_KEY_PEM_B64`, `ARCA_KEY_PASSPHRASE`, `ARCA_ENCRYPTION_KEY`, y además `SV_ARCA_SDK` (carpeta del repo del SDK) y `ARCA_PTO_VTA` (punto de venta Web Service).
+3. Iniciar el servidor (Node 20.6 o superior): `VB_API_KEY=una-clave node --env-file=/ruta/.env servidor/vb-api.mjs`.
+4. En la demo: *E-commerce y facturación* → **Conectar ARCA propio** → URL `http://localhost:8787` y esa clave → **Probar conexión** (muestra el ambiente, el CUIT, el vencimiento del certificado y si responden los servidores de ARCA).
+5. Cada **Facturar** pide el CAE real. Si el servidor está caído o ARCA no responde, el pedido queda pendiente: nunca se inventa un CAE. Reintentar el mismo pedido no duplica la factura.
+
+El certificado y la clave privada viven solo en el servidor. En el navegador se guardan únicamente la URL y la clave del servidor. En homologación los comprobantes no tienen validez fiscal. Sin conexión configurada, el módulo sigue en modo simulado.
+
 ## Qué es simulado
 
-Con los datos de ejemplo, la sincronización con ARCA es simulada. También lo son el Sistema de Cuentas Tributarias y la CCMA (Afip SDK tiene automatizaciones para ambos que se pueden sumar), la lectura con IA, las presentaciones de declaraciones juradas, los VEP, Interbanking y las plataformas de e-commerce. La tasa de interés resarcitorio y las alícuotas de Ingresos Brutos y tasas municipales son valores editables.
+Con los datos de ejemplo, la sincronización con ARCA es simulada, y la emisión de facturas del e-commerce también hasta que se conecta ARCA propio. También lo son el Sistema de Cuentas Tributarias y la CCMA (Afip SDK tiene automatizaciones para ambos que se pueden sumar), la lectura con IA, las presentaciones de declaraciones juradas, los VEP, Interbanking y las plataformas de e-commerce. La tasa de interés resarcitorio y las alícuotas de Ingresos Brutos y tasas municipales son valores editables.
 
 Desarrollado por **Vincular Business** · WhatsApp (387) 4484132 · vincularbusiness@gmail.com
+
+## V28 · Caja, Equipo y RR HH, Club, configuración dinámica (12/11/2026)
+Se llevó a esta demo lo nuevo del Sistema VB (visto en la demo de Di Parma), adaptado a un estudio contable:
+- **Acceso oculto:** el sitio público ya no muestra el botón para volver al panel. Se entra con **doble clic (doble toque en el celular) sobre el logo** o el nombre del estudio, o 5 toques seguidos. También sirve la ruta `#acceso`. La demo arranca en el sitio público.
+- **Caja y cobros** (`Administración`): turno con fondo inicial, cobro de honorarios (pagos mixtos, vuelto, recargo por crédito, un solo beneficio por cobro: gana el mayor entre nivel del Club y cupón), arqueo con Corte X / Corte Z y sellos SHA-256 encadenados con verificación. Atajos **F1** (cobrar) y **F12** (confirmar).
+- **Equipo y RR HH:** legajos, fichaje por PIN, licencias y vacaciones con aprobación y saldo, documentos con vencimientos, nómina interna con CSV.
+- **Club de clientes:** puntos por honorarios cobrados, niveles con descuento, cupones, premios canjeables, referidos y aniversarios con saludo por WhatsApp.
+- **Configuración dinámica:** buscador (tecla `/`), secciones, tarjetas plegables con resumen, aviso «Sin guardar» y salto directo desde otras pantallas. Suma las tarjetas de Caja, RR HH, Club y Conexión con ARCA.
+- **Menú lateral** con grupos plegables y **paleta Ctrl + K** (pantallas, clientes y acciones; tolera errores de tipeo).
+
+Fuente: `fuente/` (`mod-a-caja.js`, `mod-b-equipo-club.js`, `mod-c-sistema.js`, `mod.css`). Para regenerar `index.html`: `cd fuente && python3 inyectar.py` (es idempotente). Los datos de ejemplo de estos módulos aparecen sólo con «Cargar datos de ejemplo».
